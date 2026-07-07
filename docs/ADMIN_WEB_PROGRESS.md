@@ -729,3 +729,26 @@ bugs; user then asked for five more features in one message.
 >
 > Remaining, low-priority:
 > - Offline map tiles — explicitly deferred by the user, revisit later.
+
+---
+
+## Round 11 — checkpoint marker style iteration (2026-07-08)
+
+User didn't like the reached=green color-swap (hid the type color) or the
+plain white unvisited fill (too stark, no way to tell which one in sequence).
+Two quick style passes, both mobile-only (`ActiveNavigationScreen.tsx`):
+
+- [x] **S1** Outline-vs-fill: unvisited = white ring, colored outline;
+      visited = solid disc in that type color + checkmark. Type is never
+      hidden by "done" anymore.
+- [x] **S2** Order number + softer fill: unvisited fill changed white →
+      `colors.checkpoint.*.soft` (tinted), with the checkpoint's order number
+      rendered on top so the sequence stays legible before scanning anything.
+      Visited unchanged (solid + checkmark).
+- Shipped as v1.5 then v1.6 (versionCode 6, 7) same session, back to back.
+
+> Not yet verified on device — both style passes went out on trust (`tsc`
+> clean, no runtime testing). Worth a real look next time the phone's
+> plugged in, alongside the still-untouched `RoutePreviewMap.tsx` (the
+> pre-start preview never got the order-number/soft-fill treatment — still
+> shows plain solid-by-type + white number).
