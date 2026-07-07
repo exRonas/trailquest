@@ -229,6 +229,12 @@ const en: Dict = {
 
   // Route detail (additional)
   'route.map': 'Route map',
+  'route.offlineDownload': 'Download map for offline use',
+  'route.offlineDownloading': 'Downloading map… {percent}%',
+  'route.offlineReady': 'Offline map ready',
+  'route.offlineFailed': 'Could not download the offline map',
+  'route.offlineDeleteTitle': 'Delete offline map?',
+  'route.offlineDeleteMsg': 'You can download it again later.',
   'route.tipsWarnings': 'Tips & warnings',
   'route.checkpointsCount': 'Checkpoints ({count})',
   'route.discussion': 'Discussion',
@@ -450,6 +456,12 @@ const ru: Dict = {
   'forum.postFailed': 'Не удалось опубликовать пост.',
 
   'route.map': 'Карта маршрута',
+  'route.offlineDownload': 'Скачать карту офлайн',
+  'route.offlineDownloading': 'Скачивание карты… {percent}%',
+  'route.offlineReady': 'Офлайн-карта готова',
+  'route.offlineFailed': 'Не удалось скачать офлайн-карту',
+  'route.offlineDeleteTitle': 'Удалить офлайн-карту?',
+  'route.offlineDeleteMsg': 'Можно будет скачать её снова позже.',
   'route.tipsWarnings': 'Советы и предупреждения',
   'route.checkpointsCount': 'Точки ({count})',
   'route.discussion': 'Обсуждение',
@@ -670,6 +682,12 @@ const kk: Dict = {
   'forum.postFailed': 'Постты жариялау мүмкін болмады.',
 
   'route.map': 'Маршрут картасы',
+  'route.offlineDownload': 'Картаны офлайн жүктеу',
+  'route.offlineDownloading': 'Карта жүктелуде… {percent}%',
+  'route.offlineReady': 'Офлайн карта дайын',
+  'route.offlineFailed': 'Офлайн картаны жүктеу мүмкін болмады',
+  'route.offlineDeleteTitle': 'Офлайн картаны жою керек пе?',
+  'route.offlineDeleteMsg': 'Кейін қайта жүктеп алуға болады.',
   'route.tipsWarnings': 'Кеңестер мен ескертулер',
   'route.checkpointsCount': 'Нүктелер ({count})',
   'route.discussion': 'Талқылау',

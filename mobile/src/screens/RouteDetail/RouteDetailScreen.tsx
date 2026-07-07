@@ -22,6 +22,8 @@ import { StatTile } from '../../components/StatTile';
 import { TipCard } from '../../components/TipCard';
 import { RoutePreviewMap } from '../../components/map/RoutePreviewMap';
 import { CheckpointModal } from '../../components/CheckpointModal';
+import { OfflineMapCard } from '../../components/OfflineMapCard';
+import { hasMapboxToken } from '../../services/mapbox';
 import { colors, shadow, spacing } from '../../theme';
 import { checkpointIcon, categoryIcon } from '../../theme/icons';
 import {
@@ -57,6 +59,20 @@ export function RouteDetailScreen({
       warnings: tips.filter((t) => t.type === 'WARNING'),
       advice: tips.filter((t) => t.type === 'ADVICE'),
     };
+  }, [data]);
+
+  // Every coordinate touched by the route (line + checkpoints) — the offline
+  // tile pack needs to cover all of it, not just the path.
+  const offlineCoords = useMemo<[number, number][]>(() => {
+    if (!data) return [];
+    const line =
+      data.routeGeometry && data.routeGeometry.length > 1
+        ? data.routeGeometry.map((p) => [p.lng, p.lat] as [number, number])
+        : data.pathPoints.map((p) => [p.lng, p.lat] as [number, number]);
+    const checkpointCoords = data.checkpoints.map(
+      (c) => [c.lng, c.lat] as [number, number],
+    );
+    return [...line, ...checkpointCoords];
   }, [data]);
 
   const onStart = async () => {
@@ -160,10 +176,6 @@ export function RouteDetailScreen({
           </AppText>
 
           {/* Map preview */}
-          {/* TODO(offline-maps): when opening Route Detail, kick off a Mapbox
-              offline tile pack download for the route's bounding region here
-              (Mapbox.offlineManager.createPack) so navigation works without a
-              connection. Out of scope for this MVP. */}
           <SectionTitle icon="map-outline" title={t('route.map')} />
           <RoutePreviewMap
             pathPoints={data.pathPoints}
@@ -174,6 +186,9 @@ export function RouteDetailScreen({
               setSelected(data.checkpoints.find((c) => c.id === id) ?? null)
             }
           />
+          {hasMapboxToken ? (
+            <OfflineMapCard routeId={data.id} coords={offlineCoords} />
+          ) : null}
 
           {/* Tips & warnings */}
           {warnings.length + advice.length > 0 ? (
