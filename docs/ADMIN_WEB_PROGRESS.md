@@ -720,17 +720,12 @@ bugs; user then asked for five more features in one message.
       Blueprint auto-sync redeploys backend + admin on push (no manual step
       once confirmed enabled).
 
-> Not yet done / honest gaps:
-> 1. Admin panel's live Render deployment was never re-confirmed after this
->    round's push — worth a dashboard check that `trailquest-admin` and
->    `trailquest-backend` both redeployed cleanly and the Neon prod DB picked
->    up the `add_images`/`add_user_avatar` migrations via `prisma migrate
->    deploy` (automatic in the Render start command, but unverified).
-> 2. Image upload + forum moderation only exercised via curl/local DB, never
->    clicked through in an actual browser against the deployed admin site.
-> 3. Avatar picker (Round 9) still not visually verified on a real device —
->    the phone disconnected before that test happened; only the geolocation
->    fix and checkpoint-resume fix got on-device screenshots this round.
-> 4. QR-scan → XP → rank flow (Round 7's Q10) is *still* open — three
->    rounds running now without an on-device confirmation.
-> 5. Offline map tiles — explicitly deferred by the user, revisit later.
+> User confirmed on 2026-07-08, all live/working:
+> - Render deploy is live (backend + admin).
+> - Image upload and comment-delete both work through the real admin site.
+> - Avatar picker looks good on-device.
+> - QR-scan → XP → rank-up flow works (Round 7's Q10 finally closed).
+> - Current XP left as-is (offer to reset the test account was declined).
+>
+> Remaining, low-priority:
+> - Offline map tiles — explicitly deferred by the user, revisit later.
