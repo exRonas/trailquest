@@ -1,9 +1,11 @@
 import { prisma } from '../lib/prisma';
 import { AppError } from '../utils/AppError';
+import { UpdateMeInput } from '../schemas/user.schema';
 
 const publicUserSelect = {
   id: true,
   name: true,
+  avatar: true,
   createdAt: true,
 } as const;
 
@@ -43,6 +45,16 @@ function mapActivityRoute<
       region: { ru: regionRu, en: regionEn, kk: regionKk },
     },
   };
+}
+
+/** Update the signed-in user's own editable fields (currently just avatar). */
+export async function updateMe(userId: string, input: UpdateMeInput) {
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { avatar: input.avatar },
+  });
+  const { passwordHash: _passwordHash, ...safe } = user;
+  return safe;
 }
 
 /**

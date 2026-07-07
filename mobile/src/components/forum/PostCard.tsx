@@ -29,7 +29,7 @@ export function PostCard({
           onAuthorPress();
         }}
       >
-        <Avatar name={post.user.name} />
+        <Avatar name={post.user.name} avatar={post.user.avatar} />
         <View style={styles.headerText}>
           <AppText variant="bodyStrong" numberOfLines={1}>
             {post.user.name}

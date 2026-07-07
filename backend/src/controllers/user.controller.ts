@@ -9,3 +9,8 @@ export const getPublicProfile = asyncHandler(
     sendData(res, profile);
   },
 );
+
+export const updateMe = asyncHandler(async (req: Request, res: Response) => {
+  const user = await userService.updateMe(req.user!.sub, req.body);
+  sendData(res, user);
+});

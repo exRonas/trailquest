@@ -4,10 +4,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Mapbox from '@rnmapbox/maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
-import { AppText, Banner, EmptyState, ErrorState, IconButton, Loader } from '../../components/ui';
+import { AppText, Banner, Button, EmptyState, ErrorState, IconButton, Loader } from '../../components/ui';
 import { RouteCard } from '../../components/RouteCard';
 import { FilterBar } from '../../components/explore/FilterBar';
 import { MapPlaceholder } from '../../components/map/MapPlaceholder';
+import { LocationPermissionBanner } from '../../components/LocationPermissionBanner';
 import { colors, shadow, spacing } from '../../theme';
 import { hasMapboxToken, mapStyleUrl, DEFAULT_CAMERA } from '../../services/mapbox';
 import { getCurrentPosition } from '../../services/geolocation';
@@ -22,6 +23,8 @@ type Coord = [number, number];
 
 /** Routes whose start point is within this many km are considered "near you". */
 const NEARBY_KM = 50;
+/** How many routes show inline before the user taps "Show more". */
+const SHOWN_LIMIT = 4;
 
 function toFeatureCollection(routes: RouteSummary[], lang: Language) {
   return {
@@ -53,6 +56,7 @@ export function ExploreScreen({
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(
     null,
   );
+  const [expanded, setExpanded] = useState(false);
 
   const cameraRef = useRef<Mapbox.Camera>(null);
   const sheetRef = useRef<BottomSheet>(null);
@@ -85,6 +89,11 @@ export function ExploreScreen({
           NEARBY_KM,
     );
   }, [routes, userPos]);
+
+  const visible = useMemo(
+    () => (expanded ? displayed : displayed.slice(0, SHOWN_LIMIT)),
+    [displayed, expanded],
+  );
 
   const featureCollection = useMemo(
     () => toFeatureCollection(displayed, language),
@@ -137,6 +146,17 @@ export function ExploreScreen({
     },
     [openRoute],
   );
+
+  // Collapse back to the short list whenever the filters change.
+  useEffect(() => {
+    setExpanded(false);
+  }, [filters]);
+
+  const onLocationGranted = useCallback(async () => {
+    if (userPos) return;
+    const pos = await getCurrentPosition();
+    if (pos) setUserPos({ lat: pos.lat, lng: pos.lng });
+  }, [userPos]);
 
   const locateMe = useCallback(async () => {
     const pos = await getCurrentPosition();
@@ -271,6 +291,8 @@ export function ExploreScreen({
         ) : null}
       </View>
 
+      <LocationPermissionBanner onGranted={onLocationGranted} />
+
       {/* Routes bottom sheet */}
       <BottomSheet
         ref={sheetRef}
@@ -280,7 +302,7 @@ export function ExploreScreen({
         handleIndicatorStyle={styles.handle}
       >
         <BottomSheetFlatList
-          data={displayed}
+          data={visible}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.sheetContent}
           ListHeaderComponent={
@@ -306,13 +328,6 @@ export function ExploreScreen({
                 <Icon name="chevron-right" size={22} color={colors.textMuted} />
               </Pressable>
 
-              {!userPos && !isLoading ? (
-                <Banner
-                  tone="info"
-                  message={t('explore.locationOff')}
-                  style={styles.sheetBanner}
-                />
-              ) : null}
               {!hasMapboxToken ? (
                 <Banner
                   tone="info"
@@ -326,6 +341,16 @@ export function ExploreScreen({
             <RouteCard route={item} onPress={() => openRoute(item.id)} />
           )}
           ListEmptyComponent={<View style={styles.empty}>{renderEmpty()}</View>}
+          ListFooterComponent={
+            !expanded && displayed.length > SHOWN_LIMIT ? (
+              <Button
+                label={t('explore.showMore')}
+                variant="secondary"
+                onPress={() => setExpanded(true)}
+                style={styles.showMore}
+              />
+            ) : null
+          }
           showsVerticalScrollIndicator={false}
         />
       </BottomSheet>
@@ -371,5 +396,6 @@ const styles = StyleSheet.create({
   },
   browseText: { flex: 1, marginLeft: spacing.sm, color: colors.primary },
   sheetBanner: { marginTop: spacing.sm },
+  showMore: { marginTop: spacing.sm },
   empty: { height: 320 },
 });

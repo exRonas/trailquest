@@ -43,9 +43,10 @@ const en: Dict = {
   'explore.noRoutesMessage': 'Try clearing your filters to see more trails.',
   'explore.clearFilters': 'Clear filters',
   'explore.browseByCountry': 'Browse routes by country',
-  'explore.locationOff':
-    'Turn on location to see trails near you. Showing all routes for now.',
   'explore.allRoutes': 'All routes',
+  'explore.locationPromptMessage': 'Turn on location to see trails near you.',
+  'explore.locationPromptAction': 'Enable',
+  'explore.showMore': 'Show more',
 
   // Filters
   'filter.category': 'Category',
@@ -137,6 +138,7 @@ const en: Dict = {
   'profile.totalDist': 'Total dist.',
   'profile.movingTime': 'Moving time',
   'profile.yourRoutes': 'Your routes',
+  'profile.viewAll': 'View all',
   'profile.inProgress': 'In progress',
   'profile.completedBadge': 'Completed',
   'profile.hiddenBadge': 'Hidden',
@@ -270,9 +272,10 @@ const ru: Dict = {
   'explore.noRoutesMessage': 'Сбросьте фильтры, чтобы увидеть больше маршрутов.',
   'explore.clearFilters': 'Сбросить фильтры',
   'explore.browseByCountry': 'Маршруты по странам',
-  'explore.locationOff':
-    'Включите геолокацию, чтобы видеть маршруты рядом. Пока показаны все.',
   'explore.allRoutes': 'Все маршруты',
+  'explore.locationPromptMessage': 'Включите геолокацию, чтобы видеть маршруты рядом.',
+  'explore.locationPromptAction': 'Включить',
+  'explore.showMore': 'Показать ещё',
 
   'filter.category': 'Категория',
   'filter.difficulty': 'Сложность',
@@ -356,6 +359,7 @@ const ru: Dict = {
   'profile.totalDist': 'Всего км',
   'profile.movingTime': 'В движении',
   'profile.yourRoutes': 'Ваши маршруты',
+  'profile.viewAll': 'Посмотреть все',
   'profile.inProgress': 'В процессе',
   'profile.completedBadge': 'Пройден',
   'profile.hiddenBadge': 'Скрыт',
@@ -482,9 +486,10 @@ const kk: Dict = {
     'Көбірек маршрут көру үшін сүзгілерді тазалаңыз.',
   'explore.clearFilters': 'Сүзгілерді тазалау',
   'explore.browseByCountry': 'Ел бойынша маршруттар',
-  'explore.locationOff':
-    'Жақын маршруттарды көру үшін геолокацияны қосыңыз. Әзірге барлығы көрсетілген.',
   'explore.allRoutes': 'Барлық маршруттар',
+  'explore.locationPromptMessage': 'Жақын маршруттарды көру үшін геолокацияны қосыңыз.',
+  'explore.locationPromptAction': 'Қосу',
+  'explore.showMore': 'Тағы көрсету',
 
   'filter.category': 'Санат',
   'filter.difficulty': 'Күрделілік',
@@ -568,6 +573,7 @@ const kk: Dict = {
   'profile.totalDist': 'Барлығы км',
   'profile.movingTime': 'Қозғалыста',
   'profile.yourRoutes': 'Сіздің маршруттарыңыз',
+  'profile.viewAll': 'Барлығын көру',
   'profile.inProgress': 'Орындалуда',
   'profile.completedBadge': 'Өтілді',
   'profile.hiddenBadge': 'Жасырын',

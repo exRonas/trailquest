@@ -20,6 +20,8 @@ router.use(requireAuth);
 router.get('/', progressController.listMine);
 // Per-country XP/level for the signed-in user (Profile "ranks" section).
 router.get('/levels', progressController.myCountryLevels);
+// Overall level (total XP across countries) for the profile header.
+router.get('/level', progressController.myLevel);
 
 router.patch(
   '/:id/log',

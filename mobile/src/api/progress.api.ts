@@ -1,6 +1,7 @@
 import { api, unwrap } from './client';
 import {
   CountryLevel,
+  LevelInfo,
   PathLogPoint,
   ProgressWithRoute,
   ScanResult,
@@ -49,6 +50,12 @@ export async function scanCheckpoint(
 
 export async function fetchMyLevels(): Promise<CountryLevel[]> {
   const res = await api.get<{ data: CountryLevel[] }>('/progress/levels');
+  return unwrap(res.data);
+}
+
+/** Overall level (total XP across countries) for the profile header. */
+export async function fetchMyLevel(): Promise<LevelInfo> {
+  const res = await api.get<{ data: LevelInfo }>('/progress/level');
   return unwrap(res.data);
 }
 

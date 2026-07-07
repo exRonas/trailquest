@@ -58,6 +58,8 @@ model User {
   passwordHash String
   name         String
   role         Role     @default(USER)
+  // Preset cartoon avatar id (e.g. "panda-0"); null = initials fallback.
+  avatar       String?
   createdAt    DateTime @default(now())
 
   posts           ForumPost[]

@@ -50,6 +50,11 @@ export const myCountryLevels = asyncHandler(
   },
 );
 
+export const myLevel = asyncHandler(async (req: Request, res: Response) => {
+  const level = await progressService.getOverallLevel(userId(req));
+  sendData(res, level);
+});
+
 export const complete = asyncHandler(async (req: Request, res: Response) => {
   const progress = await progressService.completeRoute(
     req.params.id,

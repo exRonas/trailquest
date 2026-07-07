@@ -28,6 +28,7 @@ export type ForumStackParamList = {
 export type ProfileStackParamList = {
   Profile: undefined;
   ActivityDetail: { progressId: string };
+  AllActivities: undefined;
 };
 
 export type MainTabParamList = {

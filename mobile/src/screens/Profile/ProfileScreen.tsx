@@ -3,7 +3,6 @@ import { Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   AppText,
-  Badge,
   Button,
   Card,
   Chip,
@@ -14,18 +13,18 @@ import {
 } from '../../components/ui';
 import { Avatar } from '../../components/forum/Avatar';
 import { StatTile } from '../../components/StatTile';
+import { ProgressRow } from '../../components/ProgressRow';
 import { colors, shadow, spacing } from '../../theme';
-import {
-  formatClock,
-  formatDate,
-  formatDistanceKm,
-} from '../../utils/format';
+import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { useAuthStore } from '../../store/authStore';
-import { useMyLevels, useMyProgress } from '../../api/hooks/useProgress';
+import { useMyLevel, useMyProgress } from '../../api/hooks/useProgress';
 import { getApiErrorMessage } from '../../api/client';
 import { LANGUAGES, useLocaleStore, useT, usePickLocalized } from '../../i18n';
-import { CountryLevel, ProgressWithRoute } from '../../types/api';
+import { LevelInfo } from '../../types/api';
 import { ProfileScreenProps } from '../../types/navigation';
+
+/** Only the most recent sessions show inline; the rest live behind "View all". */
+const RECENT_COUNT = 3;
 
 export function ProfileScreen({
   navigation,
@@ -46,6 +45,8 @@ export function ProfileScreen({
     return { completedCount: completed.length, totalKm, totalSec };
   }, [data]);
 
+  const recent = useMemo(() => (data ?? []).slice(0, RECENT_COUNT), [data]);
+
   const onLogout = () => {
     Alert.alert(t('profile.signOut'), t('profile.signOutConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
@@ -53,10 +54,12 @@ export function ProfileScreen({
     ]);
   };
 
+  const openAllActivities = () => navigation.navigate('AllActivities');
+
   const header = (
     <View>
       <Card style={styles.profileCard}>
-        <Avatar name={user?.name ?? 'You'} size={64} />
+        <Avatar name={user?.name ?? 'You'} avatar={user?.avatar} size={64} />
         <View style={styles.profileText}>
           <AppText variant="heading">{user?.name ?? 'Hiker'}</AppText>
           <AppText variant="callout" color={colors.textSecondary}>
@@ -69,6 +72,8 @@ export function ProfileScreen({
           ) : null}
         </View>
       </Card>
+
+      <LevelBlock />
 
       <View style={styles.summary}>
         <StatTile
@@ -90,9 +95,6 @@ export function ProfileScreen({
         />
       </View>
 
-      {/* Ranks by country */}
-      <RanksSection />
-
       {/* Language selector */}
       <AppText variant="overline" color={colors.textMuted} style={styles.langTitle}>
         {t('profile.language')}
@@ -109,9 +111,16 @@ export function ProfileScreen({
         ))}
       </View>
 
-      <AppText variant="subheading" style={styles.historyTitle}>
-        {t('profile.yourRoutes')}
-      </AppText>
+      <View style={styles.historyHeader}>
+        <AppText variant="subheading">{t('profile.yourRoutes')}</AppText>
+        {(data ?? []).length > RECENT_COUNT ? (
+          <Pressable onPress={openAllActivities} hitSlop={8}>
+            <AppText variant="bodyStrong" color={colors.primary}>
+              {t('profile.viewAll')}
+            </AppText>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 
@@ -133,7 +142,7 @@ export function ProfileScreen({
   return (
     <FlatList
       style={styles.fill}
-      data={data ?? []}
+      data={recent}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.content}
       onRefresh={refetch}
@@ -169,115 +178,48 @@ export function ProfileScreen({
   );
 }
 
-function ProgressRow({
-  session,
-  onPress,
+function LevelBlock(): React.ReactElement | null {
+  const t = useT();
+  const pickLocalized = usePickLocalized();
+  const { data: level, isLoading } = useMyLevel();
+  if (isLoading || !level) return null;
+  return <LevelRow level={level} pickLocalized={pickLocalized} t={t} />;
+}
+
+function LevelRow({
+  level,
+  pickLocalized,
+  t,
 }: {
-  session: ProgressWithRoute;
-  onPress: () => void;
+  level: LevelInfo;
+  pickLocalized: ReturnType<typeof usePickLocalized>;
+  t: ReturnType<typeof useT>;
 }): React.ReactElement {
-  const t = useT();
-  const pickLocalized = usePickLocalized();
-  const completed = !!session.completedAt;
-  const dateLabel = formatDate(session.completedAt ?? session.startedAt);
-
-  return (
-    <Pressable onPress={onPress}>
-      <Card style={styles.row} elevated={false}>
-        <View style={styles.rowHeader}>
-          <AppText variant="bodyStrong" numberOfLines={1} style={styles.rowTitle}>
-            {pickLocalized(session.route.title)}
-          </AppText>
-          {session.hidden ? (
-            <Badge label={t('profile.hiddenBadge')} color={colors.textMuted} background={colors.surfaceAlt} />
-          ) : completed ? (
-            <Badge label={t('profile.completedBadge')} color={colors.success} background={colors.primarySoft} />
-          ) : (
-            <Badge label={t('profile.inProgress')} color={colors.warning} background={colors.warningSoft} />
-          )}
-        </View>
-        <View style={styles.rowRegion}>
-          <Icon name="map-marker-outline" size={13} color={colors.textMuted} />
-          <AppText variant="caption" color={colors.textSecondary} style={styles.rowRegionText}>
-            {pickLocalized(session.route.region)}
-          </AppText>
-        </View>
-        <View style={styles.rowStats}>
-          <RowStat icon="map-marker-distance" text={formatDistanceKm(session.totalDistanceKm)} />
-          <RowStat icon="timer-outline" text={formatClock(session.movingSeconds)} />
-          <RowStat icon="calendar-blank-outline" text={dateLabel} />
-          <Icon name="chevron-right" size={20} color={colors.textMuted} style={styles.rowChevron} />
-        </View>
-      </Card>
-    </Pressable>
-  );
-}
-
-function RowStat({ icon, text }: { icon: string; text: string }): React.ReactElement {
-  return (
-    <View style={styles.rowStat}>
-      <Icon name={icon} size={14} color={colors.primary} />
-      <AppText variant="label" color={colors.textSecondary} style={styles.rowStatText}>
-        {text}
-      </AppText>
-    </View>
-  );
-}
-
-function RanksSection(): React.ReactElement | null {
-  const t = useT();
-  const pickLocalized = usePickLocalized();
-  const { data, isLoading } = useMyLevels();
-  if (isLoading) return null;
-  const levels = data ?? [];
-
-  return (
-    <View>
-      <AppText variant="overline" color={colors.textMuted} style={styles.langTitle}>
-        {t('rank.section')}
-      </AppText>
-      {levels.length === 0 ? (
-        <AppText variant="callout" color={colors.textMuted} style={styles.rankEmpty}>
-          {t('rank.none')}
-        </AppText>
-      ) : (
-        levels.map((l) => <RankRow key={pickLocalized(l.country)} level={l} />)
-      )}
-    </View>
-  );
-}
-
-function RankRow({ level }: { level: CountryLevel }): React.ReactElement {
-  const t = useT();
-  const pickLocalized = usePickLocalized();
   const maxed = level.xpForNextLevel == null;
 
   return (
-    <Card style={styles.rankCard} elevated={false}>
-      <View style={styles.rankHeader}>
-        <View style={styles.rankBadge}>
+    <Card style={styles.levelCard} elevated={false}>
+      <View style={styles.levelHeader}>
+        <View style={styles.levelBadge}>
           <AppText variant="bodyStrong" color={colors.textInverse}>
             {level.level}
           </AppText>
         </View>
-        <View style={styles.rankText}>
-          <AppText variant="bodyStrong" numberOfLines={1}>
-            {pickLocalized(level.country)}
-          </AppText>
-          <AppText variant="caption" color={colors.textSecondary}>
+        <View style={styles.levelText}>
+          <AppText variant="bodyStrong">
             {pickLocalized(level.rank)} · {t('rank.level', { level: level.level })}
           </AppText>
         </View>
-        <View style={styles.rankXp}>
+        <View style={styles.levelXp}>
           <Icon name="star-four-points" size={14} color={colors.accent} />
-          <AppText variant="caption" color={colors.textSecondary} style={styles.rankXpText}>
+          <AppText variant="caption" color={colors.textSecondary} style={styles.levelXpText}>
             {level.xp} XP
           </AppText>
         </View>
       </View>
-      <View style={styles.rankProgressWrap}>
+      <View style={styles.levelProgressWrap}>
         <ProgressBar value={level.progress} />
-        <AppText variant="caption" color={colors.textMuted} style={styles.rankProgressLabel}>
+        <AppText variant="caption" color={colors.textMuted} style={styles.levelProgressLabel}>
           {maxed
             ? t('rank.maxed')
             : t('rank.xpToNext', {
@@ -313,10 +255,9 @@ const styles = StyleSheet.create({
   },
   langTitle: { marginTop: spacing.xxl, marginBottom: spacing.sm },
   langRow: { flexDirection: 'row', flexWrap: 'wrap' },
-  rankEmpty: { marginTop: spacing.xs },
-  rankCard: { marginTop: spacing.sm, backgroundColor: colors.surface },
-  rankHeader: { flexDirection: 'row', alignItems: 'center' },
-  rankBadge: {
+  levelCard: { marginTop: spacing.lg, backgroundColor: colors.surface },
+  levelHeader: { flexDirection: 'row', alignItems: 'center' },
+  levelBadge: {
     width: 38,
     height: 38,
     borderRadius: 19,
@@ -325,25 +266,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  rankText: { flex: 1 },
-  rankXp: { flexDirection: 'row', alignItems: 'center', marginLeft: spacing.sm },
-  rankXpText: { marginLeft: 4 },
-  rankProgressWrap: { marginTop: spacing.md },
-  rankProgressLabel: { marginTop: spacing.xs },
-  historyTitle: { marginTop: spacing.xl, marginBottom: spacing.md },
-  row: { marginBottom: spacing.md, backgroundColor: colors.surface },
-  rowHeader: {
+  levelText: { flex: 1 },
+  levelXp: { flexDirection: 'row', alignItems: 'center', marginLeft: spacing.sm },
+  levelXpText: { marginLeft: 4 },
+  levelProgressWrap: { marginTop: spacing.md },
+  levelProgressLabel: { marginTop: spacing.xs },
+  historyHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: spacing.xl,
+    marginBottom: spacing.md,
   },
-  rowTitle: { flex: 1, marginRight: spacing.sm },
-  rowRegion: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs },
-  rowRegionText: { marginLeft: 4 },
-  rowStats: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.md },
-  rowStat: { flexDirection: 'row', alignItems: 'center', marginRight: spacing.lg },
-  rowStatText: { marginLeft: 4 },
-  rowChevron: { marginLeft: 'auto' },
   footer: { marginTop: spacing.lg },
   logoutFloating: { padding: spacing.xl },
 });

@@ -1,9 +1,11 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from '../ui';
 import { colors, palette } from '../../theme';
+import { parseAvatarId } from '../avatars';
 
-const AVATAR_COLORS = [
+const FALLBACK_COLORS = [
   palette.pine500,
   palette.clay500,
   palette.blue500,
@@ -17,7 +19,7 @@ function colorFor(name: string): string {
   for (let i = 0; i < name.length; i += 1) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  return FALLBACK_COLORS[Math.abs(hash) % FALLBACK_COLORS.length];
 }
 
 function initials(name: string): string {
@@ -28,11 +30,26 @@ function initials(name: string): string {
 
 interface AvatarProps {
   name: string;
+  /** Preset avatar id ("panda-2"); falls back to initials when absent. */
+  avatar?: string | null;
   size?: number;
 }
 
-/** Deterministic colour + initials avatar (no image upload in v1). */
-export function Avatar({ name, size = 40 }: AvatarProps): React.ReactElement {
+/** Cartoon-icon avatar when the user picked one, initials otherwise. */
+export function Avatar({ name, avatar, size = 40 }: AvatarProps): React.ReactElement {
+  const spec = parseAvatarId(avatar);
+  if (spec) {
+    return (
+      <View
+        style={[
+          styles.avatar,
+          { width: size, height: size, borderRadius: size / 2, backgroundColor: spec.bg },
+        ]}
+      >
+        <Icon name={spec.icon} size={Math.round(size * 0.62)} color={spec.fg} />
+      </View>
+    );
+  }
   return (
     <View
       style={[

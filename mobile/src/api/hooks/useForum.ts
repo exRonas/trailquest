@@ -51,7 +51,7 @@ export function useCreatePost(routeId: string) {
         title: input.title,
         body: input.body,
         createdAt: new Date().toISOString(),
-        user: { id: user?.id ?? 'me', name: user?.name ?? 'You' },
+        user: { id: user?.id ?? 'me', name: user?.name ?? 'You', avatar: user?.avatar ?? null },
         _count: { comments: 0 },
       };
       qc.setQueryData<ForumPost[]>(key, (old) => [optimistic, ...(old ?? [])]);
@@ -82,7 +82,7 @@ export function useCreateComment(postId: string) {
         userId: user?.id ?? 'me',
         body,
         createdAt: new Date().toISOString(),
-        user: { id: user?.id ?? 'me', name: user?.name ?? 'You' },
+        user: { id: user?.id ?? 'me', name: user?.name ?? 'You', avatar: user?.avatar ?? null },
       };
       qc.setQueryData<ForumComment[]>(key, (old) => [...(old ?? []), optimistic]);
       return { previous };

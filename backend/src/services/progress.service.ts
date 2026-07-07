@@ -275,6 +275,18 @@ export async function listCountryLevels(userId: string) {
 }
 
 /**
+ * Overall level for the signed-in user: total XP across every country,
+ * resolved through the same curve. Shown under the profile name.
+ */
+export async function getOverallLevel(userId: string) {
+  const agg = await prisma.userCountryProgress.aggregate({
+    where: { userId },
+    _sum: { xp: true },
+  });
+  return levelForXp(agg._sum.xp ?? 0);
+}
+
+/**
  * Complete a route, optionally flushing a final batch of points, and freeze the
  * aggregate stats.
  */

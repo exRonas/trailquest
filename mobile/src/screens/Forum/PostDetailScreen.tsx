@@ -60,7 +60,7 @@ export function PostDetailScreen({
         style={styles.postHeader}
         onPress={() => goToProfile(post.data!.user.id, post.data!.user.name)}
       >
-        <Avatar name={post.data.user.name} />
+        <Avatar name={post.data.user.name} avatar={post.data.user.avatar} />
         <View style={styles.postHeaderText}>
           <AppText variant="bodyStrong">{post.data.user.name}</AppText>
           <AppText variant="caption" color={colors.textMuted}>
@@ -154,7 +154,7 @@ function CommentRow({
         style={styles.commentAuthor}
         onPress={() => onAuthorPress(comment.user.id, comment.user.name)}
       >
-        <Avatar name={comment.user.name} size={32} />
+        <Avatar name={comment.user.name} avatar={comment.user.avatar} size={32} />
       </Pressable>
       <View style={styles.commentBody}>
         <Pressable

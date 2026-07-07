@@ -5,6 +5,7 @@ import { CreateCommentInput, CreatePostInput } from '../schemas/forum.schema';
 const postAuthorSelect = {
   id: true,
   name: true,
+  avatar: true,
 } as const;
 
 export async function listPostsByRoute(routeId: string) {

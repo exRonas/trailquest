@@ -20,6 +20,7 @@ export const queryKeys = {
   countries: (lang: string) => ['routes', 'countries', lang] as const,
   myProgress: () => ['progress', 'mine'] as const,
   myLevels: () => ['progress', 'levels'] as const,
+  myLevel: () => ['progress', 'level'] as const,
   posts: (routeId: string) => ['posts', routeId] as const,
   post: (postId: string) => ['post', postId] as const,
   comments: (postId: string) => ['comments', postId] as const,

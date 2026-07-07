@@ -14,20 +14,22 @@ export const MAX_LEVEL = 10;
 
 /**
  * Cumulative XP required to *reach* each level. Index == level.
- * Gentle rising curve — each level costs a bit more than the last.
+ * Steep curve: with ~50 XP per checkpoint + 100 route bonus, a typical route
+ * yields 250–400 XP, so level 1 is one route, each next level roughly doubles
+ * the grind. Levels stop feeling free after 2.
  */
 export const LEVEL_THRESHOLDS = [
   0, // 0
-  100, // 1
-  250, // 2
-  450, // 3
-  700, // 4
-  1000, // 5
-  1400, // 6
-  1900, // 7
-  2500, // 8
-  3200, // 9
-  4000, // 10
+  300, // 1  (~1 route)
+  800, // 2  (~3 routes)
+  1600, // 3
+  2800, // 4
+  4400, // 5
+  6500, // 6
+  9200, // 7
+  12600, // 8
+  16800, // 9
+  22000, // 10
 ] as const;
 
 export interface LocalizedText {

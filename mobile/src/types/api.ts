@@ -26,6 +26,8 @@ export interface User {
   email: string;
   name: string;
   role: Role;
+  /** Preset avatar id ("<icon>-<colorIndex>"), or null for initials. */
+  avatar: string | null;
   createdAt: string;
 }
 
@@ -147,12 +149,13 @@ export interface ProgressWithRoute extends UserRouteProgress {
 export interface PostAuthor {
   id: string;
   name: string;
+  avatar: string | null;
 }
 
 /** GET /users/:id/profile — another user's public profile. Only ever includes
  *  their completed, non-hidden activities (never in-progress or hidden ones). */
 export interface PublicProfile {
-  user: { id: string; name: string; createdAt: string };
+  user: { id: string; name: string; avatar: string | null; createdAt: string };
   stats: {
     completedCount: number;
     totalDistanceKm: number;

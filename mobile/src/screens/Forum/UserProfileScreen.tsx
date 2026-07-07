@@ -33,7 +33,7 @@ export function UserProfileScreen({
   const header = (
     <View>
       <Card style={styles.profileCard}>
-        <Avatar name={data.user.name} size={64} />
+        <Avatar name={data.user.name} avatar={data.user.avatar} size={64} />
         <View style={styles.profileText}>
           <AppText variant="heading">{data.user.name}</AppText>
           <AppText variant="caption" color={colors.textMuted} style={styles.since}>

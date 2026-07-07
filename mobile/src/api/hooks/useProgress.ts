@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   completeRoute,
   deleteProgress,
+  fetchMyLevel,
   fetchMyLevels,
   fetchMyProgress,
   setProgressVisibility,
@@ -20,6 +21,13 @@ export function useMyLevels() {
   return useQuery({
     queryKey: queryKeys.myLevels(),
     queryFn: fetchMyLevels,
+  });
+}
+
+export function useMyLevel() {
+  return useQuery({
+    queryKey: queryKeys.myLevel(),
+    queryFn: fetchMyLevel,
   });
 }
 
