@@ -190,20 +190,17 @@ function NavigationActive({
     );
   }
 
-  const reachedColor = colors.success;
+  // Type color is always visible (as the stroke, or the fill once reached) —
+  // unvisited reads as a hollow ring, visited as a solid disc of the same
+  // color, so "what kind of checkpoint" never gets overridden by "done".
   const typeColorMatch = [
-    'case',
-    ['get', 'reached'],
-    reachedColor,
-    [
-      'match',
-      ['get', 'type'],
-      'HISTORICAL', colors.checkpoint.HISTORICAL.main,
-      'DANGER', colors.checkpoint.DANGER.main,
-      'UPCOMING', colors.checkpoint.UPCOMING.main,
-      'INFO', colors.checkpoint.INFO.main,
-      colors.checkpoint.INFO.main,
-    ],
+    'match',
+    ['get', 'type'],
+    'HISTORICAL', colors.checkpoint.HISTORICAL.main,
+    'DANGER', colors.checkpoint.DANGER.main,
+    'UPCOMING', colors.checkpoint.UPCOMING.main,
+    'INFO', colors.checkpoint.INFO.main,
+    colors.checkpoint.INFO.main,
   ] as unknown as string;
 
   return (
@@ -247,13 +244,12 @@ function NavigationActive({
             <Mapbox.CircleLayer
               id="nav-checkpoint-circles"
               style={{
-                circleColor: typeColorMatch,
+                // Unreached: hollow ring (white fill, colored outline).
+                // Reached: solid disc in that same type color.
+                circleColor: ['case', ['get', 'reached'], typeColorMatch, colors.surface],
                 circleRadius: 10,
                 circleStrokeWidth: 3,
-                circleStrokeColor: colors.surface,
-                // Reached checkpoints fade slightly so the checkmark reads as
-                // "done" at a glance, not just a different color.
-                circleOpacity: ['case', ['get', 'reached'], 0.55, 1],
+                circleStrokeColor: typeColorMatch,
               }}
             />
             <Mapbox.SymbolLayer
