@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../utils/AppError';
+import { cleanupOrphanedImages } from './image.service';
 
 /** Generate a stable, URL-safe token to encode in a checkpoint's physical QR. */
 function generateQrCode(): string {
@@ -339,8 +340,19 @@ export async function createRoute(input: FullRouteInput) {
 
 /** Replace a full route and all of its checkpoints/tips. */
 export async function replaceRoute(id: string, input: FullRouteInput) {
-  await ensureRouteExists(id);
-  return prisma.$transaction(async (tx) => {
+  const existing = await prisma.route.findUnique({
+    where: { id },
+    select: { coverImageUrl: true, checkpoints: { select: { mediaUrl: true } } },
+  });
+  if (!existing) {
+    throw AppError.notFound('Route not found');
+  }
+  const previousImageUrls = [
+    existing.coverImageUrl,
+    ...existing.checkpoints.map((c) => c.mediaUrl),
+  ];
+
+  const result = await prisma.$transaction(async (tx) => {
     // Wipe children first (route-wide tips aren't covered by checkpoint cascade).
     await tx.routeTip.deleteMany({ where: { routeId: id } });
     await tx.checkpoint.deleteMany({ where: { routeId: id } });
@@ -352,12 +364,23 @@ export async function replaceRoute(id: string, input: FullRouteInput) {
     });
     return mapRoute(full);
   });
+
+  const nextImageUrls = [input.coverImageUrl, ...input.checkpoints.map((c) => c.mediaUrl)];
+  await cleanupOrphanedImages(previousImageUrls, nextImageUrls);
+
+  return result;
 }
 
 /** Partial scalar update (no nested children, no title/description — use
  *  the full create/replace endpoints for those since they're per-language). */
 export async function updateRoute(id: string, input: UpdateRouteInput) {
-  await ensureRouteExists(id);
+  const existing = await prisma.route.findUnique({
+    where: { id },
+    select: { coverImageUrl: true },
+  });
+  if (!existing) {
+    throw AppError.notFound('Route not found');
+  }
   const { title, description, region, country, routeGeometry, ...rest } = input;
   const data: Prisma.RouteUncheckedUpdateInput = { ...rest };
   if (routeGeometry !== undefined) {
@@ -383,21 +406,26 @@ export async function updateRoute(id: string, input: UpdateRouteInput) {
     data.countryEn = country.en;
     data.countryKk = country.kk;
   }
-  return prisma.route.update({ where: { id }, data });
+  const updated = await prisma.route.update({ where: { id }, data });
+  if ('coverImageUrl' in rest) {
+    await cleanupOrphanedImages([existing.coverImageUrl], [rest.coverImageUrl]);
+  }
+  return updated;
 }
 
 export async function deleteRoute(id: string): Promise<void> {
-  await ensureRouteExists(id);
-  // Cascades remove checkpoints, tips, posts and progress (see schema).
-  await prisma.route.delete({ where: { id } });
-}
-
-async function ensureRouteExists(id: string): Promise<void> {
-  const exists = await prisma.route.findUnique({
+  const existing = await prisma.route.findUnique({
     where: { id },
-    select: { id: true },
+    select: { coverImageUrl: true, checkpoints: { select: { mediaUrl: true } } },
   });
-  if (!exists) {
+  if (!existing) {
     throw AppError.notFound('Route not found');
   }
+  // Cascades remove checkpoints, tips, posts and progress (see schema).
+  await prisma.route.delete({ where: { id } });
+  await cleanupOrphanedImages(
+    [existing.coverImageUrl, ...existing.checkpoints.map((c) => c.mediaUrl)],
+    [],
+  );
 }
+

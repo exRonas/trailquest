@@ -9,6 +9,10 @@ import { errorHandler, notFoundHandler } from './middleware/error';
 export function createApp(): Application {
   const app = express();
 
+  // Behind Render's proxy so req.protocol/host reflect the public https URL
+  // (used to build absolute image URLs in image.controller).
+  app.set('trust proxy', 1);
+
   app.use(helmet());
   app.use(
     cors({
@@ -16,7 +20,9 @@ export function createApp(): Application {
       credentials: true,
     }),
   );
-  app.use(express.json({ limit: '1mb' }));
+  // Raised from 1mb: base64-encoded compressed images (client caps ~1-1.5MB
+  // pre-encode) need headroom over the raw JSON body limit.
+  app.use(express.json({ limit: '4mb' }));
   app.use(express.urlencoded({ extended: true }));
   app.use(morgan(isProd ? 'combined' : 'dev'));
 

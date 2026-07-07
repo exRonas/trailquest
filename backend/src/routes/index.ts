@@ -6,6 +6,7 @@ import tipRoutes from './tip.routes';
 import progressRoutes from './progress.routes';
 import forumRoutes from './forum.routes';
 import userRoutes from './user.routes';
+import imageRoutes from './image.routes';
 import { appVersion } from '../config/appVersion';
 
 const router = Router();
@@ -25,5 +26,6 @@ router.use('/tips', tipRoutes);
 router.use('/progress', progressRoutes);
 router.use('/posts', forumRoutes);
 router.use('/users', userRoutes);
+router.use('/images', imageRoutes);
 
 export default router;

@@ -144,6 +144,7 @@ export interface AdminCheckpoint {
   altitudeM?: number | null;
   radiusTriggerM: number;
   description: LocalizedText;
+  mediaUrl?: string | null;
   // Stable QR token; present on checkpoints already saved at least once,
   // undefined for new ones (the server mints one on save).
   qrCode?: string | null;
@@ -162,4 +163,31 @@ export interface User {
   name: string;
   role: 'USER' | 'ADMIN';
   createdAt: string;
+}
+
+export interface ForumAuthor {
+  id: string;
+  name: string;
+  avatar: string | null;
+}
+
+/** GET /posts (admin-only, every post across every route) row shape. */
+export interface AdminForumPost {
+  id: string;
+  routeId: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  user: ForumAuthor;
+  route: { id: string; titleRu: string; titleEn: string; titleKk: string };
+  _count: { comments: number };
+}
+
+export interface ForumComment {
+  id: string;
+  postId: string;
+  userId: string;
+  body: string;
+  createdAt: string;
+  user: ForumAuthor;
 }

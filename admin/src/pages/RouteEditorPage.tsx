@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { QRCodeCanvas } from 'qrcode.react';
 import { MapEditor, EditMode } from '../components/MapEditor';
+import { ImageUploadField } from '../components/ImageUploadField';
 import { fetchRoute, createRoute, replaceRoute } from '../api/routes';
 import { snapToRoads } from '../lib/directions';
 import { apiErrorMessage } from '../api/client';
@@ -93,6 +94,7 @@ export function RouteEditorPage() {
           altitudeM: c.altitudeM,
           radiusTriggerM: c.radiusTriggerM,
           description: c.description,
+          mediaUrl: c.mediaUrl,
           qrCode: c.qrCode ?? undefined,
           orderIndex: c.orderIndex,
         })),
@@ -295,14 +297,11 @@ export function RouteEditorPage() {
               onChange={(e) => setTitle((p) => ({ ...p, [lang]: e.target.value }))}
             />
           </div>
-          <div className="field">
-            <label>Cover image URL (optional)</label>
-            <input
-              value={coverImageUrl}
-              onChange={(e) => setCoverImageUrl(e.target.value)}
-              placeholder="https://…"
-            />
-          </div>
+          <ImageUploadField
+            label="Cover image (optional)"
+            value={coverImageUrl}
+            onChange={setCoverImageUrl}
+          />
         </div>
         <div className="field">
           <label>Description ({LOCALE_LABELS[lang]})</label>
@@ -495,6 +494,11 @@ export function RouteEditorPage() {
                 }
               />
             </div>
+            <ImageUploadField
+              label="Media (optional)"
+              value={cp.mediaUrl ?? ''}
+              onChange={(url) => patchCheckpoint(i, { mediaUrl: url || null })}
+            />
             <div className="muted">
               {cp.lat.toFixed(5)}, {cp.lng.toFixed(5)} — drag its map marker to move
             </div>

@@ -249,3 +249,17 @@ model UserRouteProgress {
   @@index([routeId])
   @@map("user_route_progress")
 }
+
+// Uploaded, client-compressed images (route covers, checkpoint media) stored
+// as a blob so the free-tier stack needs no separate object-storage account.
+// Served via GET /api/images/:id; orphaned rows are deleted by route.service
+// whenever a coverImageUrl/mediaUrl referencing them is replaced or removed.
+model Image {
+  id        String   @id @default(uuid())
+  data      Bytes
+  mimeType  String
+  size      Int
+  createdAt DateTime @default(now())
+
+  @@map("images")
+}

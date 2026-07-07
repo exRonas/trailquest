@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../utils/AppError';
+import { cleanupOrphanedImages } from './image.service';
 import {
   CreateCheckpointInput,
   UpdateCheckpointInput,
@@ -66,7 +67,7 @@ export async function createCheckpoint(input: CreateCheckpointInput) {
 export async function updateCheckpoint(id: string, input: UpdateCheckpointInput) {
   const exists = await prisma.checkpoint.findUnique({
     where: { id },
-    select: { id: true },
+    select: { mediaUrl: true },
   });
   if (!exists) {
     throw AppError.notFound('Checkpoint not found');
@@ -84,5 +85,8 @@ export async function updateCheckpoint(id: string, input: UpdateCheckpointInput)
     data.descriptionKk = description.kk;
   }
   const updated = await prisma.checkpoint.update({ where: { id }, data });
+  if ('mediaUrl' in rest) {
+    await cleanupOrphanedImages([exists.mediaUrl], [rest.mediaUrl]);
+  }
   return mapCheckpoint(updated);
 }
