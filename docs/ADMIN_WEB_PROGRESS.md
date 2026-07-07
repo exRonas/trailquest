@@ -655,3 +655,82 @@ existed — the picker UI didn't).
 
 > Not yet verified on device: picker look & feel (sheet height, grid spacing)
 > — needs a Metro run before shipping in the next APK.
+
+---
+
+## Round 10 — checkpoint-resume bug, tests, forum moderation, image upload (2026-07-07/08)
+
+Live on-device testing (USB debug on a real Realme phone) surfaced two real
+bugs; user then asked for five more features in one message.
+
+- [x] **R1** Bug: `getCurrentPosition()` used `enableHighAccuracy: true` +
+      `maximumAge: 10000`, forcing a raw GPS satellite fix on every call.
+      Confirmed via `adb logcat`: gps provider registered, removed after
+      exactly 15s (timeout), no fix — indoors this basically never resolves.
+      Explore stayed on "all routes" forever. Fixed: `enableHighAccuracy:
+      false`, `maximumAge: 5min` — uses the fast cached network/fused
+      provider instead. Only used for the "nearby routes" bucket (±50km),
+      never for live navigation tracking, so the accuracy tradeoff is fine.
+      Shipped as v1.2.
+- [x] **R2** Bug: `TrackMap` showed the generic "set MAPBOX_PUBLIC_TOKEN"
+      placeholder both when the token was missing AND when a session simply
+      had zero recorded GPS points (e.g. finished immediately without
+      moving) — message lied in the second case. Gave the empty-track case
+      its own `activity.noTrack` message.
+- [x] **R3** Bug: resuming an in-progress route (exit + re-enter navigation)
+      showed every checkpoint as unvisited again, even though scans persist
+      server-side (`CheckpointScan`). `startRoute()` now returns
+      `reachedOrderIndices`, threaded through nav params into
+      `useNavigationEngine`'s initial state. Also added a checkmark symbol +
+      dimmed circle on reached checkpoints (color-alone wasn't obvious
+      enough).
+- [x] **R4** XP investigated, not a bug: overall level sums XP across every
+      `UserCountryProgress` row (850 XP = level 2 under the new curve from
+      Round 9's retune) — the 850 came from Round 7-era test scans on
+      2026-06-30/07-01, not "one walk". Offered to reset the test account;
+      not yet done (waiting on user).
+- [x] **R5** Backend test suite (previously zero): Jest + ts-jest, 24 tests —
+      `lib/levels` curve edge cases, `utils/geo` haversine/path/speed math,
+      an integration test against the local dev Postgres for the
+      public-profile privacy filter (hidden/in-progress must never leak),
+      and a cascade-delete check for the new forum moderation path. Test
+      files excluded from the `tsc` build output.
+- [x] **R6** Forum moderation: `GET/DELETE /api/posts` (admin-only list-all +
+      delete-post, comments cascade via existing FK), `DELETE
+      /api/posts/:id/comments/:commentId` for pruning a single comment. New
+      admin `/forum` page: post list, expandable comment list, delete
+      buttons, nav link added to the top bar.
+- [x] **R7** Image upload: new `Image` Prisma model (blob storage — no
+      object-storage account needed on the free-tier stack). Admin picks a
+      file → resized to fit 1600px + re-encoded JPEG q0.82 via canvas →
+      base64-POSTed to `POST /api/images` → served from `GET
+      /api/images/:id` with a year-long immutable `Cache-Control` (a
+      replaced image gets a new id; the old row is deleted). Orphan cleanup
+      wired into `route.service` (replace/update/delete) and
+      `checkpoint.service` (update): diffs old vs new coverImageUrl/mediaUrl
+      on every save, deletes any of our own rows that dropped out — matched
+      by URL pattern, so a manually-pasted external URL is never touched.
+      Caught and fixed live: helmet's default `Cross-Origin-Resource-Policy:
+      same-origin` would have silently broken `<img>` previews in the admin
+      panel (a different Render origin than the backend) — set to
+      `cross-origin` on the image route. Verified end-to-end against the
+      local DB with curl: upload → attach to a route → replace with null →
+      old image 404s.
+- [x] **R8** Shipped as v1.4 (versionCode 5); pushed to master, Render
+      Blueprint auto-sync redeploys backend + admin on push (no manual step
+      once confirmed enabled).
+
+> Not yet done / honest gaps:
+> 1. Admin panel's live Render deployment was never re-confirmed after this
+>    round's push — worth a dashboard check that `trailquest-admin` and
+>    `trailquest-backend` both redeployed cleanly and the Neon prod DB picked
+>    up the `add_images`/`add_user_avatar` migrations via `prisma migrate
+>    deploy` (automatic in the Render start command, but unverified).
+> 2. Image upload + forum moderation only exercised via curl/local DB, never
+>    clicked through in an actual browser against the deployed admin site.
+> 3. Avatar picker (Round 9) still not visually verified on a real device —
+>    the phone disconnected before that test happened; only the geolocation
+>    fix and checkpoint-resume fix got on-device screenshots this round.
+> 4. QR-scan → XP → rank flow (Round 7's Q10) is *still* open — three
+>    rounds running now without an on-device confirmation.
+> 5. Offline map tiles — explicitly deferred by the user, revisit later.
