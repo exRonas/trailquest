@@ -1,7 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ForumStackParamList } from '../types/navigation';
-import { defaultStackOptions } from './headerOptions';
+import { useDefaultStackOptions } from './headerOptions';
 import { ForumRoutesScreen } from '../screens/Forum/ForumRoutesScreen';
 import { RoutePostsScreen } from '../screens/Forum/RoutePostsScreen';
 import { PostDetailScreen } from '../screens/Forum/PostDetailScreen';
@@ -14,8 +14,9 @@ const Stack = createNativeStackNavigator<ForumStackParamList>();
 
 export function ForumStack(): React.ReactElement {
   const t = useT();
+  const stackOptions = useDefaultStackOptions();
   return (
-    <Stack.Navigator screenOptions={defaultStackOptions}>
+    <Stack.Navigator screenOptions={stackOptions}>
       <Stack.Screen
         name="ForumRoutes"
         component={ForumRoutesScreen}

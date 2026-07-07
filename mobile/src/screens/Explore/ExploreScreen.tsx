@@ -9,7 +9,7 @@ import { RouteCard } from '../../components/RouteCard';
 import { FilterBar } from '../../components/explore/FilterBar';
 import { MapPlaceholder } from '../../components/map/MapPlaceholder';
 import { LocationPermissionBanner } from '../../components/LocationPermissionBanner';
-import { colors, shadow, spacing } from '../../theme';
+import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { hasMapboxToken, mapStyleUrl, DEFAULT_CAMERA } from '../../services/mapbox';
 import { getCurrentPosition } from '../../services/geolocation';
 import { haversineMeters } from '../../utils/geo';
@@ -48,6 +48,7 @@ export function ExploreScreen({
 }: ExploreScreenProps<'Explore'>): React.ReactElement {
   const insets = useSafeAreaInsets();
   const t = useT();
+  const theme = useThemeColors();
   const language = useLocaleStore((s) => s.language);
   const [filters, setFilters] = useState<RouteFilters>({});
   const { data: routes, isLoading, isError, error, refetch, isFetching } =
@@ -248,7 +249,7 @@ export function ExploreScreen({
               id="clusters"
               filter={['has', 'point_count']}
               style={{
-                circleColor: colors.primary,
+                circleColor: theme.primary,
                 circleRadius: ['step', ['get', 'point_count'], 18, 5, 24, 15, 30],
                 circleStrokeWidth: 3,
                 circleStrokeColor: colors.surface,
@@ -290,7 +291,7 @@ export function ExploreScreen({
           <AppText variant="heading">{t('explore.title')}</AppText>
         </View>
         {hasMapboxToken ? (
-          <IconButton name="crosshairs-gps" onPress={locateMe} color={colors.primary} />
+          <IconButton name="crosshairs-gps" onPress={locateMe} color={theme.primary} />
         ) : null}
       </View>
 
@@ -323,9 +324,16 @@ export function ExploreScreen({
                 <FilterBar filters={filters} onChange={setFilters} />
               </View>
 
-              <Pressable style={styles.browseRow} onPress={openCountries}>
-                <Icon name="earth" size={20} color={colors.primary} />
-                <AppText variant="bodyStrong" style={styles.browseText}>
+              <Pressable
+                style={[styles.browseRow, { backgroundColor: theme.primarySoft }]}
+                onPress={openCountries}
+              >
+                <Icon name="earth" size={20} color={theme.primary} />
+                <AppText
+                  variant="bodyStrong"
+                  color={theme.primary}
+                  style={styles.browseText}
+                >
                   {t('explore.browseByCountry')}
                 </AppText>
                 <Icon name="chevron-right" size={22} color={colors.textMuted} />
@@ -393,11 +401,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.primarySoft,
     borderRadius: 14,
     marginTop: spacing.xs,
   },
-  browseText: { flex: 1, marginLeft: spacing.sm, color: colors.primary },
+  browseText: { flex: 1, marginLeft: spacing.sm },
   sheetBanner: { marginTop: spacing.sm },
   showMore: { marginTop: spacing.sm },
   empty: { height: 320 },

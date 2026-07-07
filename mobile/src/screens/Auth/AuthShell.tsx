@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from '../../components/ui';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, spacing, useThemeColors } from '../../theme';
 
 interface AuthShellProps {
   title: string;
@@ -23,6 +23,7 @@ export function AuthShell({
   subtitle,
   children,
 }: AuthShellProps): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
@@ -35,7 +36,7 @@ export function AuthShell({
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <View style={styles.logo}>
+            <View style={[styles.logo, { backgroundColor: theme.primary }]}>
               <Icon name="compass-rose" size={38} color={colors.textInverse} />
             </View>
             <AppText variant="overline" color={colors.accent} style={styles.brand}>
@@ -72,7 +73,6 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: radius.xl,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg,

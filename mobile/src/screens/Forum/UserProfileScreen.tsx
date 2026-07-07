@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Card, EmptyState, ErrorState, Loader } from '../../components/ui';
 import { Avatar } from '../../components/forum/Avatar';
 import { StatTile } from '../../components/StatTile';
-import { colors, shadow, spacing } from '../../theme';
+import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { usePublicProfile } from '../../api/hooks/useUsers';
 import { getApiErrorMessage } from '../../api/client';
@@ -136,9 +136,10 @@ function ActivityRow({
 }
 
 function RowStat({ icon, text }: { icon: string; text: string }): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <View style={styles.rowStat}>
-      <Icon name={icon} size={14} color={colors.primary} />
+      <Icon name={icon} size={14} color={theme.primary} />
       <AppText variant="label" color={colors.textSecondary} style={styles.rowStatText}>
         {text}
       </AppText>

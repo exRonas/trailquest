@@ -3,7 +3,7 @@ import { Image, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Card } from './ui';
 import { CategoryBadge, DifficultyBadge } from './RouteBadges';
-import { colors, spacing } from '../theme';
+import { colors, spacing, useThemeColors } from '../theme';
 import { categoryIcon } from '../theme/icons';
 import { formatDistanceKm, formatDuration } from '../utils/format';
 import { useT, usePickLocalized, useLocaleStore } from '../i18n';
@@ -16,6 +16,7 @@ interface RouteCardProps {
 
 export function RouteCard({ route, onPress }: RouteCardProps): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const pickLocalized = usePickLocalized();
   const language = useLocaleStore((s) => s.language);
   const [imageFailed, setImageFailed] = useState(false);
@@ -23,7 +24,7 @@ export function RouteCard({ route, onPress }: RouteCardProps): React.ReactElemen
 
   return (
     <Card onPress={onPress} padded={false} style={styles.card}>
-      <View style={styles.cover}>
+      <View style={[styles.cover, { backgroundColor: theme.primarySoft }]}>
         {showImage ? (
           <Image
             source={{ uri: route.coverImageUrl! }}
@@ -35,7 +36,7 @@ export function RouteCard({ route, onPress }: RouteCardProps): React.ReactElemen
             <Icon
               name={categoryIcon[route.category]}
               size={40}
-              color={colors.primary}
+              color={theme.primary}
             />
           </View>
         )}
@@ -83,9 +84,10 @@ export function RouteCard({ route, onPress }: RouteCardProps): React.ReactElemen
 }
 
 function Stat({ icon, text }: { icon: string; text: string }): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <View style={styles.stat}>
-      <Icon name={icon} size={15} color={colors.primary} />
+      <Icon name={icon} size={15} color={theme.primary} />
       <AppText variant="label" color={colors.textSecondary} style={styles.statText}>
         {text}
       </AppText>
@@ -95,13 +97,12 @@ function Stat({ icon, text }: { icon: string; text: string }): React.ReactElemen
 
 const styles = StyleSheet.create({
   card: { marginBottom: spacing.lg },
-  cover: { height: 140, backgroundColor: colors.primarySoft },
+  cover: { height: 140 },
   image: { width: '100%', height: '100%' },
   placeholder: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
   },
   badgeRow: {
     position: 'absolute',

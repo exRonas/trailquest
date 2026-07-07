@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, spacing, useThemeColors, ThemeColors } from '../../theme';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
@@ -38,6 +38,7 @@ export function Button({
   fullWidth = true,
   style,
 }: ButtonProps): React.ReactElement {
+  const theme = useThemeColors();
   const scale = useRef(new Animated.Value(1)).current;
   const isDisabled = disabled || loading;
 
@@ -49,7 +50,7 @@ export function Button({
       bounciness: 4,
     }).start();
 
-  const palette = getVariantStyle(variant);
+  const palette = getVariantStyle(variant, theme);
 
   return (
     <Animated.View
@@ -96,21 +97,24 @@ export function Button({
   );
 }
 
-function getVariantStyle(variant: Variant): {
+function getVariantStyle(
+  variant: Variant,
+  theme: ThemeColors,
+): {
   bg: string;
   fg: string;
   border?: string;
 } {
   switch (variant) {
     case 'secondary':
-      return { bg: colors.surface, fg: colors.primary, border: colors.primary };
+      return { bg: colors.surface, fg: theme.primary, border: theme.primary };
     case 'ghost':
-      return { bg: 'transparent', fg: colors.primary };
+      return { bg: 'transparent', fg: theme.primary };
     case 'danger':
       return { bg: colors.danger, fg: colors.textInverse };
     case 'primary':
     default:
-      return { bg: colors.primary, fg: colors.textInverse };
+      return { bg: theme.primary, fg: colors.textInverse };
   }
 }
 

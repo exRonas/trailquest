@@ -16,7 +16,7 @@ import { CheckpointModal } from '../../components/CheckpointModal';
 import { RunSummaryOverlay } from '../../components/RunSummaryOverlay';
 import { ScanResultCard } from '../../components/ScanResultCard';
 import { QRScannerModal } from '../../components/QRScannerModal';
-import { colors, shadow, spacing } from '../../theme';
+import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { hasMapboxToken, mapStyleUrl } from '../../services/mapbox';
 import { MapPlaceholder } from '../../components/map/MapPlaceholder';
 import {
@@ -83,6 +83,7 @@ function NavigationActive({
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
   const t = useT();
+  const theme = useThemeColors();
   const pickLocalized = usePickLocalized();
   const language = useLocaleStore((s) => s.language);
   const [modal, setModal] = useState<Modal>(null);
@@ -234,7 +235,7 @@ function NavigationActive({
             <Mapbox.LineLayer
               id="nav-line-layer"
               style={{
-                lineColor: colors.primary,
+                lineColor: theme.primary,
                 lineWidth: 5,
                 lineCap: 'round',
                 lineJoin: 'round',

@@ -2,16 +2,18 @@ import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, spacing, useThemeColors, ThemeColors } from '../../theme';
 
 type Tone = 'error' | 'warning' | 'info' | 'success';
 
-const toneMap: Record<Tone, { fg: string; bg: string; icon: string }> = {
-  error: { fg: colors.danger, bg: colors.dangerSoft, icon: 'alert-circle-outline' },
-  warning: { fg: colors.warning, bg: colors.warningSoft, icon: 'alert-outline' },
-  info: { fg: colors.info, bg: colors.infoSoft, icon: 'information-outline' },
-  success: { fg: colors.success, bg: colors.primarySoft, icon: 'check-circle-outline' },
-};
+function toneMap(theme: ThemeColors): Record<Tone, { fg: string; bg: string; icon: string }> {
+  return {
+    error: { fg: colors.danger, bg: colors.dangerSoft, icon: 'alert-circle-outline' },
+    warning: { fg: colors.warning, bg: colors.warningSoft, icon: 'alert-outline' },
+    info: { fg: colors.info, bg: colors.infoSoft, icon: 'information-outline' },
+    success: { fg: colors.success, bg: theme.primarySoft, icon: 'check-circle-outline' },
+  };
+}
 
 interface BannerProps {
   tone?: Tone;
@@ -24,7 +26,8 @@ export function Banner({
   message,
   style,
 }: BannerProps): React.ReactElement {
-  const t = toneMap[tone];
+  const theme = useThemeColors();
+  const t = toneMap(theme)[tone];
   return (
     <View style={[styles.banner, { backgroundColor: t.bg }, style]}>
       <Icon name={t.icon} size={18} color={t.fg} style={styles.icon} />

@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from '../ui';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, spacing, useThemeColors } from '../../theme';
 import { hasMapboxToken, mapStyleUrl } from '../../services/mapbox';
 import { useT } from '../../i18n';
 import { MapPlaceholder } from './MapPlaceholder';
@@ -32,6 +32,7 @@ export function TrackMap({
   interactive = false,
 }: TrackMapProps): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const cameraRef = useRef<Mapbox.Camera>(null);
   const [mapReady, setMapReady] = useState(false);
   const onMapReady = useCallback(() => setMapReady(true), []);
@@ -140,9 +141,9 @@ export function TrackMap({
               circleColor: [
                 'match',
                 ['get', 'kind'],
-                'start', colors.primary,
+                'start', theme.primary,
                 'end', colors.danger,
-                colors.primary,
+                theme.primary,
               ] as unknown as string,
               circleRadius: 7,
               circleStrokeWidth: 3,

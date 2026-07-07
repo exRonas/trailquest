@@ -7,7 +7,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Edge, SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing } from '../../theme';
+import { colors, spacing, useThemeColors } from '../../theme';
 
 interface ScreenProps {
   children: React.ReactNode;
@@ -33,6 +33,7 @@ export function Screen({
   refreshing,
   onRefresh,
 }: ScreenProps): React.ReactElement {
+  const theme = useThemeColors();
   const inner: ViewStyle = {
     ...(padded ? { padding: spacing.xl } : null),
   };
@@ -49,8 +50,8 @@ export function Screen({
               <RefreshControl
                 refreshing={!!refreshing}
                 onRefresh={onRefresh}
-                tintColor={colors.primary}
-                colors={[colors.primary]}
+                tintColor={theme.primary}
+                colors={[theme.primary]}
               />
             ) : undefined
           }

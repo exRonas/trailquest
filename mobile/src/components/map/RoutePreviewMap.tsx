@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
-import { colors, radius } from '../../theme';
+import { colors, radius, useThemeColors } from '../../theme';
 import { hasMapboxToken, mapStyleUrl } from '../../services/mapbox';
 import { MapPlaceholder } from './MapPlaceholder';
 import { Checkpoint, PathPoint } from '../../types/api';
@@ -27,6 +27,7 @@ export function RoutePreviewMap({
   interactive = false,
   onCheckpointPress,
 }: RoutePreviewMapProps): React.ReactElement {
+  const theme = useThemeColors();
   const cameraRef = useRef<Mapbox.Camera>(null);
   const [mapReady, setMapReady] = useState(false);
   const onMapReady = useCallback(() => setMapReady(true), []);
@@ -123,7 +124,7 @@ export function RoutePreviewMap({
           <Mapbox.LineLayer
             id="route-line-layer"
             style={{
-              lineColor: colors.primary,
+              lineColor: theme.primary,
               lineWidth: 4,
               lineCap: 'round',
               lineJoin: 'round',

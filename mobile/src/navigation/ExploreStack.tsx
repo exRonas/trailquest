@@ -1,7 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ExploreStackParamList } from '../types/navigation';
-import { defaultStackOptions } from './headerOptions';
+import { useDefaultStackOptions } from './headerOptions';
 import { ExploreScreen } from '../screens/Explore/ExploreScreen';
 import { CountriesScreen } from '../screens/Countries/CountriesScreen';
 import { CountryRoutesScreen } from '../screens/Countries/CountryRoutesScreen';
@@ -13,8 +13,9 @@ const Stack = createNativeStackNavigator<ExploreStackParamList>();
 
 export function ExploreStack(): React.ReactElement {
   const language = useLocaleStore((s) => s.language);
+  const stackOptions = useDefaultStackOptions();
   return (
-    <Stack.Navigator screenOptions={defaultStackOptions}>
+    <Stack.Navigator screenOptions={stackOptions}>
       <Stack.Screen
         name="Explore"
         component={ExploreScreen}

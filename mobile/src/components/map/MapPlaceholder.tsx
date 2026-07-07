@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Banner } from '../ui';
-import { colors, spacing } from '../../theme';
+import { colors, spacing, useThemeColors } from '../../theme';
 
 /**
  * Shown in place of the live map when no Mapbox public token is configured, so
@@ -10,9 +10,10 @@ import { colors, spacing } from '../../theme';
  * exactly what to do.
  */
 export function MapPlaceholder(): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <View style={styles.container}>
-      <Icon name="map-outline" size={48} color={colors.primary} />
+      <Icon name="map-outline" size={48} color={theme.primary} />
       <AppText variant="subheading" center style={styles.title}>
         Map unavailable
       </AppText>

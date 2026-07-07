@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AuthShell } from './AuthShell';
 import { AppText, Banner, Button, TextField } from '../../components/ui';
-import { colors, spacing } from '../../theme';
+import { colors, spacing, useThemeColors } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
 import { getApiErrorMessage } from '../../api/client';
 import { validateEmail, validatePassword } from '../../utils/validation';
@@ -13,6 +13,7 @@ export function LoginScreen({
   navigation,
 }: AuthScreenProps<'Login'>): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const login = useAuthStore((s) => s.login);
 
   const [email, setEmail] = useState('email@email.com');
@@ -80,7 +81,7 @@ export function LoginScreen({
           {t('auth.noAccount')}
         </AppText>
         <Pressable onPress={() => navigation.navigate('Register')} hitSlop={8}>
-          <AppText variant="bodyStrong" color={colors.primary}>
+          <AppText variant="bodyStrong" color={theme.primary}>
             {t('auth.createAccount')}
           </AppText>
         </Pressable>

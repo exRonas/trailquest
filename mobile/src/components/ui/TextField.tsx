@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { colors, radius, spacing, typography } from '../../theme';
+import { colors, radius, spacing, typography, useThemeColors } from '../../theme';
 
 interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   label?: string;
@@ -26,13 +26,14 @@ export function TextField({
   secure = false,
   ...rest
 }: TextFieldProps): React.ReactElement {
+  const theme = useThemeColors();
   const [focused, setFocused] = useState(false);
   const [hidden, setHidden] = useState(secure);
 
   const borderColor = error
     ? colors.danger
     : focused
-    ? colors.primary
+    ? theme.primary
     : colors.border;
 
   return (
@@ -47,14 +48,14 @@ export function TextField({
         style={[
           styles.inputRow,
           { borderColor },
-          focused ? styles.focusedShadow : null,
+          focused ? [styles.focusedShadow, { shadowColor: theme.primary }] : null,
         ]}
       >
         {icon ? (
           <Icon
             name={icon}
             size={20}
-            color={focused ? colors.primary : colors.textMuted}
+            color={focused ? theme.primary : colors.textMuted}
             style={styles.leftIcon}
           />
         ) : null}
@@ -103,7 +104,6 @@ const styles = StyleSheet.create({
     minHeight: 50,
   },
   focusedShadow: {
-    shadowColor: colors.primary,
     shadowOpacity: 0.12,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },

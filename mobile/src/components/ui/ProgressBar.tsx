@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View, ViewStyle } from 'react-native';
-import { colors, radius } from '../../theme';
+import { colors, radius, useThemeColors } from '../../theme';
 
 interface ProgressBarProps {
   /** 0..1 */
@@ -14,10 +14,12 @@ interface ProgressBarProps {
 export function ProgressBar({
   value,
   height = 8,
-  color = colors.primary,
+  color,
   trackColor = colors.surfaceAlt,
   style,
 }: ProgressBarProps): React.ReactElement {
+  const theme = useThemeColors();
+  const resolvedColor = color ?? theme.primary;
   const clamped = Math.max(0, Math.min(1, value));
   const anim = useRef(new Animated.Value(clamped)).current;
 
@@ -43,7 +45,7 @@ export function ProgressBar({
       ]}
     >
       <Animated.View
-        style={[styles.fill, { width, backgroundColor: color, borderRadius: height / 2 }]}
+        style={[styles.fill, { width, backgroundColor: resolvedColor, borderRadius: height / 2 }]}
       />
     </View>
   );

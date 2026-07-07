@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge } from './ui';
-import { colors } from '../theme';
+import { colors, useThemeColors } from '../theme';
 import { categoryIcon, difficultyIcon } from '../theme/icons';
 import { labelForCategory, labelForDifficulty } from '../utils/format';
 import { Difficulty, RouteCategory } from '../types/api';
@@ -26,11 +26,12 @@ export function CategoryBadge({
 }: {
   category: RouteCategory;
 }): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <Badge
       label={labelForCategory(category)}
-      color={colors.primary}
-      background={colors.primarySoft}
+      color={theme.primary}
+      background={theme.primarySoft}
       icon={categoryIcon[category]}
     />
   );

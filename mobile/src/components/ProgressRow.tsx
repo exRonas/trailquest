@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Badge, Card } from './ui';
-import { colors, spacing } from '../theme';
+import { colors, spacing, useThemeColors } from '../theme';
 import { formatClock, formatDate, formatDistanceKm } from '../utils/format';
 import { useT, usePickLocalized } from '../i18n';
 import { ProgressWithRoute } from '../types/api';
@@ -15,6 +15,7 @@ interface ProgressRowProps {
 /** One row in a session history list — Profile's "last 3" and the "view all" screen. */
 export function ProgressRow({ session, onPress }: ProgressRowProps): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const pickLocalized = usePickLocalized();
   const completed = !!session.completedAt;
   const dateLabel = formatDate(session.completedAt ?? session.startedAt);
@@ -29,7 +30,7 @@ export function ProgressRow({ session, onPress }: ProgressRowProps): React.React
           {session.hidden ? (
             <Badge label={t('profile.hiddenBadge')} color={colors.textMuted} background={colors.surfaceAlt} />
           ) : completed ? (
-            <Badge label={t('profile.completedBadge')} color={colors.success} background={colors.primarySoft} />
+            <Badge label={t('profile.completedBadge')} color={colors.success} background={theme.primarySoft} />
           ) : (
             <Badge label={t('profile.inProgress')} color={colors.warning} background={colors.warningSoft} />
           )}
@@ -52,9 +53,10 @@ export function ProgressRow({ session, onPress }: ProgressRowProps): React.React
 }
 
 function RowStat({ icon, text }: { icon: string; text: string }): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <View style={styles.rowStat}>
-      <Icon name={icon} size={14} color={colors.primary} />
+      <Icon name={icon} size={14} color={theme.primary} />
       <AppText variant="label" color={colors.textSecondary} style={styles.rowStatText}>
         {text}
       </AppText>

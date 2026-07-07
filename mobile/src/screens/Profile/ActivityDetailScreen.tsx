@@ -10,7 +10,7 @@ import {
 } from '../../components/ui';
 import { StatTile } from '../../components/StatTile';
 import { TrackMap } from '../../components/map/TrackMap';
-import { colors, shadow, spacing } from '../../theme';
+import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import {
   formatClock,
   formatDate,
@@ -29,6 +29,7 @@ export function ActivityDetailScreen({
   navigation,
 }: ProfileScreenProps<'ActivityDetail'>): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const pickLocalized = usePickLocalized();
   const { progressId } = route.params;
   const { data } = useMyProgress();
@@ -92,7 +93,7 @@ export function ActivityDetailScreen({
           <Badge
             label={t('profile.completedBadge')}
             color={colors.success}
-            background={colors.primarySoft}
+            background={theme.primarySoft}
           />
         ) : (
           <Badge

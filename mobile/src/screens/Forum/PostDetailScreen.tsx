@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Divider, ErrorState, Loader } from '../../components/ui';
 import { Avatar } from '../../components/forum/Avatar';
-import { colors, spacing, typography } from '../../theme';
+import { colors, spacing, typography, useThemeColors } from '../../theme';
 import { formatRelativeTime } from '../../utils/format';
 import { usePost, useComments, useCreateComment } from '../../api/hooks/useForum';
 import { getApiErrorMessage } from '../../api/client';
@@ -25,6 +25,7 @@ export function PostDetailScreen({
   navigation,
 }: ForumScreenProps<'PostDetail'>): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const { postId } = route.params;
   const insets = useSafeAreaInsets();
 
@@ -132,7 +133,11 @@ export function PostDetailScreen({
         <Pressable
           onPress={onSend}
           disabled={!text.trim()}
-          style={[styles.send, !text.trim() ? styles.sendDisabled : null]}
+          style={[
+            styles.send,
+            { backgroundColor: theme.primary },
+            !text.trim() ? styles.sendDisabled : null,
+          ]}
         >
           <Icon name="send" size={20} color={colors.textInverse} />
         </Pressable>
@@ -218,7 +223,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: spacing.sm,

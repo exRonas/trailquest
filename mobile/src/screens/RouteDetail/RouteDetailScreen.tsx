@@ -24,7 +24,7 @@ import { RoutePreviewMap } from '../../components/map/RoutePreviewMap';
 import { CheckpointModal } from '../../components/CheckpointModal';
 import { OfflineMapCard } from '../../components/OfflineMapCard';
 import { hasMapboxToken } from '../../services/mapbox';
-import { colors, shadow, spacing } from '../../theme';
+import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { checkpointIcon, categoryIcon } from '../../theme/icons';
 import {
   formatDistanceKm,
@@ -44,6 +44,7 @@ export function RouteDetailScreen({
 }: ExploreScreenProps<'RouteDetail'>): React.ReactElement {
   const { routeId } = route.params;
   const t = useT();
+  const theme = useThemeColors();
   const pickLocalized = usePickLocalized();
   const language = useLocaleStore((s) => s.language);
   const insets = useSafeAreaInsets();
@@ -112,7 +113,7 @@ export function RouteDetailScreen({
         showsVerticalScrollIndicator={false}
       >
         {/* Hero */}
-        <View style={styles.hero}>
+        <View style={[styles.hero, { backgroundColor: theme.primarySoft }]}>
           {showImage ? (
             <Image
               source={{ uri: data.coverImageUrl! }}
@@ -124,7 +125,7 @@ export function RouteDetailScreen({
               <Icon
                 name={categoryIcon[data.category]}
                 size={56}
-                color={colors.primary}
+                color={theme.primary}
               />
             </View>
           )}
@@ -227,7 +228,7 @@ export function RouteDetailScreen({
               })
             }
           >
-            <Icon name="forum-outline" size={22} color={colors.primary} />
+            <Icon name="forum-outline" size={22} color={theme.primary} />
             <AppText variant="bodyStrong" style={styles.discussionText}>
               {t('route.discussion')}
             </AppText>
@@ -281,9 +282,10 @@ function SectionTitle({
   icon: string;
   title: string;
 }): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <View style={styles.sectionTitle}>
-      <Icon name={icon} size={18} color={colors.primary} />
+      <Icon name={icon} size={18} color={theme.primary} />
       <AppText variant="subheading" style={styles.sectionTitleText}>
         {title}
       </AppText>
@@ -320,7 +322,7 @@ function CheckpointRow({
 
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.background },
-  hero: { height: 260, backgroundColor: colors.primarySoft },
+  hero: { height: 260 },
   heroImage: { width: '100%', height: '100%' },
   heroPlaceholder: { alignItems: 'center', justifyContent: 'center' },
   heroBadges: {

@@ -3,7 +3,7 @@ import { Animated, AppState, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './ui';
-import { colors, radius, shadow, spacing } from '../theme';
+import { colors, radius, shadow, spacing, useThemeColors } from '../theme';
 import { useT } from '../i18n';
 import {
   getLocationAuthStatus,
@@ -24,6 +24,7 @@ export function LocationPermissionBanner({
   onGranted,
 }: LocationPermissionBannerProps): React.ReactElement | null {
   const t = useT();
+  const theme = useThemeColors();
   const insets = useSafeAreaInsets();
   const [denied, setDenied] = useState(false);
   const translateY = useRef(new Animated.Value(-200)).current;
@@ -78,12 +79,12 @@ export function LocationPermissionBanner({
       ]}
     >
       <View style={styles.card}>
-        <Icon name="crosshairs-gps" size={22} color={colors.primary} />
+        <Icon name="crosshairs-gps" size={22} color={theme.primary} />
         <AppText variant="callout" style={styles.text}>
           {t('explore.locationPromptMessage')}
         </AppText>
         <Pressable onPress={onEnable} hitSlop={8}>
-          <AppText variant="bodyStrong" color={colors.primary}>
+          <AppText variant="bodyStrong" color={theme.primary}>
             {t('explore.locationPromptAction')}
           </AppText>
         </Pressable>

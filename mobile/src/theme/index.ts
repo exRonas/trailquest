@@ -19,6 +19,8 @@ export type AppTheme = typeof theme;
 export { colors, palette } from './colors';
 export { typography, fontFamily, fontFamilyMedium } from './typography';
 export { spacing, radius, shadow, hitSlop } from './layout';
+export { useThemeColors } from './useThemeColors';
+export type { ThemeColors } from './useThemeColors';
 export type {
   CheckpointTypeKey,
   TipTypeKey,

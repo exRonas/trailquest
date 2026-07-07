@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ErrorState, EmptyState, Loader } from '../../components/ui';
 import { PostCard } from '../../components/forum/PostCard';
-import { colors, shadow, spacing } from '../../theme';
+import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { usePosts } from '../../api/hooks/useForum';
 import { getApiErrorMessage } from '../../api/client';
 import { useT } from '../../i18n';
@@ -15,6 +15,7 @@ export function RoutePostsScreen({
   navigation,
 }: ForumScreenProps<'RoutePosts'>): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const { routeId, routeTitle } = route.params;
   const insets = useSafeAreaInsets();
   const { data, isLoading, isError, error, refetch, isRefetching } =
@@ -76,7 +77,10 @@ export function RoutePostsScreen({
     <View style={styles.fill}>
       {renderBody()}
       <Pressable
-        style={[styles.fab, { bottom: insets.bottom + spacing.lg }]}
+        style={[
+          styles.fab,
+          { bottom: insets.bottom + spacing.lg, backgroundColor: theme.primary },
+        ]}
         onPress={() => navigation.navigate('CreatePost', { routeId })}
       >
         <Icon name="plus" size={26} color={colors.textInverse} />
@@ -94,7 +98,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadow.lg,

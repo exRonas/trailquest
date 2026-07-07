@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, ProgressBar } from './ui';
-import { colors, radius, spacing } from '../theme';
+import { colors, radius, spacing, useThemeColors } from '../theme';
 import { useT } from '../i18n';
 import {
   deleteOfflineMap,
@@ -29,6 +29,7 @@ type State =
  *  this is purely the visual map). */
 export function OfflineMapCard({ routeId, coords }: OfflineMapCardProps): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const [state, setState] = useState<State>({ kind: 'checking' });
 
   useEffect(() => {
@@ -78,7 +79,7 @@ export function OfflineMapCard({ routeId, coords }: OfflineMapCardProps): React.
     <View style={styles.card}>
       {state.kind === 'none' ? (
         <Pressable style={styles.row} onPress={onDownload}>
-          <Icon name="cloud-download-outline" size={22} color={colors.primary} />
+          <Icon name="cloud-download-outline" size={22} color={theme.primary} />
           <AppText variant="bodyStrong" style={styles.text}>
             {t('route.offlineDownload')}
           </AppText>
@@ -88,7 +89,7 @@ export function OfflineMapCard({ routeId, coords }: OfflineMapCardProps): React.
       {state.kind === 'downloading' ? (
         <View>
           <View style={styles.row}>
-            <Icon name="cloud-download-outline" size={22} color={colors.primary} />
+            <Icon name="cloud-download-outline" size={22} color={theme.primary} />
             <AppText variant="bodyStrong" style={styles.text}>
               {t('route.offlineDownloading', { percent: Math.round(state.percentage) })}
             </AppText>
@@ -120,7 +121,7 @@ export function OfflineMapCard({ routeId, coords }: OfflineMapCardProps): React.
             </AppText>
           </View>
           <Pressable onPress={onDownload}>
-            <AppText variant="bodyStrong" color={colors.primary}>
+            <AppText variant="bodyStrong" color={theme.primary}>
               {t('common.retry')}
             </AppText>
           </Pressable>

@@ -15,7 +15,7 @@ import { Avatar } from '../../components/forum/Avatar';
 import { AvatarPicker } from '../../components/AvatarPicker';
 import { StatTile } from '../../components/StatTile';
 import { ProgressRow } from '../../components/ProgressRow';
-import { colors, shadow, spacing } from '../../theme';
+import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { useAuthStore } from '../../store/authStore';
 import { useMyLevel, useMyProgress } from '../../api/hooks/useProgress';
@@ -32,6 +32,7 @@ export function ProfileScreen({
   navigation,
 }: ProfileScreenProps<'Profile'>): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const language = useLocaleStore((s) => s.language);
@@ -72,7 +73,7 @@ export function ProfileScreen({
       <Card style={styles.profileCard}>
         <Pressable onPress={() => setPickerOpen(true)} hitSlop={8}>
           <Avatar name={user?.name ?? 'You'} avatar={user?.avatar} size={64} />
-          <View style={styles.editBadge}>
+          <View style={[styles.editBadge, { backgroundColor: theme.primary }]}>
             <Icon name="pencil" size={12} color={colors.textInverse} />
           </View>
         </Pressable>
@@ -131,7 +132,7 @@ export function ProfileScreen({
         <AppText variant="subheading">{t('profile.yourRoutes')}</AppText>
         {(data ?? []).length > RECENT_COUNT ? (
           <Pressable onPress={openAllActivities} hitSlop={8}>
-            <AppText variant="bodyStrong" color={colors.primary}>
+            <AppText variant="bodyStrong" color={theme.primary}>
               {t('profile.viewAll')}
             </AppText>
           </Pressable>
@@ -224,12 +225,13 @@ function LevelRow({
   pickLocalized: ReturnType<typeof usePickLocalized>;
   t: ReturnType<typeof useT>;
 }): React.ReactElement {
+  const theme = useThemeColors();
   const maxed = level.xpForNextLevel == null;
 
   return (
     <Card style={styles.levelCard} elevated={false}>
       <View style={styles.levelHeader}>
-        <View style={styles.levelBadge}>
+        <View style={[styles.levelBadge, { backgroundColor: theme.primary }]}>
           <AppText variant="bodyStrong" color={colors.textInverse}>
             {level.level}
           </AppText>
@@ -273,7 +275,6 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.primary,
     borderWidth: 2,
     borderColor: colors.surface,
     alignItems: 'center',
@@ -303,7 +304,6 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,

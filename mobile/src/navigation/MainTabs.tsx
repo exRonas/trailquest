@@ -6,7 +6,7 @@ import { MainTabParamList } from '../types/navigation';
 import { ExploreStack } from './ExploreStack';
 import { ForumStack } from './ForumStack';
 import { ProfileStack } from './ProfileStack';
-import { colors, fontFamilyMedium } from '../theme';
+import { colors, fontFamilyMedium, useThemeColors } from '../theme';
 import { useT } from '../i18n';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -19,11 +19,12 @@ const ICONS: Record<keyof MainTabParamList, string> = {
 
 export function MainTabs(): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
           backgroundColor: colors.surface,

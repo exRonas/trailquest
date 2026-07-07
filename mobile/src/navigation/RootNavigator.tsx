@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import {
   NavigationContainer,
@@ -7,30 +7,34 @@ import {
 } from '@react-navigation/native';
 import { Loader } from '../components/ui';
 import { UpdateBanner } from '../components/UpdateBanner';
-import { colors } from '../theme';
+import { colors, useThemeColors } from '../theme';
 import { useAuthStore } from '../store/authStore';
 import { useLocaleStore } from '../i18n';
 import { initMapbox } from '../services/mapbox';
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabs } from './MainTabs';
 
-const navTheme: Theme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: colors.primary,
-    background: colors.background,
-    card: colors.surface,
-    text: colors.text,
-    border: colors.border,
-    notification: colors.accent,
-  },
-};
-
 export function RootNavigator(): React.ReactElement {
   const status = useAuthStore((s) => s.status);
   const hydrate = useAuthStore((s) => s.hydrate);
   const hydrateLocale = useLocaleStore((s) => s.hydrate);
+  const theme = useThemeColors();
+
+  const navTheme: Theme = useMemo(
+    () => ({
+      ...DefaultTheme,
+      colors: {
+        ...DefaultTheme.colors,
+        primary: theme.primary,
+        background: theme.background,
+        card: theme.surface,
+        text: theme.text,
+        border: theme.border,
+        notification: theme.accent,
+      },
+    }),
+    [theme],
+  );
 
   useEffect(() => {
     initMapbox();

@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Button } from './ui';
-import { colors, radius, shadow, spacing } from '../theme';
+import { colors, radius, shadow, spacing, useThemeColors } from '../theme';
 import { checkpointIcon } from '../theme/icons';
 import { useT, usePickLocalized } from '../i18n';
 import { ScanResult } from '../types/api';
@@ -135,9 +135,10 @@ function Stat({
   label: string;
   value: string;
 }): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <View style={styles.stat}>
-      <Icon name={icon} size={18} color={colors.primary} />
+      <Icon name={icon} size={18} color={theme.primary} />
       <AppText variant="bodyStrong" style={styles.statValue} numberOfLines={1}>
         {value}
       </AppText>

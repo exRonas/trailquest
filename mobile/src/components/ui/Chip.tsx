@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, spacing, useThemeColors } from '../../theme';
 
 interface ChipProps {
   label: string;
@@ -18,10 +18,16 @@ export function Chip({
   onPress,
   icon,
 }: ChipProps): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.chip, selected ? styles.selected : styles.unselected]}
+      style={[
+        styles.chip,
+        selected
+          ? { backgroundColor: theme.primary, borderColor: theme.primary }
+          : styles.unselected,
+      ]}
     >
       {icon ? (
         <Icon
@@ -51,10 +57,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     marginRight: spacing.sm,
     marginBottom: spacing.sm,
-  },
-  selected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
   },
   unselected: {
     backgroundColor: colors.surface,

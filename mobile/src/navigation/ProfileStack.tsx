@@ -1,7 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../types/navigation';
-import { defaultStackOptions } from './headerOptions';
+import { useDefaultStackOptions } from './headerOptions';
 import { ProfileScreen } from '../screens/Profile/ProfileScreen';
 import { ActivityDetailScreen } from '../screens/Profile/ActivityDetailScreen';
 import { AllActivitiesScreen } from '../screens/Profile/AllActivitiesScreen';
@@ -11,8 +11,9 @@ const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
 export function ProfileStack(): React.ReactElement {
   const language = useLocaleStore((s) => s.language);
+  const stackOptions = useDefaultStackOptions();
   return (
-    <Stack.Navigator screenOptions={defaultStackOptions}>
+    <Stack.Navigator screenOptions={stackOptions}>
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}

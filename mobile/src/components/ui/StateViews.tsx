@@ -3,13 +3,14 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
 import { Button } from './Button';
-import { colors, spacing } from '../../theme';
+import { colors, spacing, useThemeColors } from '../../theme';
 
 /** Centred full-area loading spinner. */
 export function Loader({ message }: { message?: string }): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <View style={styles.center}>
-      <ActivityIndicator size="large" color={colors.primary} />
+      <ActivityIndicator size="large" color={theme.primary} />
       {message ? (
         <AppText
           variant="callout"
@@ -39,10 +40,11 @@ export function EmptyState({
   actionLabel,
   onAction,
 }: EmptyStateProps): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <View style={styles.center}>
-      <View style={styles.iconCircle}>
-        <Icon name={icon} size={34} color={colors.primary} />
+      <View style={[styles.iconCircle, { backgroundColor: theme.primarySoft }]}>
+        <Icon name={icon} size={34} color={theme.primary} />
       </View>
       <AppText variant="heading" center style={styles.spaced}>
         {title}
@@ -122,7 +124,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
