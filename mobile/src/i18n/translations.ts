@@ -169,6 +169,7 @@ const en: Dict = {
     'This permanently removes this activity and its track. This cannot be undone.',
   'activity.started': 'Started',
   'activity.finished': 'Finished',
+  'activity.noTrack': 'No GPS track was recorded for this session.',
 
   // Auth
   'auth.loginTitle': 'Welcome back',
@@ -394,6 +395,7 @@ const ru: Dict = {
     'Активность и её трек будут удалены навсегда. Это действие необратимо.',
   'activity.started': 'Начало',
   'activity.finished': 'Завершено',
+  'activity.noTrack': 'Для этой сессии GPS-трек не записан.',
 
   'auth.loginTitle': 'С возвращением',
   'auth.loginSubtitle': 'Войдите, чтобы продолжить ваши приключения',
@@ -613,6 +615,7 @@ const kk: Dict = {
     'Белсенділік пен оның трегі біржола жойылады. Бұл әрекетті қайтару мүмкін емес.',
   'activity.started': 'Басталды',
   'activity.finished': 'Аяқталды',
+  'activity.noTrack': 'Бұл сессия үшін GPS-трек жазылмаған.',
 
   'auth.loginTitle': 'Қайта қош келдіңіз',
   'auth.loginSubtitle': 'Саяхатты жалғастыру үшін кіріңіз',

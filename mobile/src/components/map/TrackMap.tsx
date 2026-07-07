@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
-import { colors, radius } from '../../theme';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { AppText } from '../ui';
+import { colors, radius, spacing } from '../../theme';
 import { hasMapboxToken, mapStyleUrl } from '../../services/mapbox';
+import { useT } from '../../i18n';
 import { MapPlaceholder } from './MapPlaceholder';
 
 interface LatLng {
@@ -28,6 +31,7 @@ export function TrackMap({
   height = 200,
   interactive = false,
 }: TrackMapProps): React.ReactElement {
+  const t = useT();
   const cameraRef = useRef<Mapbox.Camera>(null);
 
   const coords = useMemo<Coord[]>(
@@ -77,10 +81,21 @@ export function TrackMap({
     });
   }, [coords]);
 
-  if (!hasMapboxToken || coords.length === 0) {
+  if (!hasMapboxToken) {
     return (
       <View style={[styles.wrap, { height }]}>
         <MapPlaceholder />
+      </View>
+    );
+  }
+
+  if (coords.length === 0) {
+    return (
+      <View style={[styles.wrap, styles.empty, { height }]}>
+        <Icon name="map-marker-off-outline" size={40} color={colors.textMuted} />
+        <AppText variant="callout" color={colors.textMuted} center style={styles.emptyText}>
+          {t('activity.noTrack')}
+        </AppText>
       </View>
     );
   }
@@ -140,5 +155,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.surfaceAlt,
   },
+  empty: { alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
+  emptyText: { marginTop: spacing.sm },
   map: { flex: 1 },
 });
