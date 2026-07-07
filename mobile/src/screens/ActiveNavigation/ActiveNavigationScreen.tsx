@@ -126,6 +126,7 @@ function NavigationActive({
         properties: {
           checkpointId: cp.id,
           type: cp.type,
+          order: cp.orderIndex + 1,
           reached: engine.reachedIndices.includes(cp.orderIndex),
         },
         geometry: { type: 'Point' as const, coordinates: [cp.lng, cp.lat] as Coord },
@@ -191,8 +192,9 @@ function NavigationActive({
   }
 
   // Type color is always visible (as the stroke, or the fill once reached) —
-  // unvisited reads as a hollow ring, visited as a solid disc of the same
-  // color, so "what kind of checkpoint" never gets overridden by "done".
+  // unvisited reads as a tinted ring with its order number, visited as a
+  // solid disc of the same color + checkmark, so "what kind of checkpoint"
+  // never gets overridden by "done", and the sequence stays legible.
   const typeColorMatch = [
     'match',
     ['get', 'type'],
@@ -201,6 +203,15 @@ function NavigationActive({
     'UPCOMING', colors.checkpoint.UPCOMING.main,
     'INFO', colors.checkpoint.INFO.main,
     colors.checkpoint.INFO.main,
+  ] as unknown as string;
+  const typeSoftMatch = [
+    'match',
+    ['get', 'type'],
+    'HISTORICAL', colors.checkpoint.HISTORICAL.soft,
+    'DANGER', colors.checkpoint.DANGER.soft,
+    'UPCOMING', colors.checkpoint.UPCOMING.soft,
+    'INFO', colors.checkpoint.INFO.soft,
+    colors.checkpoint.INFO.soft,
   ] as unknown as string;
 
   return (
@@ -244,12 +255,24 @@ function NavigationActive({
             <Mapbox.CircleLayer
               id="nav-checkpoint-circles"
               style={{
-                // Unreached: hollow ring (white fill, colored outline).
-                // Reached: solid disc in that same type color.
-                circleColor: ['case', ['get', 'reached'], typeColorMatch, colors.surface],
-                circleRadius: 10,
+                // Unreached: soft tinted ring showing its order number.
+                // Reached: solid disc in that same type color + checkmark.
+                circleColor: ['case', ['get', 'reached'], typeColorMatch, typeSoftMatch],
+                circleRadius: 11,
                 circleStrokeWidth: 3,
                 circleStrokeColor: typeColorMatch,
+              }}
+            />
+            <Mapbox.SymbolLayer
+              id="nav-checkpoint-order"
+              filter={['!', ['get', 'reached']]}
+              style={{
+                textField: ['get', 'order'],
+                textSize: 12,
+                textColor: typeColorMatch,
+                textFont: ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                textAllowOverlap: true,
+                textIgnorePlacement: true,
               }}
             />
             <Mapbox.SymbolLayer
