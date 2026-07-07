@@ -5,6 +5,20 @@
  */
 
 export const AVATAR_ICONS = [
+  // Trail & nature — the TrailQuest theme.
+  'image-filter-hdr', // mountain peaks
+  'hiking',
+  'tent',
+  'campfire',
+  'compass',
+  'binoculars',
+  'pine-tree',
+  'kayaking',
+  'leaf',
+  'flower-tulip',
+  'mushroom',
+  'snowflake',
+  // Animals — kept from the original set so stored ids keep rendering.
   'panda',
   'owl',
   'penguin',

@@ -622,3 +622,36 @@ effectively no cold start) — fully free, no card, user confirmed this combo.
 >    seconds, not the 30-50s Render used to have — combined with the keep-alive
 >    ping keeping Render's requests flowing (which also touches the DB), this
 >    hasn't been an issue in testing so far.
+
+---
+
+## Round 9 — Profile avatars: themed picker UI (2026-07-07)
+
+Finished the avatar feature left half-done in Round 8's working tree (backend
+migration/endpoint, `Avatar.tsx` renderer, and `useUpdateAvatar` mutation all
+existed — the picker UI didn't).
+
+- [x] **H1** Decision: **no `react-native-svg` / no custom SVG art.** Avatars
+      stay MaterialCommunityIcons-on-colored-disc — zero new native deps (no
+      APK rebuild complexity, no size increase), guaranteed visual consistency
+      with the rest of the app's iconography.
+- [x] **H2** `mobile/src/components/avatars.ts`: icon set expanded 12 → 24.
+      First 12 are trail/nature-themed (`image-filter-hdr` mountains, `hiking`,
+      `tent`, `campfire`, `compass`, `binoculars`, `pine-tree`, `kayaking`,
+      `leaf`, `flower-tulip`, `mushroom`, `snowflake`); the original 12 animals
+      kept after them so already-stored avatar ids keep rendering. All names
+      verified against `react-native-vector-icons` glyphmap JSON. Backend zod
+      regex `^[a-z-]+-\d+$` (max 40) still matches every new id.
+- [x] **H3** New `mobile/src/components/AvatarPicker.tsx`: bottom-sheet
+      `Modal` — live preview disc, 6-color dot row, 24-icon grid, "Save" +
+      "Use initials" (reset to `null`, only shown when an avatar is set).
+      Re-syncs selection from the stored id each open.
+- [x] **H4** `ProfileScreen.tsx`: avatar wrapped in `Pressable` with a small
+      pencil badge; opens the picker; save goes through `useUpdateAvatar`
+      (which already writes the returned user into `authStore`). Error path:
+      `Alert` with `avatar.saveFailed`.
+- [x] **H5** i18n: `avatar.title`/`avatar.save`/`avatar.reset`/
+      `avatar.saveFailed` added in en/ru/kk. `npx tsc --noEmit` clean.
+
+> Not yet verified on device: picker look & feel (sheet height, grid spacing)
+> — needs a Metro run before shipping in the next APK.

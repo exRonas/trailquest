@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
@@ -12,12 +12,14 @@ import {
   ProgressBar,
 } from '../../components/ui';
 import { Avatar } from '../../components/forum/Avatar';
+import { AvatarPicker } from '../../components/AvatarPicker';
 import { StatTile } from '../../components/StatTile';
 import { ProgressRow } from '../../components/ProgressRow';
 import { colors, shadow, spacing } from '../../theme';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { useAuthStore } from '../../store/authStore';
 import { useMyLevel, useMyProgress } from '../../api/hooks/useProgress';
+import { useUpdateAvatar } from '../../api/hooks/useUsers';
 import { getApiErrorMessage } from '../../api/client';
 import { LANGUAGES, useLocaleStore, useT, usePickLocalized } from '../../i18n';
 import { LevelInfo } from '../../types/api';
@@ -36,6 +38,15 @@ export function ProfileScreen({
   const setLanguage = useLocaleStore((s) => s.setLanguage);
   const { data, isLoading, isError, error, refetch, isRefetching } =
     useMyProgress();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const updateAvatar = useUpdateAvatar();
+
+  const onSaveAvatar = (avatarId: string | null) => {
+    updateAvatar.mutate(avatarId, {
+      onSuccess: () => setPickerOpen(false),
+      onError: (e) => Alert.alert(t('avatar.saveFailed'), getApiErrorMessage(e)),
+    });
+  };
 
   const summary = useMemo(() => {
     const sessions = data ?? [];
@@ -59,7 +70,12 @@ export function ProfileScreen({
   const header = (
     <View>
       <Card style={styles.profileCard}>
-        <Avatar name={user?.name ?? 'You'} avatar={user?.avatar} size={64} />
+        <Pressable onPress={() => setPickerOpen(true)} hitSlop={8}>
+          <Avatar name={user?.name ?? 'You'} avatar={user?.avatar} size={64} />
+          <View style={styles.editBadge}>
+            <Icon name="pencil" size={12} color={colors.textInverse} />
+          </View>
+        </Pressable>
         <View style={styles.profileText}>
           <AppText variant="heading">{user?.name ?? 'Hiker'}</AppText>
           <AppText variant="callout" color={colors.textSecondary}>
@@ -124,6 +140,16 @@ export function ProfileScreen({
     </View>
   );
 
+  const picker = (
+    <AvatarPicker
+      visible={pickerOpen}
+      current={user?.avatar}
+      saving={updateAvatar.isPending}
+      onClose={() => setPickerOpen(false)}
+      onSave={onSaveAvatar}
+    />
+  );
+
   if (isLoading) return <Loader message={t('profile.loading')} />;
   if (isError) {
     return (
@@ -140,41 +166,44 @@ export function ProfileScreen({
   }
 
   return (
-    <FlatList
-      style={styles.fill}
-      data={recent}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={styles.content}
-      onRefresh={refetch}
-      refreshing={isRefetching}
-      ListHeaderComponent={header}
-      renderItem={({ item }) => (
-        <ProgressRow
-          session={item}
-          onPress={() =>
-            navigation.navigate('ActivityDetail', { progressId: item.id })
-          }
-        />
-      )}
-      ListEmptyComponent={
-        <EmptyState
-          icon="hiking"
-          title={t('profile.noRoutesTitle')}
-          message={t('profile.noRoutesMsg')}
-        />
-      }
-      ListFooterComponent={
-        <View style={styles.footer}>
-          <Button
-            label={t('profile.signOut')}
-            variant="secondary"
-            icon="logout"
-            onPress={onLogout}
+    <View style={styles.fill}>
+      {picker}
+      <FlatList
+        style={styles.fill}
+        data={recent}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.content}
+        onRefresh={refetch}
+        refreshing={isRefetching}
+        ListHeaderComponent={header}
+        renderItem={({ item }) => (
+          <ProgressRow
+            session={item}
+            onPress={() =>
+              navigation.navigate('ActivityDetail', { progressId: item.id })
+            }
           />
-        </View>
-      }
-      showsVerticalScrollIndicator={false}
-    />
+        )}
+        ListEmptyComponent={
+          <EmptyState
+            icon="hiking"
+            title={t('profile.noRoutesTitle')}
+            message={t('profile.noRoutesMsg')}
+          />
+        }
+        ListFooterComponent={
+          <View style={styles.footer}>
+            <Button
+              label={t('profile.signOut')}
+              variant="secondary"
+              icon="logout"
+              onPress={onLogout}
+            />
+          </View>
+        }
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
   );
 }
 
@@ -237,6 +266,19 @@ const styles = StyleSheet.create({
   content: { padding: spacing.xl, paddingBottom: spacing.huge },
   profileCard: { flexDirection: 'row', alignItems: 'center' },
   profileText: { marginLeft: spacing.lg, flex: 1 },
+  editBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.primary,
+    borderWidth: 2,
+    borderColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   since: { marginTop: spacing.xs },
   summary: {
     flexDirection: 'row',

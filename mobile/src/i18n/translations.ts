@@ -149,6 +149,12 @@ const en: Dict = {
   'profile.signOutConfirm': 'Are you sure you want to sign out?',
   'profile.language': 'Language',
 
+  // Avatar picker
+  'avatar.title': 'Choose your avatar',
+  'avatar.save': 'Save',
+  'avatar.reset': 'Use initials',
+  'avatar.saveFailed': 'Could not save avatar',
+
   // Activity (progress) detail
   'activity.title': 'Activity',
   'activity.yourTrack': 'Your track',
@@ -370,6 +376,11 @@ const ru: Dict = {
   'profile.signOutConfirm': 'Вы уверены, что хотите выйти?',
   'profile.language': 'Язык',
 
+  'avatar.title': 'Выберите аватар',
+  'avatar.save': 'Сохранить',
+  'avatar.reset': 'Инициалы',
+  'avatar.saveFailed': 'Не удалось сохранить аватар',
+
   'activity.title': 'Активность',
   'activity.yourTrack': 'Ваш трек',
   'activity.share': 'Поделиться',
@@ -583,6 +594,11 @@ const kk: Dict = {
   'profile.signOut': 'Шығу',
   'profile.signOutConfirm': 'Шынымен шыққыңыз келе ме?',
   'profile.language': 'Тіл',
+
+  'avatar.title': 'Аватар таңдаңыз',
+  'avatar.save': 'Сақтау',
+  'avatar.reset': 'Инициалдар',
+  'avatar.saveFailed': 'Аватар сақталмады',
 
   'activity.title': 'Белсенділік',
   'activity.yourTrack': 'Сіздің трегіңіз',
