@@ -482,3 +482,143 @@ levels per-country only; +50 XP/checkpoint, +100 bonus for all QRs on a route,
 > all three apps tsc-clean. Last step is the release APK build with the new
 > camera native module and an on-device test of the end-to-end scan flow.
 > Backend on :4001 must be running; admin shows the QRs to scan.
+> **Note (Round 8):** the on-device QR-scan test in Q10 is still not done —
+> Round 8 below was a separate infra push and didn't touch this.
+
+## Round 8 — permanent hosting (Render + Neon) + permanent APK link + update banner
+
+User no longer wanted to run ngrok manually and wanted a permanent, free,
+always-on backend+DB, plus a permanent APK download link that auto-updates
+and an in-app "update available" banner for new releases.
+
+Evaluated Fly.io first (originally planned) — WebSearch confirmed Fly killed
+its free tier in 2024 (now requires a card, ~$2-10/mo for always-on). Switched
+to **Render (free web service) + Neon (free Postgres) + cron-job.org
+keep-alive ping every 10min** (prevents Render's free-tier sleep, so
+effectively no cold start) — fully free, no card, user confirmed this combo.
+
+- [x] **G1** Git repo initialized at the repo root for the first time (monorepo
+      was never under version control before). Root `.gitignore` added
+      (`.idea/`, `.claude/`, etc.). Found and fixed: `mobile/.gitignore` had
+      `!debug.keystore` (standard RN convention — debug keystore is normally
+      shareable/non-sensitive), but this project's release APKs are actually
+      **signed with that same debug keystore** (see Round 4-ish APK builds),
+      so publishing it in a now-public repo would leak the real release-signing
+      key. Removed the negation so `*.keystore` is fully ignored; the file
+      still exists locally for builds, just isn't committed.
+- [x] **G2** GitHub CLI installed (`winget install GitHub.cli`), authenticated
+      as `exRonas` via device-code flow. Public repo created:
+      **github.com/exRonas/trailquest**.
+- [x] **G3** Backend: `prisma/schema.prisma` datasource gained `directUrl =
+      env("DIRECT_URL")` (Neon's recommended split: pooled URL for the app,
+      direct/unpooled URL for `prisma migrate deploy`, avoiding pgbouncer
+      transaction-mode issues during migrations). `backend/.env`/`.env.example`
+      updated with `DIRECT_URL` (same value as `DATABASE_URL` for local dev).
+- [x] **G4** `render.yaml` (repo root, Render Blueprint) added: Node runtime,
+      `rootDir: backend`, `buildCommand: npm install --include=dev && npx
+      prisma generate && npm run build`, `startCommand: npx prisma migrate
+      deploy && npm start`, free plan, `/api/health` healthcheck. Two real bugs
+      hit and fixed on first deploy:
+      1. Render sets `NODE_ENV=production` during the **build** step too,
+         which makes plain `npm install` skip `devDependencies` (typescript,
+         prisma CLI) — build failed on `tsc`/`prisma generate`. Fixed with
+         `--include=dev`.
+      2. Runtime crashed with `Cannot find module dist/index.js`. Root cause:
+         `tsconfig.json`'s `rootDir` is `./` (covers both `src/` and
+         `prisma/`), so `tsc` mirrors that into `dist/src/index.js`, not
+         `dist/index.js` as `package.json` assumed. **Pre-existing bug**, never
+         caught before because local dev always ran `ts-node-dev` against
+         `src/` directly, never the actual compiled build — this was the
+         first time the app ran from `dist/`. Fixed `package.json`
+         `main`/`start` to point at `dist/src/index.js`.
+- [x] **G5** Backend: `GET /api/app-version` added (`src/config/appVersion.ts`
+      — plain constant, no DB/admin UI, bumped by hand alongside each release,
+      same spirit as the existing `versionCode` bump ritual). Returns
+      `{ latestVersionCode, latestVersionName, downloadUrl, notes }`.
+- [x] **G6** Data migration: `pg_dump` (local Postgres 16) → `psql` restore
+      into Neon (direct/unpooled connection), `--no-owner --no-privileges`
+      since the Neon role differs from local `postgres`. Two `psql`/`pg_dump`
+      CLI gotchas hit: (1) `pg_dump` connection URIs don't accept Prisma's
+      `?schema=public` query param — libpq rejects `schema` as an unknown
+      connection option, had to drop it; (2) `psql` stops parsing `-f`/`-v` as
+      options once it sees a positional arg (the connection string) before
+      them — options must come *before* the connection string on the command
+      line. All 8 routes, 35 checkpoints, 17 tips, 3 users, and the full
+      `_prisma_migrations` history (so `migrate deploy` sees "no pending
+      migrations") verified present in Neon after restore.
+- [x] **G7** Render web service live at
+      **https://trailquest-backend-uze0.onrender.com** (Frankfurt region, same
+      as the Neon project — keeps DB round-trips local to the region). New
+      random `JWT_ACCESS_SECRET`/`JWT_REFRESH_SECRET` generated for production
+      (not reused from local `.env`). `/api/health`, `/api/routes`,
+      `/api/app-version` all curl-verified live with real migrated data.
+- [x] **G8** `mobile/.env` and `admin/.env` `API_URL`/`VITE_API_URL` repointed
+      from the (now-dead) ngrok tunnel to the Render URL — this also
+      permanently fixes the earlier "only works on home Wi-Fi/ngrok" problem,
+      since Render is reachable from anywhere with no PC/tunnel running.
+- [x] **G9** cron-job.org keep-alive job created by the user, hitting
+      `/api/health` every 10 minutes — keeps the Render free instance from
+      spinning down, so in practice there's no cold-start delay.
+- [x] **G10** Mobile: in-app update banner. `src/config/appVersion.ts`
+      (`CURRENT_VERSION_CODE`, hand-bumped alongside `android/app/
+      build.gradle`'s `versionCode` — no `react-native-device-info` dependency
+      added, since a full rebuild is already required for every release
+      anyway). `api/appVersion.api.ts` + `api/hooks/useAppVersion.ts` (react-
+      query, same pattern as `useRoutes.ts`). `components/UpdateBanner.tsx`
+      wraps the existing `<Banner tone="info">` in a `Pressable` that opens
+      `downloadUrl`; mounted in `RootNavigator.tsx` after `NavigationContainer`
+      so it's visible on every screen regardless of auth state. New
+      `update.available`/`update.message`/`update.action` i18n keys (en/ru/kk).
+- [x] **G11** Release APK rebuilt (now bundling the Render URL, verified by
+      grepping the extracted JS bundle for `onrender.com` vs the old
+      `ngrok-free.app`) and published as **GitHub Release v1.0**, asset always
+      named `TrailQuest.apk`. Permanent download link (never changes across
+      future releases as long as the asset keeps this exact name):
+      `https://github.com/exRonas/trailquest/releases/latest/download/TrailQuest.apk`
+      — curl-verified it resolves (200, correct size/filename).
+
+### How to ship a new APK version (going forward)
+
+1. Bump `versionCode`/`versionName` in `mobile/android/app/build.gradle`, and
+   bump `CURRENT_VERSION_CODE` in `mobile/src/config/appVersion.ts` to match
+   — this is what makes *older* installs recognize the new build as newer
+   than themselves once step 2 below ships.
+2. Bump `backend/src/config/appVersion.ts`'s `latestVersionCode` (and
+   `latestVersionName`/`notes`) to the same new version — this is what
+   already-installed older apps compare against to show the banner.
+3. `git push` (Render auto-redeploys the backend with the new
+   `appVersion.ts` on push to `master`).
+4. `cd mobile/android && JAVA_HOME="/c/Program Files/Eclipse
+   Adoptium/jdk-21.0.10.7-hotspot" ./gradlew assembleRelease`.
+5. `gh release create vX.Y android/app/build/outputs/apk/release/app-release.apk#TrailQuest.apk --repo exRonas/trailquest --title "TrailQuest vX.Y" --notes "..."`
+   (the `#TrailQuest.apk` renames the uploaded asset — keep this exact name
+   every time so the permanent `/releases/latest/download/TrailQuest.apk` link
+   keeps working).
+
+## RESUME HERE (Round 8)
+
+> Backend + DB are now permanently hosted (Render + Neon, both free, Frankfurt
+> region) and no longer depend on this PC, ngrok, or home Wi-Fi being up —
+> the keep-alive cron job means there's effectively no cold start either.
+> `mobile/.env`/`admin/.env` point at the Render URL. A public GitHub repo
+> (github.com/exRonas/trailquest) now exists with a permanent, always-current
+> APK download link, and the app shows an in-app banner when a newer version
+> is published. v1.0 is live at that link right now.
+>
+> Not yet done / honest gaps:
+> 1. **Q10 from Round 7 is still open** — no on-device test of the QR-scan →
+>    XP → rank flow has happened yet (this round was purely infra, didn't
+>    touch that). The v1.0 APK published today does include the camera-kit
+>    scan code from Round 7, just untested on a real device.
+> 2. The in-app update banner itself hasn't been observed on a real device
+>    either — only curl-verified the API side and grepped the bundled JS for
+>    the right URL. To see it fire, temporarily set `latestVersionCode` higher
+>    than `CURRENT_VERSION_CODE` on the backend, reload the app, confirm the
+>    banner shows and tapping it opens the GitHub release page, then revert.
+> 3. Render's free plan is single-instance with no autoscaling — fine for
+>    5-10 test users, would need a paid plan before any real growth.
+> 4. Neon's free tier project also has its own idle-suspend behavior
+>    (independent of Render's), but Neon's cold start is sub-second/a couple
+>    seconds, not the 30-50s Render used to have — combined with the keep-alive
+>    ping keeping Render's requests flowing (which also touches the DB), this
+>    hasn't been an issue in testing so far.
