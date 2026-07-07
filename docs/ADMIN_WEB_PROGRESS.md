@@ -752,3 +752,23 @@ Two quick style passes, both mobile-only (`ActiveNavigationScreen.tsx`):
 > plugged in, alongside the still-untouched `RoutePreviewMap.tsx` (the
 > pre-start preview never got the order-number/soft-fill treatment — still
 > shows plain solid-by-type + white number).
+
+---
+
+## Round 12 — offline map download (2026-07-08)
+
+User confirmed routes are in mountains/forest with no signal — the deferred
+offline-maps TODO in RouteDetailScreen became a real ask.
+
+- [x] Mobile: `services/offlineMaps.ts` wraps `Mapbox.offlineManager`
+      (createPack/getPack/deletePack), bounds = route line + all checkpoint
+      coords padded ~1km, zoom 10-16. `components/OfflineMapCard.tsx` on
+      Route Detail: download button -> progress bar -> "ready" + delete.
+      No new dependency (already in `@rnmapbox/maps`). Once cached, both the
+      preview map and live navigation map pick it up automatically (same
+      Mapbox style/bounds) — no per-screen wiring needed.
+- [x] Shipped as v1.7 (versionCode 8).
+
+> Not yet verified on device (no phone connected this round) — worth
+> confirming the download actually completes and that airplane-mode
+> navigation renders from the cached pack next time the phone's plugged in.
