@@ -13,5 +13,10 @@ export const postIdParamSchema = z.object({
   id: z.string().uuid('Invalid post id'),
 });
 
+export const postCommentIdParamSchema = z.object({
+  id: z.string().uuid('Invalid post id'),
+  commentId: z.string().uuid('Invalid comment id'),
+});
+
 export type CreatePostInput = z.infer<typeof createPostSchema>;
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;

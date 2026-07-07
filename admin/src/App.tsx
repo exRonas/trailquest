@@ -1,23 +1,39 @@
-import { Navigate, Route, Routes, Link } from 'react-router-dom';
+import { Navigate, Route, Routes, Link, useLocation } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { RoutesListPage } from './pages/RoutesListPage';
 import { RouteEditorPage } from './pages/RouteEditorPage';
+import { ForumPage } from './pages/ForumPage';
 
 function TopBar() {
   const { user, logout } = useAuth();
+  const location = useLocation();
   return (
     <div className="topbar">
       <div>
         <div className="brand">TRAILQUEST</div>
         <h1>
           <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-            Admin · Routes
+            Admin
           </Link>
         </h1>
       </div>
       {user ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <nav style={{ display: 'flex', gap: 12 }}>
+            <Link
+              to="/"
+              style={{ fontWeight: location.pathname === '/' ? 700 : 400 }}
+            >
+              Routes
+            </Link>
+            <Link
+              to="/forum"
+              style={{ fontWeight: location.pathname === '/forum' ? 700 : 400 }}
+            >
+              Forum
+            </Link>
+          </nav>
           <span className="muted">{user.email}</span>
           <button className="ghost" onClick={logout}>
             Sign out
@@ -68,6 +84,14 @@ export function App() {
           element={
             <Protected>
               <RouteEditorPage />
+            </Protected>
+          }
+        />
+        <Route
+          path="/forum"
+          element={
+            <Protected>
+              <ForumPage />
             </Protected>
           }
         />

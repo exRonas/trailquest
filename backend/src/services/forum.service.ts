@@ -98,3 +98,42 @@ export async function createComment(
     include: { user: { select: postAuthorSelect } },
   });
 }
+
+/** Every post across every route, newest first — admin moderation list. */
+export async function listAllPostsAdmin() {
+  return prisma.forumPost.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: {
+      user: { select: postAuthorSelect },
+      route: { select: { id: true, titleRu: true, titleEn: true, titleKk: true } },
+      _count: { select: { comments: true } },
+    },
+  });
+}
+
+/**
+ * Delete a post. Comments cascade at the DB level (ForumComment.post has
+ * onDelete: Cascade) so the thread can never be left with orphaned replies.
+ */
+export async function deletePostAdmin(postId: string) {
+  const post = await prisma.forumPost.findUnique({
+    where: { id: postId },
+    select: { id: true },
+  });
+  if (!post) {
+    throw AppError.notFound('Post not found');
+  }
+  await prisma.forumPost.delete({ where: { id: postId } });
+}
+
+/** Delete a single comment without touching the rest of the thread. */
+export async function deleteCommentAdmin(commentId: string) {
+  const comment = await prisma.forumComment.findUnique({
+    where: { id: commentId },
+    select: { id: true },
+  });
+  if (!comment) {
+    throw AppError.notFound('Comment not found');
+  }
+  await prisma.forumComment.delete({ where: { id: commentId } });
+}

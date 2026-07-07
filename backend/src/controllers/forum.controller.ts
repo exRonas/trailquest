@@ -41,3 +41,18 @@ export const createComment = asyncHandler(async (req: Request, res: Response) =>
   );
   sendData(res, comment, 201);
 });
+
+export const listAllAdmin = asyncHandler(async (_req: Request, res: Response) => {
+  const posts = await forumService.listAllPostsAdmin();
+  sendData(res, posts);
+});
+
+export const removePost = asyncHandler(async (req: Request, res: Response) => {
+  await forumService.deletePostAdmin(req.params.id);
+  res.status(204).send();
+});
+
+export const removeComment = asyncHandler(async (req: Request, res: Response) => {
+  await forumService.deleteCommentAdmin(req.params.commentId);
+  res.status(204).send();
+});
