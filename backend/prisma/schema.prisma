@@ -1,0 +1,249 @@
+// TrailQuest — Prisma schema
+// PostgreSQL + plain lat/lng (Haversine done in app code; no PostGIS in v1).
+// Phase-2 AR readiness: Checkpoint.altitudeM / qrCode and pathPoints altitude
+// are persisted now so geo-anchors won't require a migration later.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum RouteCategory {
+  HISTORICAL
+  BATTLE
+  SCENIC
+  GATHERING_SPOT
+  MIXED
+}
+
+enum Difficulty {
+  EASY
+  MODERATE
+  HARD
+}
+
+enum CheckpointType {
+  HISTORICAL
+  DANGER
+  UPCOMING
+  INFO
+}
+
+enum TipType {
+  WARNING
+  ADVICE
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Models
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+
+  posts           ForumPost[]
+  comments        ForumComment[]
+  progress        UserRouteProgress[]
+  countryProgress UserCountryProgress[]
+
+  @@map("users")
+}
+
+model Route {
+  id               String        @id @default(uuid())
+  // Per-language title/description (ru/en/kk). Resolved client-side with a
+  // fallback chain (selected language -> en -> ru -> kk) so an
+  // untranslated route still shows something instead of a blank string.
+  titleRu          String        @default("")
+  titleEn          String        @default("")
+  titleKk          String        @default("")
+  descriptionRu    String        @default("")
+  descriptionEn    String        @default("")
+  descriptionKk    String        @default("")
+  category         RouteCategory
+  difficulty       Difficulty
+  distanceKm       Float
+  estimatedMinutes Int
+  // Per-language region/country (ru/en/kk), same fallback-chain pattern as
+  // title/description above.
+  regionRu         String        @default("")
+  regionEn         String        @default("")
+  regionKk         String        @default("")
+  // Country the route is in — drives the "browse by country" picker and the
+  // "near me" fallback.
+  countryRu        String        @default("")
+  countryEn        String        @default("")
+  countryKk        String        @default("")
+  // Ordered polyline of the route: [{ lat, lng, altitudeM, sequence }]
+  // These are the sparse, admin-placed waypoints.
+  pathPoints       Json
+  // Dense road-following polyline [{ lat, lng }] produced by snapping
+  // pathPoints to streets (Mapbox Directions) at edit time. Null until
+  // computed; clients fall back to drawing pathPoints directly.
+  routeGeometry    Json?
+  coverImageUrl    String?
+  createdAt        DateTime      @default(now())
+
+  checkpoints Checkpoint[]
+  tips        RouteTip[]
+  posts       ForumPost[]
+  progress    UserRouteProgress[]
+
+  @@index([category])
+  @@index([difficulty])
+  @@index([countryEn])
+  @@map("routes")
+}
+
+model Checkpoint {
+  id             String         @id @default(uuid())
+  routeId        String
+  route          Route          @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  nameRu         String         @default("")
+  nameEn         String         @default("")
+  nameKk         String         @default("")
+  type           CheckpointType
+  lat            Float
+  lng            Float
+  altitudeM      Float? // Phase-2 AR
+  radiusTriggerM Int            @default(30)
+  descriptionRu  String         @default("")
+  descriptionEn  String         @default("")
+  descriptionKk  String         @default("")
+  mediaUrl       String?
+  // Stable unique token encoded in the physical QR placed at the checkpoint.
+  // Generated once (admin upsert) and preserved across route edits so printed
+  // QRs keep working. Scanning it marks the checkpoint reached + awards XP.
+  qrCode         String?        @unique
+  orderIndex     Int
+
+  tips  RouteTip[]
+  scans CheckpointScan[]
+
+  @@index([routeId])
+  @@map("checkpoints")
+}
+
+// One row per checkpoint a user has scanned within a given progress session.
+// Drives checkpoint-based progress (% = scans / total) and prevents awarding
+// XP twice for the same checkpoint in the same session.
+model CheckpointScan {
+  id           String            @id @default(uuid())
+  progressId   String
+  progress     UserRouteProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  checkpointId String
+  checkpoint   Checkpoint        @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  scannedAt    DateTime          @default(now())
+
+  @@unique([progressId, checkpointId])
+  @@index([progressId])
+  @@index([checkpointId])
+  @@map("checkpoint_scans")
+}
+
+// Per-country XP/level. A country appears here once the user scans their first
+// checkpoint QR there. Level is derived from xp (see src/lib/levels.ts), not
+// stored. `country` is the canonical Route.countryEn key (stable across locales).
+model UserCountryProgress {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  country   String
+  xp        Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, country])
+  @@index([userId])
+  @@map("user_country_progress")
+}
+
+model RouteTip {
+  id           String      @id @default(uuid())
+  routeId      String
+  route        Route       @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  checkpointId String? // null = applies to the whole route
+  checkpoint   Checkpoint? @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  type         TipType
+  textRu       String      @default("")
+  textEn       String      @default("")
+  textKk       String      @default("")
+
+  @@index([routeId])
+  @@index([checkpointId])
+  @@map("route_tips")
+}
+
+model ForumPost {
+  id        String   @id @default(uuid())
+  routeId   String
+  route     Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+
+  comments ForumComment[]
+
+  @@index([routeId])
+  @@index([userId])
+  @@map("forum_posts")
+}
+
+model ForumComment {
+  id        String    @id @default(uuid())
+  postId    String
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime  @default(now())
+
+  @@index([postId])
+  @@index([userId])
+  @@map("forum_comments")
+}
+
+model UserRouteProgress {
+  id                  String    @id @default(uuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routeId             String
+  route               Route     @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  startedAt           DateTime  @default(now())
+  completedAt         DateTime?
+  // When true the user has hidden this activity from public/shared views.
+  hidden              Boolean   @default(false)
+  lastCheckpointIndex Int       @default(0)
+  // Aggregate stats persisted on completion for cheap Profile rendering.
+  totalDistanceKm     Float     @default(0)
+  movingSeconds       Int       @default(0)
+  // [{ lat, lng, speedKmh, timestamp }] — used to derive speed/distance.
+  pathLog             Json
+
+  scans CheckpointScan[]
+
+  @@index([userId])
+  @@index([routeId])
+  @@map("user_route_progress")
+}

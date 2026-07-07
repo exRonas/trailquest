@@ -1,0 +1,9 @@
+.idea/
+.vscode/
+.claude/
+
+# Signs the release APKs published publicly — do not publish the key itself.
+mobile/android/app/debug.keystore
+*.log
+.DS_Store
+Thumbs.db

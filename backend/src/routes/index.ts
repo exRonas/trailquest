@@ -1,0 +1,29 @@
+import { Router } from 'express';
+import authRoutes from './auth.routes';
+import routeRoutes from './route.routes';
+import checkpointRoutes from './checkpoint.routes';
+import tipRoutes from './tip.routes';
+import progressRoutes from './progress.routes';
+import forumRoutes from './forum.routes';
+import userRoutes from './user.routes';
+import { appVersion } from '../config/appVersion';
+
+const router = Router();
+
+router.get('/health', (_req, res) => {
+  res.json({ data: { status: 'ok', timestamp: new Date().toISOString() } });
+});
+
+router.get('/app-version', (_req, res) => {
+  res.json({ data: appVersion });
+});
+
+router.use('/auth', authRoutes);
+router.use('/routes', routeRoutes);
+router.use('/checkpoints', checkpointRoutes);
+router.use('/tips', tipRoutes);
+router.use('/progress', progressRoutes);
+router.use('/posts', forumRoutes);
+router.use('/users', userRoutes);
+
+export default router;

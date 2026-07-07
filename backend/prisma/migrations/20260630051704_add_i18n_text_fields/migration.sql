@@ -1,0 +1,20 @@
+-- AlterTable
+ALTER TABLE "checkpoints" ADD COLUMN     "descriptionEn" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "descriptionKk" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "descriptionRu" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "nameEn" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "nameKk" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "nameRu" TEXT NOT NULL DEFAULT '';
+
+-- AlterTable
+ALTER TABLE "route_tips" ADD COLUMN     "textEn" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "textKk" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "textRu" TEXT NOT NULL DEFAULT '';
+
+-- AlterTable
+ALTER TABLE "routes" ADD COLUMN     "descriptionEn" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "descriptionKk" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "descriptionRu" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "titleEn" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "titleKk" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "titleRu" TEXT NOT NULL DEFAULT '';
