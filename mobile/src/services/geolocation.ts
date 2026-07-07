@@ -134,14 +134,21 @@ export async function startTracking(
   };
 }
 
-/** One-shot current position (e.g. centring the Explore map). */
+/**
+ * One-shot current position (e.g. centring the Explore map, "nearby routes").
+ * Deliberately NOT high-accuracy: that forces a raw GPS satellite fix, which
+ * can take 15s+ or never resolve indoors/underground. This use case only
+ * needs city-level precision, so we accept the network/fused provider's
+ * cached fix (near-instant) — a stale-but-recent location beats an accurate
+ * one that times out to null.
+ */
 export async function getCurrentPosition(): Promise<LocationSample | null> {
   configureTracking();
   return new Promise((resolve) => {
     Geolocation.getCurrentPosition(
       (pos) => resolve(toSample(pos)),
       () => resolve(null),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60_000 },
     );
   });
 }
