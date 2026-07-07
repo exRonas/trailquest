@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 import { colors, radius } from '../../theme';
@@ -28,6 +28,8 @@ export function RoutePreviewMap({
   onCheckpointPress,
 }: RoutePreviewMapProps): React.ReactElement {
   const cameraRef = useRef<Mapbox.Camera>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const onMapReady = useCallback(() => setMapReady(true), []);
 
   const coords = useMemo<Coord[]>(() => {
     if (geometry && geometry.length > 1) {
@@ -60,16 +62,19 @@ export function RoutePreviewMap({
     [checkpoints],
   );
 
+  // Wait for the map to actually finish loading before fitting bounds — a
+  // bare requestAnimationFrame could fire before the native camera exists,
+  // silently no-op, and leave the map on the style's own built-in default
+  // view (e.g. Mapbox's "outdoors" style defaults to a scenic spot that has
+  // nothing to do with the route — very confusing to spot as a bug).
   useEffect(() => {
-    if (!hasMapboxToken || coords.length === 0) return;
+    if (!hasMapboxToken || !mapReady || coords.length === 0) return;
     const lngs = coords.map((c) => c[0]);
     const lats = coords.map((c) => c[1]);
     const ne: Coord = [Math.max(...lngs), Math.max(...lats)];
     const sw: Coord = [Math.min(...lngs), Math.min(...lats)];
-    requestAnimationFrame(() => {
-      cameraRef.current?.fitBounds(ne, sw, 50, 0);
-    });
-  }, [coords]);
+    cameraRef.current?.fitBounds(ne, sw, 50, 0);
+  }, [coords, mapReady]);
 
   if (!hasMapboxToken) {
     return (
@@ -101,8 +106,18 @@ export function RoutePreviewMap({
         scaleBarEnabled={false}
         logoEnabled={false}
         attributionEnabled={false}
+        onDidFinishLoadingMap={onMapReady}
       >
-        <Mapbox.Camera ref={cameraRef} />
+        <Mapbox.Camera
+          ref={cameraRef}
+          // Safety net: if fitBounds somehow never fires, at least center on
+          // the route instead of the style's own unrelated default view.
+          defaultSettings={
+            coords.length > 0
+              ? { centerCoordinate: coords[0], zoomLevel: 13 }
+              : undefined
+          }
+        />
 
         <Mapbox.ShapeSource id="route-line" shape={lineShape}>
           <Mapbox.LineLayer

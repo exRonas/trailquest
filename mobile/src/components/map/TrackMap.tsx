@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -33,6 +33,8 @@ export function TrackMap({
 }: TrackMapProps): React.ReactElement {
   const t = useT();
   const cameraRef = useRef<Mapbox.Camera>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const onMapReady = useCallback(() => setMapReady(true), []);
 
   const coords = useMemo<Coord[]>(
     () => track.map((p) => [p.lng, p.lat]),
@@ -70,16 +72,16 @@ export function TrackMap({
     return { type: 'FeatureCollection' as const, features };
   }, [coords]);
 
+  // See RoutePreviewMap for why this waits on the map actually loading
+  // instead of a bare requestAnimationFrame.
   useEffect(() => {
-    if (!hasMapboxToken || coords.length === 0) return;
+    if (!hasMapboxToken || !mapReady || coords.length === 0) return;
     const lngs = coords.map((c) => c[0]);
     const lats = coords.map((c) => c[1]);
     const ne: Coord = [Math.max(...lngs), Math.max(...lats)];
     const sw: Coord = [Math.min(...lngs), Math.min(...lats)];
-    requestAnimationFrame(() => {
-      cameraRef.current?.fitBounds(ne, sw, 48, 0);
-    });
-  }, [coords]);
+    cameraRef.current?.fitBounds(ne, sw, 48, 0);
+  }, [coords, mapReady]);
 
   if (!hasMapboxToken) {
     return (
@@ -112,8 +114,12 @@ export function TrackMap({
         scaleBarEnabled={false}
         logoEnabled={false}
         attributionEnabled={false}
+        onDidFinishLoadingMap={onMapReady}
       >
-        <Mapbox.Camera ref={cameraRef} />
+        <Mapbox.Camera
+          ref={cameraRef}
+          defaultSettings={{ centerCoordinate: coords[0], zoomLevel: 14 }}
+        />
 
         <Mapbox.ShapeSource id="track-line" shape={lineShape}>
           <Mapbox.LineLayer

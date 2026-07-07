@@ -62,6 +62,8 @@ export function ExploreScreen({
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['22%', '55%', '92%'], []);
   const fittedRef = useRef(false);
+  const [mapReady, setMapReady] = useState(false);
+  const onMapReady = useCallback(() => setMapReady(true), []);
 
   // Try to get the user's location once so we can surface nearby routes first.
   useEffect(() => {
@@ -100,9 +102,11 @@ export function ExploreScreen({
     [displayed, language],
   );
 
-  // Fit the camera to the visible markers once, after the first load.
+  // Fit the camera to the visible markers once, after the map has actually
+  // finished loading (a bare requestAnimationFrame could fire before the
+  // native camera exists and silently no-op — see RoutePreviewMap).
   useEffect(() => {
-    if (fittedRef.current || !hasMapboxToken) return;
+    if (fittedRef.current || !hasMapboxToken || !mapReady) return;
     const coords = featureCollection.features.map((f) => f.geometry.coordinates);
     if (coords.length === 0) return;
     const lngs = coords.map((c) => c[0]);
@@ -110,10 +114,8 @@ export function ExploreScreen({
     const ne: Coord = [Math.max(...lngs), Math.max(...lats)];
     const sw: Coord = [Math.min(...lngs), Math.min(...lats)];
     fittedRef.current = true;
-    requestAnimationFrame(() => {
-      cameraRef.current?.fitBounds(ne, sw, [120, 60, 320, 60], 800);
-    });
-  }, [featureCollection]);
+    cameraRef.current?.fitBounds(ne, sw, [120, 60, 320, 60], 800);
+  }, [featureCollection, mapReady]);
 
   const openRoute = useCallback(
     (routeId: string) => navigation.navigate('RouteDetail', { routeId }),
@@ -223,6 +225,7 @@ export function ExploreScreen({
           scaleBarEnabled={false}
           logoPosition={{ bottom: 8, left: 8 }}
           attributionPosition={{ bottom: 8, right: 8 }}
+          onDidFinishLoadingMap={onMapReady}
         >
           <Mapbox.Camera
             ref={cameraRef}
