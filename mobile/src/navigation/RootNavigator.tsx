@@ -6,6 +6,7 @@ import {
   Theme,
 } from '@react-navigation/native';
 import { Loader } from '../components/ui';
+import { UpdateBanner } from '../components/UpdateBanner';
 import { colors } from '../theme';
 import { useAuthStore } from '../store/authStore';
 import { useLocaleStore } from '../i18n';
@@ -48,6 +49,7 @@ export function RootNavigator(): React.ReactElement {
   return (
     <NavigationContainer theme={navTheme}>
       {status === 'authenticated' ? <MainTabs /> : <AuthNavigator />}
+      <UpdateBanner />
     </NavigationContainer>
   );
 }

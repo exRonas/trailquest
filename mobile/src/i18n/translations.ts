@@ -237,6 +237,11 @@ const en: Dict = {
   'userProfile.activities': 'Completed routes',
   'userProfile.noActivitiesTitle': 'Nothing here yet',
   'userProfile.noActivities': "This person hasn't completed any public routes yet.",
+
+  // Update banner
+  'update.available': 'Update available',
+  'update.message': 'A new version of TrailQuest is ready to download.',
+  'update.action': 'Download',
 };
 
 const ru: Dict = {
@@ -444,6 +449,10 @@ const ru: Dict = {
   'userProfile.activities': 'Пройденные маршруты',
   'userProfile.noActivitiesTitle': 'Пока пусто',
   'userProfile.noActivities': 'Этот человек пока не прошёл ни одного открытого маршрута.',
+
+  'update.available': 'Доступно обновление',
+  'update.message': 'Вышла новая версия TrailQuest — можно скачать.',
+  'update.action': 'Скачать',
 };
 
 const kk: Dict = {
@@ -652,6 +661,10 @@ const kk: Dict = {
   'userProfile.activities': 'Өтілген маршруттар',
   'userProfile.noActivitiesTitle': 'Әзірге бос',
   'userProfile.noActivities': 'Бұл адам әзірге ешбір ашық маршрутты өтпеген.',
+
+  'update.available': 'Жаңарту қолжетімді',
+  'update.message': 'TrailQuest-тің жаңа нұсқасы шықты — жүктеп алуға болады.',
+  'update.action': 'Жүктеп алу',
 };
 
 export const translations: Record<Language, Dict> = { en, ru, kk };

@@ -241,3 +241,10 @@ export interface ApiErrorBody {
     details?: Array<{ path: string; message: string }>;
   };
 }
+
+export interface AppVersionInfo {
+  latestVersionCode: number;
+  latestVersionName: string;
+  downloadUrl: string;
+  notes: string;
+}
