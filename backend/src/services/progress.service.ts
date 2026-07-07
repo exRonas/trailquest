@@ -16,7 +16,10 @@ import {
 
 /**
  * Start a route. If the user already has an in-progress (not completed) session
- * for this route, that session is returned instead of creating a duplicate.
+ * for this route, that session is returned instead of creating a duplicate —
+ * along with `reachedOrderIndices` so a resumed navigation screen can restore
+ * which checkpoints were already scanned instead of showing them all as
+ * unvisited again.
  */
 export async function startRoute(userId: string, routeId: string) {
   const route = await prisma.route.findUnique({
@@ -30,11 +33,18 @@ export async function startRoute(userId: string, routeId: string) {
   const active = await prisma.userRouteProgress.findFirst({
     where: { userId, routeId, completedAt: null },
   });
-  if (active) return active;
+  if (active) {
+    const scans = await prisma.checkpointScan.findMany({
+      where: { progressId: active.id },
+      select: { checkpoint: { select: { orderIndex: true } } },
+    });
+    return { ...active, reachedOrderIndices: scans.map((s) => s.checkpoint.orderIndex) };
+  }
 
-  return prisma.userRouteProgress.create({
+  const created = await prisma.userRouteProgress.create({
     data: { userId, routeId, pathLog: [] },
   });
+  return { ...created, reachedOrderIndices: [] as number[] };
 }
 
 /** Loads a session and asserts the caller owns it. */

@@ -132,6 +132,8 @@ export interface UserRouteProgress {
   totalDistanceKm: number;
   movingSeconds: number;
   pathLog: PathLogPoint[];
+  /** Only present on the POST /routes/:id/start response. */
+  reachedOrderIndices?: number[];
 }
 
 export interface ProgressWithRoute extends UserRouteProgress {

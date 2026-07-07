@@ -65,6 +65,7 @@ export function RouteDetailScreen({
       navigation.navigate('ActiveNavigation', {
         routeId,
         progressId: progress.id,
+        reachedOrderIndices: progress.reachedOrderIndices ?? [],
       });
     } catch (err) {
       Alert.alert(t('route.startFailed'), getApiErrorMessage(err));

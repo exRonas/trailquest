@@ -34,6 +34,8 @@ export interface LiveStats {
 interface EngineArgs {
   route: RouteDetail;
   progressId: string;
+  /** Checkpoint order-indices already scanned in a resumed session. */
+  initialReachedIndices?: number[];
 }
 
 const BATCH_SIZE = 5; // GPS samples buffered before syncing to the server
@@ -54,21 +56,33 @@ const ZERO_STATS: LiveStats = {
  * scanning their physical QR (see `scan`). Progress is therefore checkpoint-
  * based: fraction = scanned / total.
  */
-export function useNavigationEngine({ route, progressId }: EngineArgs) {
+export function useNavigationEngine({
+  route,
+  progressId,
+  initialReachedIndices,
+}: EngineArgs) {
   const totalCheckpoints = route.checkpoints.length;
 
   const [status, setStatus] = useState<EngineStatus>('requesting');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [position, setPosition] = useState<LocationSample | null>(null);
-  const [stats, setStats] = useState<LiveStats>(ZERO_STATS);
-  const [reachedIndices, setReachedIndices] = useState<number[]>([]);
+  const [stats, setStats] = useState<LiveStats>({
+    ...ZERO_STATS,
+    progressFraction:
+      totalCheckpoints > 0
+        ? (initialReachedIndices?.length ?? 0) / totalCheckpoints
+        : 0,
+  });
+  const [reachedIndices, setReachedIndices] = useState<number[]>(
+    initialReachedIndices ?? [],
+  );
 
   // Mutable accumulators kept in refs so the location callback isn't re-created
   // and we avoid re-rendering on every raw sample.
   const samplesRef = useRef<TimedPoint[]>([]);
   const distanceMRef = useRef(0);
   const startTimeRef = useRef<number>(Date.now());
-  const reachedRef = useRef<Set<number>>(new Set());
+  const reachedRef = useRef<Set<number>>(new Set(initialReachedIndices ?? []));
   const pendingRef = useRef<PathLogPoint[]>([]);
   const stopRef = useRef<(() => Promise<void>) | null>(null);
   const mountedRef = useRef(true);

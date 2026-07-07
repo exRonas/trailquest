@@ -13,7 +13,12 @@ export type ExploreStackParamList = {
   Countries: undefined;
   CountryRoutes: { country: string };
   RouteDetail: { routeId: string };
-  ActiveNavigation: { routeId: string; progressId: string };
+  ActiveNavigation: {
+    routeId: string;
+    progressId: string;
+    /** Checkpoint order-indices already scanned in a resumed session. */
+    reachedOrderIndices?: number[];
+  };
 };
 
 export type ForumStackParamList = {

@@ -60,6 +60,7 @@ export function ActiveNavigationScreen(
       route={data}
       navigation={props.navigation}
       progressId={props.route.params.progressId}
+      initialReachedIndices={props.route.params.reachedOrderIndices}
     />
   );
 }
@@ -72,10 +73,12 @@ function NavigationActive({
   route,
   navigation,
   progressId,
+  initialReachedIndices,
 }: {
   route: RouteDetail;
   navigation: NavProp;
   progressId: string;
+  initialReachedIndices?: number[];
 }): React.ReactElement {
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
@@ -87,7 +90,7 @@ function NavigationActive({
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
 
-  const engine = useNavigationEngine({ route, progressId });
+  const engine = useNavigationEngine({ route, progressId, initialReachedIndices });
 
   const onScanned = async (code: string) => {
     setScannerOpen(false);
@@ -248,6 +251,20 @@ function NavigationActive({
                 circleRadius: 10,
                 circleStrokeWidth: 3,
                 circleStrokeColor: colors.surface,
+                // Reached checkpoints fade slightly so the checkmark reads as
+                // "done" at a glance, not just a different color.
+                circleOpacity: ['case', ['get', 'reached'], 0.55, 1],
+              }}
+            />
+            <Mapbox.SymbolLayer
+              id="nav-checkpoint-check"
+              filter={['get', 'reached']}
+              style={{
+                textField: '✓',
+                textSize: 13,
+                textColor: colors.textInverse,
+                textAllowOverlap: true,
+                textIgnorePlacement: true,
               }}
             />
           </Mapbox.ShapeSource>
