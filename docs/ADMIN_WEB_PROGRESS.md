@@ -772,3 +772,41 @@ offline-maps TODO in RouteDetailScreen became a real ask.
 > Not yet verified on device (no phone connected this round) — worth
 > confirming the download actually completes and that airplane-mode
 > navigation renders from the cached pack next time the phone's plugged in.
+
+---
+
+## Round 13 — offline-first navigation (2026-07-08)
+
+User correctly pushed back on Round 12: "офлайн-карта" was pointless if the
+actual progress calls (start/scan/complete) still hard-fail with no signal.
+Confirmed live: only GPS point logging had any retry; scan and complete had
+none.
+
+- [x] New `mobile/src/services/offlineQueue.ts` (AsyncStorage-backed): every
+      session keyed by a real server progress id or a `local-<...>` id
+      minted when even `start` can't reach the server. QR scans match
+      against `route.checkpoints` client-side (qrCode already ships in the
+      route payload — no server round-trip needed to identify a checkpoint).
+      Points/scans/completion queue on network failure, replay in order on
+      `syncAll()`. Server-side per-checkpoint uniqueness makes scan replays
+      safe even after a partial sync.
+- [x] `useNavigationEngine` rewritten offline-first: `flush`/`scan`/`complete`
+      each try the network call first, fall back to the queue on a network
+      error specifically (`isNetworkError` — no response received — vs a
+      real 4xx/5xx, which still surfaces as before).
+- [x] `RouteDetailScreen.onStart` resumes an existing unsynced local session
+      for the route instead of starting a duplicate.
+- [x] Sync triggers: NetInfo reconnect + AppState foreground in
+      `RootNavigator`, plus an opportunistic call on mount.
+- [x] UI: "Offline — saving locally" pill on the nav HUD; scan result card
+      gets a "saved offline, will sync" variant (no XP/level — those are
+      server-computed); Profile shows a pending-sync banner with a manual
+      "Sync now".
+- [x] Added `@react-native-async-storage/async-storage` — confirmed
+      autolinks and a release APK builds fine with it.
+- Shipped as v1.9 (versionCode 10).
+
+> Not yet verified on device this round (no phone connected) — the whole
+> flow (offline start → scan → finish → reconnect → auto-sync) needs a real
+> end-to-end pass next time the phone's plugged in, ideally in the same
+> no-signal spot that surfaced the original bug.
