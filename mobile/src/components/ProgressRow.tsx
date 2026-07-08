@@ -30,7 +30,7 @@ export function ProgressRow({ session, onPress }: ProgressRowProps): React.React
           {session.hidden ? (
             <Badge label={t('profile.hiddenBadge')} color={colors.textMuted} background={colors.surfaceAlt} />
           ) : completed ? (
-            <Badge label={t('profile.completedBadge')} color={colors.success} background={theme.primarySoft} />
+            <Badge label={t('profile.completedBadge')} color={theme.primary} background={theme.primarySoft} />
           ) : (
             <Badge label={t('profile.inProgress')} color={colors.warning} background={colors.warningSoft} />
           )}

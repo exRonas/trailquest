@@ -92,7 +92,7 @@ export function ActivityDetailScreen({
         {session.completedAt ? (
           <Badge
             label={t('profile.completedBadge')}
-            color={colors.success}
+            color={theme.primary}
             background={theme.primarySoft}
           />
         ) : (

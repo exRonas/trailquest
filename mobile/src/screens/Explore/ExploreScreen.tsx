@@ -270,7 +270,7 @@ export function ExploreScreen({
               id="unclustered"
               filter={['!', ['has', 'point_count']]}
               style={{
-                circleColor: colors.accent,
+                circleColor: theme.primary,
                 circleRadius: 9,
                 circleStrokeWidth: 3,
                 circleStrokeColor: colors.surface,
@@ -285,7 +285,7 @@ export function ExploreScreen({
       {/* Floating header */}
       <View style={[styles.header, { top: insets.top + spacing.sm }]}>
         <View style={styles.titlePill}>
-          <AppText variant="overline" color={colors.accent}>
+          <AppText variant="overline" color={theme.primary}>
             {t('explore.brand')}
           </AppText>
           <AppText variant="heading">{t('explore.title')}</AppText>

@@ -10,7 +10,14 @@ export function DifficultyBadge({
 }: {
   difficulty: Difficulty;
 }): React.ReactElement {
-  const c = colors.difficulty[difficulty];
+  const theme = useThemeColors();
+  // EASY tracks the brand accent (it's a "safe/on-brand" tier, not a hazard
+  // color); MODERATE/HARD keep fixed amber/red — universal severity cues that
+  // shouldn't shift with the user's chosen accent.
+  const c =
+    difficulty === 'EASY'
+      ? { main: theme.primary, soft: theme.primarySoft }
+      : colors.difficulty[difficulty];
   return (
     <Badge
       label={labelForDifficulty(difficulty)}
