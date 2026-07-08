@@ -1,11 +1,6 @@
 import React, { useRef } from 'react';
-import {
-  ActivityIndicator,
-  Animated,
-  Pressable,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
+import { ActivityIndicator, Animated, StyleSheet, ViewStyle } from 'react-native';
+import { Pressable } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
 import { radius, spacing, useThemeColors, ThemeColors } from '../../theme';
@@ -52,6 +47,9 @@ export function Button({
 
   const palette = getVariantStyle(variant, theme);
 
+  // Pressable is imported from gesture-handler, not core RN — works around a
+  // longstanding Fabric bug where onPress randomly stops firing after a
+  // layout/theme change coincides with a nav pop (facebook/react-native#36710).
   return (
     <Animated.View
       style={[

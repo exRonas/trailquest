@@ -46,13 +46,18 @@ export function ProfileStack(): React.ReactElement {
       <Stack.Screen
         name="Settings"
         component={SettingsScreen}
-        // animation: 'none' works around a known native-stack + Android bug
-        // (react-navigation#10096, #11521): popping this screen while a
-        // TextInput is still focused/keyboard open can leave the touch
-        // responder permanently stuck on the screen underneath, requiring a
-        // full app reload to recover. Settings always has a focused field
-        // right before Save → back, so it hits this every time.
-        options={{ title: translate(language, 'settings.title'), animation: 'none' }}
+        // react-native-screens disables touch on the screen below while this
+        // one is on top, and re-enables it once the transition is detected as
+        // finished; animation: 'none' skips that transition entirely instead
+        // of relying on the "finished" detection, which was leaving Profile's
+        // touch permanently disabled after Settings popped (Alert + focused
+        // TextInput mid-transition confuses that check). Note:
+        // detachPreviousScreen isn't available on this native-stack version —
+        // animation: 'none' alone is the fix here.
+        options={{
+          title: translate(language, 'settings.title'),
+          animation: 'none',
+        }}
       />
       <Stack.Screen
         name="Friends"
