@@ -87,7 +87,7 @@ export function TrackMap({
 
   if (!hasMapboxToken) {
     return (
-      <View style={[styles.wrap, { height }]}>
+      <View style={[styles.wrap, { height, backgroundColor: theme.surfaceAlt }]}>
         <MapPlaceholder />
       </View>
     );
@@ -95,7 +95,7 @@ export function TrackMap({
 
   if (coords.length === 0) {
     return (
-      <View style={[styles.wrap, styles.empty, { height }]}>
+      <View style={[styles.wrap, styles.empty, { height, backgroundColor: theme.surfaceAlt }]}>
         <Icon name="map-marker-off-outline" size={40} color={colors.textMuted} />
         <AppText variant="callout" color={colors.textMuted} center style={styles.emptyText}>
           {t('activity.noTrack')}
@@ -105,7 +105,7 @@ export function TrackMap({
   }
 
   return (
-    <View style={[styles.wrap, { height }]}>
+    <View style={[styles.wrap, { height, backgroundColor: theme.surfaceAlt }]}>
       <Mapbox.MapView
         style={styles.map}
         styleURL={mapStyleUrl}

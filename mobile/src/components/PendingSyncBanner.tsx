@@ -31,7 +31,7 @@ export function PendingSyncBanner(): React.ReactElement | null {
   if (count === 0) return null;
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, { backgroundColor: theme.surface }]}>
       <Icon name="cloud-sync-outline" size={20} color={theme.primary} />
       <AppText variant="callout" style={styles.text}>
         {t('sync.pending', { count })}

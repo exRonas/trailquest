@@ -65,7 +65,7 @@ function RowStat({ icon, text }: { icon: string; text: string }): React.ReactEle
 }
 
 const styles = StyleSheet.create({
-  row: { marginBottom: spacing.md, backgroundColor: colors.surface },
+  row: { marginBottom: spacing.md },
   rowHeader: {
     flexDirection: 'row',
     alignItems: 'center',

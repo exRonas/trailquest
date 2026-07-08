@@ -77,7 +77,7 @@ export function RouteCard({ route, onPress }: RouteCardProps): React.ReactElemen
           </View>
         ) : null}
 
-        <View style={styles.statsRow}>
+        <View style={[styles.statsRow, { borderTopColor: theme.border }]}>
           <Stat icon="map-marker-distance" text={formatDistanceKm(route.distanceKm)} />
           <Stat
             icon="clock-outline"

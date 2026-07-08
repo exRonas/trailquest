@@ -6,7 +6,7 @@ import {
   Loader,
 } from '../../components/ui';
 import { RouteCard } from '../../components/RouteCard';
-import { colors, spacing } from '../../theme';
+import { colors, spacing, useThemeColors } from '../../theme';
 import { useRoutes } from '../../api/hooks/useRoutes';
 import { getApiErrorMessage } from '../../api/client';
 import { useT } from '../../i18n';
@@ -17,6 +17,7 @@ export function CountryRoutesScreen({
   navigation,
 }: ExploreScreenProps<'CountryRoutes'>): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const { country } = route.params;
   const { data, isLoading, isError, error, refetch } = useRoutes({ country });
 
@@ -31,7 +32,7 @@ export function CountryRoutesScreen({
 
   return (
     <FlatList
-      style={styles.fill}
+      style={[styles.fill, { backgroundColor: theme.background }]}
       data={data ?? []}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.content}

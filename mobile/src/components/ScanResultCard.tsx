@@ -25,6 +25,7 @@ export function ScanResultCard({
   onClose,
 }: ScanResultCardProps): React.ReactElement | null {
   const t = useT();
+  const theme = useThemeColors();
   const pickLocalized = usePickLocalized();
   if (!result) return null;
 
@@ -41,8 +42,8 @@ export function ScanResultCard({
       statusBarTranslucent
     >
       <View style={styles.backdrop}>
-        <View style={styles.card}>
-          <Pressable style={styles.closeBtn} onPress={onClose} hitSlop={10}>
+        <View style={[styles.card, { backgroundColor: theme.surface }]}>
+          <Pressable style={[styles.closeBtn, { backgroundColor: theme.surface }]} onPress={onClose} hitSlop={10}>
             <Icon name="close" size={22} color={colors.textSecondary} />
           </Pressable>
 
@@ -112,7 +113,7 @@ export function ScanResultCard({
             ) : null}
 
             {/* Progress + rank */}
-            <View style={styles.statsRow}>
+            <View style={[styles.statsRow, { backgroundColor: theme.surfaceAlt }]}>
               <Stat
                 icon="flag-checkered"
                 label={t('scan.checkpoints')}
@@ -120,7 +121,7 @@ export function ScanResultCard({
               />
               {!result.pending ? (
                 <>
-                  <View style={styles.statDivider} />
+                  <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
                   <Stat
                     icon="medal-outline"
                     label={pickLocalized(result.country)}
@@ -133,7 +134,7 @@ export function ScanResultCard({
             </View>
           </ScrollView>
 
-          <View style={styles.actions}>
+          <View style={[styles.actions, { borderTopColor: theme.border }]}>
             <Button label={t('scan.gotIt')} onPress={onClose} />
           </View>
         </View>

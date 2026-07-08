@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, Banner, Button, TextField } from '../../components/ui';
-import { colors, radius, spacing, typography } from '../../theme';
+import { colors, radius, spacing, typography, useThemeColors } from '../../theme';
 import { useCreatePost } from '../../api/hooks/useForum';
 import { getApiErrorMessage } from '../../api/client';
 import { validateRequired } from '../../utils/validation';
@@ -21,6 +21,7 @@ export function CreatePostScreen({
   navigation,
 }: ForumScreenProps<'CreatePost'>): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const { routeId } = route.params;
   const insets = useSafeAreaInsets();
   const createPost = useCreatePost(routeId);
@@ -47,7 +48,7 @@ export function CreatePostScreen({
 
   return (
     <KeyboardAvoidingView
-      style={styles.fill}
+      style={[styles.fill, { backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
@@ -73,9 +74,13 @@ export function CreatePostScreen({
           {t('forum.yourPostLabel')}
         </AppText>
         <TextInput
-          style={[styles.bodyInput, errors.body ? styles.bodyError : null]}
+          style={[
+            styles.bodyInput,
+            { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text },
+            errors.body ? { borderColor: theme.danger } : null,
+          ]}
           placeholder={t('forum.bodyPlaceholder')}
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={theme.textMuted}
           value={body}
           onChangeText={setBody}
           multiline
@@ -89,7 +94,7 @@ export function CreatePostScreen({
         ) : null}
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md, backgroundColor: theme.surface, borderTopColor: theme.border }]}>
         <Button
           label={t('forum.publish')}
           icon="send"

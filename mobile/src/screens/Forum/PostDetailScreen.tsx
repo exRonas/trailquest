@@ -91,7 +91,7 @@ export function PostDetailScreen({
 
   return (
     <KeyboardAvoidingView
-      style={styles.fill}
+      style={[styles.fill, { backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
@@ -121,11 +121,16 @@ export function PostDetailScreen({
         showsVerticalScrollIndicator={false}
       />
 
-      <View style={[styles.composer, { paddingBottom: insets.bottom + spacing.sm }]}>
+      <View
+        style={[
+          styles.composer,
+          { paddingBottom: insets.bottom + spacing.sm, backgroundColor: theme.surface, borderTopColor: theme.border },
+        ]}
+      >
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.surfaceAlt, color: theme.text }]}
           placeholder={t('forum.addComment')}
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={theme.textMuted}
           value={text}
           onChangeText={setText}
           multiline

@@ -11,7 +11,7 @@ import { StatTile } from './StatTile';
 import { TrackMap } from './map/TrackMap';
 import { ShareableStatsCard } from './ShareableStatsCard';
 import { shareViewAsImage } from '../services/shareCard';
-import { colors, radius, shadow, spacing } from '../theme';
+import { colors, radius, shadow, spacing, useThemeColors } from '../theme';
 import {
   formatClock,
   formatDistanceKm,
@@ -55,6 +55,7 @@ export function RunSummaryOverlay({
   onSave,
 }: RunSummaryOverlayProps): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const shareRef = useRef<View>(null);
   const avgSpeed =
     movingSeconds > 0 ? distanceKm / (movingSeconds / 3600) : 0;
@@ -86,7 +87,7 @@ export function RunSummaryOverlay({
       statusBarTranslucent
     >
       <View style={styles.backdrop}>
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: theme.surface }]}>
           <Pressable style={styles.closeBtn} onPress={onClose} hitSlop={10}>
             <Icon name="close" size={22} color={colors.textSecondary} />
           </Pressable>
@@ -116,7 +117,7 @@ export function RunSummaryOverlay({
               label={t('summary.distance')}
               emphasis
             />
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
             <StatTile
               icon="timer-outline"
               value={formatClock(movingSeconds)}
@@ -131,7 +132,7 @@ export function RunSummaryOverlay({
               label={t('summary.avgSpeed')}
               emphasis
             />
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
             <StatTile
               icon="flag-variant-outline"
               value={`${reachedCount}/${totalCheckpoints}`}

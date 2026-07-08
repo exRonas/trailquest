@@ -219,7 +219,7 @@ export function ExploreScreen({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {hasMapboxToken ? (
         <Mapbox.MapView
           style={styles.map}
@@ -285,7 +285,7 @@ export function ExploreScreen({
 
       {/* Floating header */}
       <View style={[styles.header, { top: insets.top + spacing.sm }]}>
-        <View style={styles.titlePill}>
+        <View style={[styles.titlePill, { backgroundColor: theme.surface }]}>
           <AppText variant="overline" color={theme.primary}>
             {t('explore.brand')}
           </AppText>
@@ -303,8 +303,8 @@ export function ExploreScreen({
         ref={sheetRef}
         index={1}
         snapPoints={snapPoints}
-        backgroundStyle={styles.sheetBg}
-        handleIndicatorStyle={styles.handle}
+        backgroundStyle={[styles.sheetBg, { backgroundColor: theme.surface }]}
+        handleIndicatorStyle={[styles.handle, { backgroundColor: theme.border }]}
       >
         <BottomSheetFlatList
           data={visible}

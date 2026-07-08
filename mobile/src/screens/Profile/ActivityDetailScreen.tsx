@@ -93,7 +93,7 @@ export function ActivityDetailScreen({
 
   return (
     <ScrollView
-      style={styles.fill}
+      style={[styles.fill, { backgroundColor: theme.background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
@@ -127,19 +127,19 @@ export function ActivityDetailScreen({
       </AppText>
       <TrackMap track={session.pathLog ?? []} height={240} interactive />
 
-      <View style={styles.statsCard}>
+      <View style={[styles.statsCard, { backgroundColor: theme.surface }]}>
         <StatTile
           icon="map-marker-distance"
           value={formatDistanceKm(session.totalDistanceKm)}
           label={t('summary.distance')}
         />
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
         <StatTile
           icon="timer-outline"
           value={formatClock(session.movingSeconds)}
           label={t('summary.time')}
         />
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
         <StatTile
           icon="speedometer"
           value={`${avgSpeed.toFixed(1)}`}
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     height: 36,
     backgroundColor: colors.border,
   },
-  metaCard: { marginTop: spacing.lg, backgroundColor: colors.surface },
+  metaCard: { marginTop: spacing.lg },
   metaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

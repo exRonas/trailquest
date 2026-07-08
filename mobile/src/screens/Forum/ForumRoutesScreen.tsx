@@ -63,7 +63,7 @@ export function ForumRoutesScreen({
 
   return (
     <FlatList
-      style={styles.list}
+      style={[styles.list, { backgroundColor: theme.background }]}
       data={sorted}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.content}

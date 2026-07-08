@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, Modal, Pressable, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Button } from './ui';
-import { colors, radius, spacing } from '../theme';
+import { colors, radius, spacing, useThemeColors } from '../theme';
 import { checkpointIcon } from '../theme/icons';
 import { labelForCheckpointType } from '../utils/format';
 import { usePickLocalized } from '../i18n';
@@ -27,6 +27,7 @@ export function CheckpointModal({
   onClose,
 }: CheckpointModalProps): React.ReactElement | null {
   const pickLocalized = usePickLocalized();
+  const theme = useThemeColors();
   if (!checkpoint) return null;
   const c = colors.checkpoint[checkpoint.type];
 
@@ -39,9 +40,9 @@ export function CheckpointModal({
       statusBarTranslucent
     >
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.card} onPress={(e) => e.stopPropagation()}>
+        <Pressable style={[styles.card, { backgroundColor: theme.surface }]} onPress={(e) => e.stopPropagation()}>
           <View style={[styles.banner, { backgroundColor: c.main }]}>
-            <View style={styles.bannerIcon}>
+            <View style={[styles.bannerIcon, { backgroundColor: theme.surface }]}>
               <Icon name={checkpointIcon[checkpoint.type]} size={26} color={c.main} />
             </View>
             <View style={styles.bannerText}>
@@ -56,7 +57,7 @@ export function CheckpointModal({
 
           <View style={styles.body}>
             {checkpoint.mediaUrl ? (
-              <Image source={{ uri: checkpoint.mediaUrl }} style={styles.media} />
+              <Image source={{ uri: checkpoint.mediaUrl }} style={[styles.media, { backgroundColor: theme.surfaceAlt }]} />
             ) : null}
             <AppText variant="body" color={colors.text}>
               {pickLocalized(checkpoint.description)}

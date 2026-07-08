@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Card, Loader } from '../../components/ui';
 import { StatTile } from '../../components/StatTile';
 import { TrackMap } from '../../components/map/TrackMap';
-import { colors, shadow, spacing } from '../../theme';
+import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { formatClock, formatDateTime, formatDistanceKm } from '../../utils/format';
 import { usePublicProfile } from '../../api/hooks/useUsers';
 import { useT, usePickLocalized } from '../../i18n';
@@ -15,6 +15,7 @@ export function PublicActivityDetailScreen({
   navigation,
 }: ForumScreenProps<'PublicActivityDetail'>): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const pickLocalized = usePickLocalized();
   const { userId, progressId } = route.params;
   const { data } = usePublicProfile(userId);
@@ -33,7 +34,7 @@ export function PublicActivityDetailScreen({
 
   return (
     <ScrollView
-      style={styles.fill}
+      style={[styles.fill, { backgroundColor: theme.background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
@@ -50,19 +51,19 @@ export function PublicActivityDetailScreen({
       </AppText>
       <TrackMap track={session.pathLog ?? []} height={240} interactive />
 
-      <View style={styles.statsCard}>
+      <View style={[styles.statsCard, { backgroundColor: theme.surface }]}>
         <StatTile
           icon="map-marker-distance"
           value={formatDistanceKm(session.totalDistanceKm)}
           label={t('summary.distance')}
         />
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
         <StatTile
           icon="timer-outline"
           value={formatClock(session.movingSeconds)}
           label={t('summary.time')}
         />
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
         <StatTile
           icon="speedometer"
           value={`${avgSpeed.toFixed(1)}`}
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
     height: 36,
     backgroundColor: colors.border,
   },
-  metaCard: { marginTop: spacing.lg, backgroundColor: colors.surface },
+  metaCard: { marginTop: spacing.lg },
   metaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

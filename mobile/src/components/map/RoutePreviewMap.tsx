@@ -80,14 +80,14 @@ export function RoutePreviewMap({
 
   if (!hasMapboxToken) {
     return (
-      <View style={[styles.wrap, { height }]}>
+      <View style={[styles.wrap, { height, backgroundColor: theme.surfaceAlt }]}>
         <MapPlaceholder />
       </View>
     );
   }
 
   return (
-    <View style={[styles.wrap, { height }]}>
+    <View style={[styles.wrap, { height, backgroundColor: theme.surfaceAlt }]}>
       <Mapbox.MapView
         style={styles.map}
         styleURL={mapStyleUrl}

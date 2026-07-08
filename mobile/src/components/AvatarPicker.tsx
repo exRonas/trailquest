@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Button } from './ui';
-import { colors, shadow, spacing } from '../theme';
+import { colors, shadow, spacing, useThemeColors } from '../theme';
 import { AVATAR_COLORS, AVATAR_ICONS, makeAvatarId, parseAvatarId } from './avatars';
 import { useT } from '../i18n';
 
@@ -25,6 +25,7 @@ export function AvatarPicker({
   onSave,
 }: AvatarPickerProps): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const [icon, setIcon] = useState<string>(AVATAR_ICONS[0]);
   const [colorIndex, setColorIndex] = useState(0);
 
@@ -43,8 +44,8 @@ export function AvatarPicker({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={[StyleSheet.absoluteFill, styles.backdrop]} onPress={onClose} />
-      <View style={styles.sheet}>
-        <View style={styles.grabber} />
+      <View style={[styles.sheet, { backgroundColor: theme.background }]}>
+        <View style={[styles.grabber, { backgroundColor: theme.border }]} />
         <AppText variant="subheading" style={styles.title}>
           {t('avatar.title')}
         </AppText>
@@ -64,7 +65,7 @@ export function AvatarPicker({
               style={[
                 styles.colorDot,
                 { backgroundColor: c.fg },
-                i === colorIndex ? styles.colorDotSelected : null,
+                i === colorIndex ? { borderColor: theme.text, transform: [{ scale: 1.15 }] } : null,
               ]}
             />
           ))}

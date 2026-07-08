@@ -33,7 +33,7 @@ export function CountriesScreen({
 
   return (
     <FlatList
-      style={styles.fill}
+      style={[styles.fill, { backgroundColor: theme.background }]}
       data={data ?? []}
       keyExtractor={(item) => item.country}
       contentContainerStyle={styles.content}

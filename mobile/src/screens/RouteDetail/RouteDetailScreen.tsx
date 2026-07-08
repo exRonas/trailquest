@@ -108,7 +108,7 @@ export function RouteDetailScreen({
   }
   if (!data) {
     return (
-      <View style={styles.fill}>
+      <View style={[styles.fill, { backgroundColor: theme.background }]}>
         <BackButton top={insets.top} onPress={() => navigation.goBack()} />
         <ErrorState
           message={getApiErrorMessage(error, 'Could not load this route.')}
@@ -121,7 +121,7 @@ export function RouteDetailScreen({
   const showImage = !!data.coverImageUrl && !imageFailed;
 
   return (
-    <View style={styles.fill}>
+    <View style={[styles.fill, { backgroundColor: theme.background }]}>
       <ScrollView
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
@@ -153,7 +153,7 @@ export function RouteDetailScreen({
         <BackButton top={insets.top} onPress={() => navigation.goBack()} />
 
         {/* Body */}
-        <View style={styles.body}>
+        <View style={[styles.body, { backgroundColor: theme.background }]}>
           <AppText variant="title">{pickLocalized(data.title)}</AppText>
           <View style={styles.regionRow}>
             <Icon name="map-marker-outline" size={16} color={colors.textMuted} />
@@ -179,19 +179,19 @@ export function RouteDetailScreen({
             </View>
           ) : null}
 
-          <View style={styles.statsCard}>
+          <View style={[styles.statsCard, { backgroundColor: theme.surface }]}>
             <StatTile
               icon="map-marker-distance"
               value={formatDistanceKm(data.distanceKm)}
               label={t('route.distance')}
             />
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
             <StatTile
               icon="clock-outline"
               value={formatDuration(data.estimatedMinutes, language)}
               label={t('route.estTime')}
             />
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
             <StatTile
               icon="flag-variant-outline"
               value={`${data.checkpoints.length}`}
@@ -271,7 +271,7 @@ export function RouteDetailScreen({
       </ScrollView>
 
       {/* Sticky start bar */}
-      <View style={[styles.startBar, { paddingBottom: insets.bottom + spacing.md }]}>
+      <View style={[styles.startBar, { paddingBottom: insets.bottom + spacing.md, backgroundColor: theme.surface, borderTopColor: theme.border }]}>
         <Button
           label={t('route.start')}
           icon="navigation-variant"

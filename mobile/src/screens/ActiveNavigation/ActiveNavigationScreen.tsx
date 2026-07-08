@@ -175,7 +175,7 @@ function NavigationActive({
 
   if (engine.status === 'denied') {
     return (
-      <View style={styles.fill}>
+      <View style={[styles.fill, { backgroundColor: theme.background }]}>
         <EmptyState
           icon="map-marker-off-outline"
           title={t('nav.deniedTitle')}
@@ -201,7 +201,7 @@ function NavigationActive({
   }
 
   return (
-    <View style={styles.fill}>
+    <View style={[styles.fill, { backgroundColor: theme.background }]}>
       {hasMapboxToken ? (
         <Mapbox.MapView
           style={styles.map}
@@ -279,9 +279,9 @@ function NavigationActive({
       )}
 
       {/* Top stats HUD */}
-      <View style={[styles.hud, { top: insets.top + spacing.sm }]}>
+      <View style={[styles.hud, { top: insets.top + spacing.sm, backgroundColor: theme.surface }]}>
         {engine.isOffline ? (
-          <View style={styles.offlinePill}>
+          <View style={[styles.offlinePill, { backgroundColor: theme.textMuted }]}>
             <Icon name="cloud-off-outline" size={13} color={colors.textInverse} />
             <AppText variant="label" color={colors.textInverse} style={styles.offlineText}>
               {t('nav.offline')}
@@ -327,7 +327,7 @@ function NavigationActive({
         <IconButton name="close" onPress={onExit} />
       </View>
 
-      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + spacing.md }]}>
+      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + spacing.md, backgroundColor: theme.surface, borderTopColor: theme.border }]}>
         <View style={styles.bottomRow}>
           <View style={styles.bottomBtn}>
             <Button

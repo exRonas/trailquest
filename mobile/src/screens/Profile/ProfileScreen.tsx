@@ -98,17 +98,17 @@ export function ProfileScreen({
       <Card style={styles.profileCard}>
         <Pressable onPress={() => setPickerOpen(true)} hitSlop={8}>
           <Avatar name={user?.name ?? 'You'} avatar={user?.avatar} size={64} />
-          <View style={[styles.editBadge, { backgroundColor: theme.primary }]}>
-            <Icon name="pencil" size={12} color={colors.textInverse} />
+          <View style={[styles.editBadge, { backgroundColor: theme.primary, borderColor: theme.surface }]}>
+            <Icon name="pencil" size={12} color={theme.textInverse} />
           </View>
         </Pressable>
         <View style={styles.profileText}>
           <AppText variant="heading">{user?.name ?? 'Hiker'}</AppText>
-          <AppText variant="callout" color={colors.textSecondary}>
+          <AppText variant="callout" color={theme.textSecondary}>
             {user?.email}
           </AppText>
           {user?.createdAt ? (
-            <AppText variant="caption" color={colors.textMuted} style={styles.since}>
+            <AppText variant="caption" color={theme.textMuted} style={styles.since}>
               {t('profile.memberSince', { date: formatDate(user.createdAt) })}
             </AppText>
           ) : null}
@@ -136,11 +136,11 @@ export function ProfileScreen({
         <Icon name="podium-gold" size={22} color={theme.primary} />
         <View style={styles.leaderboardText}>
           <AppText variant="bodyStrong">{t('leaderboard.title')}</AppText>
-          <AppText variant="caption" color={colors.textSecondary}>
+          <AppText variant="caption" color={theme.textSecondary}>
             {t('leaderboard.subtitle')}
           </AppText>
         </View>
-        <Icon name="chevron-right" size={22} color={colors.textMuted} />
+        <Icon name="chevron-right" size={22} color={theme.textMuted} />
       </Pressable>
 
       <Pressable
@@ -153,29 +153,29 @@ export function ProfileScreen({
         </View>
         {incomingCount > 0 ? (
           <View style={[styles.friendBadge, { backgroundColor: theme.accent }]}>
-            <AppText variant="overline" color={colors.textInverse}>
+            <AppText variant="overline" color={theme.textInverse}>
               {incomingCount}
             </AppText>
           </View>
         ) : null}
-        <Icon name="chevron-right" size={22} color={colors.textMuted} />
+        <Icon name="chevron-right" size={22} color={theme.textMuted} />
       </Pressable>
 
       <PendingSyncBanner />
 
-      <View style={styles.summary}>
+      <View style={[styles.summary, { backgroundColor: theme.surface }]}>
         <StatTile
           icon="trophy-outline"
           value={`${summary.completedCount}`}
           label={t('profile.completed')}
         />
-        <View style={styles.summaryDivider} />
+        <View style={[styles.summaryDivider, { backgroundColor: theme.border }]} />
         <StatTile
           icon="map-marker-distance"
           value={formatDistanceKm(summary.totalKm)}
           label={t('profile.totalDist')}
         />
-        <View style={styles.summaryDivider} />
+        <View style={[styles.summaryDivider, { backgroundColor: theme.border }]} />
         <StatTile
           icon="timer-outline"
           value={formatClock(summary.totalSec)}
@@ -184,7 +184,7 @@ export function ProfileScreen({
       </View>
 
       {/* Language selector */}
-      <AppText variant="overline" color={colors.textMuted} style={styles.langTitle}>
+      <AppText variant="overline" color={theme.textMuted} style={styles.langTitle}>
         {t('profile.language')}
       </AppText>
       <View style={styles.langRow}>
@@ -228,7 +228,7 @@ export function ProfileScreen({
   if (isLoading && !data) return <Loader message={t('profile.loading')} />;
   if (isError && !data) {
     return (
-      <View style={styles.fill}>
+      <View style={[styles.fill, { backgroundColor: theme.background }]}>
         <ErrorState
           message={getApiErrorMessage(error)}
           onRetry={refetch}
@@ -241,7 +241,7 @@ export function ProfileScreen({
   }
 
   return (
-    <View style={styles.fill}>
+    <View style={[styles.fill, { backgroundColor: theme.background }]}>
       {picker}
       <FlatList
         style={styles.fill}
@@ -303,10 +303,10 @@ function LevelRow({
   const maxed = level.xpForNextLevel == null;
 
   return (
-    <Card style={styles.levelCard} elevated={false}>
+    <Card style={[styles.levelCard, { backgroundColor: theme.surface }]} elevated={false}>
       <View style={styles.levelHeader}>
         <View style={[styles.levelBadge, { backgroundColor: theme.primary }]}>
-          <AppText variant="bodyStrong" color={colors.textInverse}>
+          <AppText variant="bodyStrong" color={theme.textInverse}>
             {level.level}
           </AppText>
         </View>
@@ -317,14 +317,14 @@ function LevelRow({
         </View>
         <View style={styles.levelXp}>
           <Icon name="star-four-points" size={14} color={colors.accent} />
-          <AppText variant="caption" color={colors.textSecondary} style={styles.levelXpText}>
+          <AppText variant="caption" color={theme.textSecondary} style={styles.levelXpText}>
             {level.xp} XP
           </AppText>
         </View>
       </View>
       <View style={styles.levelProgressWrap}>
         <ProgressBar value={level.progress} />
-        <AppText variant="caption" color={colors.textMuted} style={styles.levelProgressLabel}>
+        <AppText variant="caption" color={theme.textMuted} style={styles.levelProgressLabel}>
           {maxed
             ? t('rank.maxed')
             : t('rank.xpToNext', {

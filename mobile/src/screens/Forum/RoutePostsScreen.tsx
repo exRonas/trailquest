@@ -74,7 +74,7 @@ export function RoutePostsScreen({
   };
 
   return (
-    <View style={styles.fill}>
+    <View style={[styles.fill, { backgroundColor: theme.background }]}>
       {renderBody()}
       <Pressable
         style={[

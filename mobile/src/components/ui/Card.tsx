@@ -1,11 +1,11 @@
 import React from 'react';
-import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { radius, shadow, spacing, useThemeColors } from '../../theme';
 
 interface CardProps {
   children: React.ReactNode;
   onPress?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   padded?: boolean;
   elevated?: boolean;
 }
@@ -18,7 +18,7 @@ export function Card({
   elevated = true,
 }: CardProps): React.ReactElement {
   const theme = useThemeColors();
-  const cardStyle: ViewStyle[] = [
+  const cardStyle: StyleProp<ViewStyle>[] = [
     styles.card,
     { backgroundColor: theme.surface, borderColor: theme.border },
     padded ? styles.padded : {},

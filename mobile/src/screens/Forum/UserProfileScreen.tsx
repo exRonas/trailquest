@@ -18,6 +18,7 @@ export function UserProfileScreen({
   navigation,
 }: ForumScreenProps<'UserProfile'>): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const { userId, userName } = route.params;
   const { data, isLoading, isError, error, refetch, isRefetching } =
     usePublicProfile(userId);
@@ -45,19 +46,19 @@ export function UserProfileScreen({
 
       <FriendButton userId={userId} userName={data.user.name} />
 
-      <View style={styles.summary}>
+      <View style={[styles.summary, { backgroundColor: theme.surface }]}>
         <StatTile
           icon="trophy-outline"
           value={`${data.stats.completedCount}`}
           label={t('userProfile.completed')}
         />
-        <View style={styles.summaryDivider} />
+        <View style={[styles.summaryDivider, { backgroundColor: theme.border }]} />
         <StatTile
           icon="map-marker-distance"
           value={formatDistanceKm(data.stats.totalDistanceKm)}
           label={t('userProfile.totalDist')}
         />
-        <View style={styles.summaryDivider} />
+        <View style={[styles.summaryDivider, { backgroundColor: theme.border }]} />
         <StatTile
           icon="timer-outline"
           value={formatClock(data.stats.movingSeconds)}
@@ -73,7 +74,7 @@ export function UserProfileScreen({
 
   return (
     <FlatList
-      style={styles.fill}
+      style={[styles.fill, { backgroundColor: theme.background }]}
       data={data.activities}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.content}
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   historyTitle: { marginTop: spacing.xl, marginBottom: spacing.md },
-  row: { marginBottom: spacing.md, backgroundColor: colors.surface },
+  row: { marginBottom: spacing.md },
   rowRegion: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs },
   rowRegionText: { marginLeft: 4 },
   rowStats: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.md },

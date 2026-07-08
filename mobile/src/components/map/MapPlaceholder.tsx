@@ -12,7 +12,7 @@ import { colors, spacing, useThemeColors } from '../../theme';
 export function MapPlaceholder(): React.ReactElement {
   const theme = useThemeColors();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.surfaceAlt }]}>
       <Icon name="map-outline" size={48} color={theme.primary} />
       <AppText variant="subheading" center style={styles.title}>
         Map unavailable

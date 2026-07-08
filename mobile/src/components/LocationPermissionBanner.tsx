@@ -78,7 +78,7 @@ export function LocationPermissionBanner({
         { top: insets.top + spacing.sm, transform: [{ translateY }] },
       ]}
     >
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: theme.surface }]}>
         <Icon name="crosshairs-gps" size={22} color={theme.primary} />
         <AppText variant="callout" style={styles.text}>
           {t('explore.locationPromptMessage')}
