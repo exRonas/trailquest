@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Button, Card, Chip, TextField } from '../../components/ui';
 import { spacing, useThemeColors, useThemeStore, THEME_MODES } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
@@ -43,6 +43,10 @@ export function SettingsScreen({
     const err = validateName(name, t);
     setNameError(err);
     if (err) return;
+    // Close the keyboard before the success Alert/back navigation — leaving
+    // it open while the screen pops causes RN's touch responder to get
+    // stuck, freezing every button on the screen underneath until reload.
+    Keyboard.dismiss();
     updateName.mutate(name.trim(), {
       onSuccess: () => Alert.alert(t('settings.nameSaved')),
       onError: (e) =>
@@ -73,6 +77,7 @@ export function SettingsScreen({
     });
     if (currentErr || nextErr || confirmErr) return;
 
+    Keyboard.dismiss();
     changePassword.mutate(
       { currentPassword, newPassword },
       {

@@ -42,7 +42,11 @@ export function MainTabs(): React.ReactElement {
       <Tab.Screen
         name="ExploreTab"
         component={ExploreStack}
-        options={{ title: t('tab.explore') }}
+        // The map-heavy Explore tab holds a live Mapbox GL surface; without
+        // this it stays mounted (and the map alive) in the background after
+        // switching tabs, which was driving the app into constant
+        // critical-memory GC and freezing touches elsewhere in the app.
+        options={{ title: t('tab.explore'), freezeOnBlur: true }}
       />
       <Tab.Screen
         name="ForumTab"

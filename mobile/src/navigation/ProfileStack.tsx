@@ -46,7 +46,13 @@ export function ProfileStack(): React.ReactElement {
       <Stack.Screen
         name="Settings"
         component={SettingsScreen}
-        options={{ title: translate(language, 'settings.title') }}
+        // animation: 'none' works around a known native-stack + Android bug
+        // (react-navigation#10096, #11521): popping this screen while a
+        // TextInput is still focused/keyboard open can leave the touch
+        // responder permanently stuck on the screen underneath, requiring a
+        // full app reload to recover. Settings always has a focused field
+        // right before Save → back, so it hits this every time.
+        options={{ title: translate(language, 'settings.title'), animation: 'none' }}
       />
       <Stack.Screen
         name="Friends"
