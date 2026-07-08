@@ -20,9 +20,9 @@ import { useUpdateAvailable } from '../api/hooks/useAppVersion';
 export function UpdateBanner(): React.ReactElement | null {
   const t = useT();
   const theme = useThemeColors();
-  const { data, dismissed, dismiss } = useUpdateAvailable();
+  const { data, available, dismissed, dismiss } = useUpdateAvailable();
 
-  if (!data || dismissed) return null;
+  if (!data || !available || dismissed) return null;
 
   return (
     <Pressable
