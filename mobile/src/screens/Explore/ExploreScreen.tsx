@@ -10,7 +10,7 @@ import { FilterBar } from '../../components/explore/FilterBar';
 import { MapPlaceholder } from '../../components/map/MapPlaceholder';
 import { LocationPermissionBanner } from '../../components/LocationPermissionBanner';
 import { colors, shadow, spacing, useThemeColors } from '../../theme';
-import { hasMapboxToken, mapStyleUrl, DEFAULT_CAMERA } from '../../services/mapbox';
+import { hasMapboxToken, useMapStyleUrl, DEFAULT_CAMERA } from '../../services/mapbox';
 import { getCurrentPosition } from '../../services/geolocation';
 import { haversineMeters } from '../../utils/geo';
 import { useRoutes } from '../../api/hooks/useRoutes';
@@ -49,6 +49,7 @@ export function ExploreScreen({
   const insets = useSafeAreaInsets();
   const t = useT();
   const theme = useThemeColors();
+  const mapStyleUrl = useMapStyleUrl();
   const language = useLocaleStore((s) => s.language);
   const [filters, setFilters] = useState<RouteFilters>({});
   const { data: routes, isLoading, isError, error, refetch, isFetching } =

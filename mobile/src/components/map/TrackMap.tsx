@@ -4,7 +4,7 @@ import Mapbox from '@rnmapbox/maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from '../ui';
 import { colors, radius, spacing, useThemeColors } from '../../theme';
-import { hasMapboxToken, mapStyleUrl } from '../../services/mapbox';
+import { hasMapboxToken, useMapStyleUrl } from '../../services/mapbox';
 import { useT } from '../../i18n';
 import { MapPlaceholder } from './MapPlaceholder';
 
@@ -33,6 +33,7 @@ export function TrackMap({
 }: TrackMapProps): React.ReactElement {
   const t = useT();
   const theme = useThemeColors();
+  const mapStyleUrl = useMapStyleUrl();
   const cameraRef = useRef<Mapbox.Camera>(null);
   const [mapReady, setMapReady] = useState(false);
   const onMapReady = useCallback(() => setMapReady(true), []);

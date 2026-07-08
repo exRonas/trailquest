@@ -18,7 +18,7 @@ import { RunSummaryOverlay } from '../../components/RunSummaryOverlay';
 import { ScanResultCard } from '../../components/ScanResultCard';
 import { QRScannerModal } from '../../components/QRScannerModal';
 import { colors, shadow, spacing, useThemeColors } from '../../theme';
-import { hasMapboxToken, mapStyleUrl } from '../../services/mapbox';
+import { hasMapboxToken, useMapStyleUrl } from '../../services/mapbox';
 import { MapPlaceholder } from '../../components/map/MapPlaceholder';
 import {
   formatClock,
@@ -85,6 +85,7 @@ function NavigationActive({
   const qc = useQueryClient();
   const t = useT();
   const theme = useThemeColors();
+  const mapStyleUrl = useMapStyleUrl();
   const pickLocalized = usePickLocalized();
   const language = useLocaleStore((s) => s.language);
   const [modal, setModal] = useState<Modal>(null);

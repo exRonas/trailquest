@@ -1,5 +1,6 @@
 import Mapbox from '@rnmapbox/maps';
 import { config, hasMapboxToken } from '../config/env';
+import { useIsDark } from '../theme/useThemeColors';
 
 /**
  * Initialise the Mapbox SDK once at app start. If no public token is configured
@@ -19,6 +20,17 @@ export function initMapbox(): void {
 
 export { hasMapboxToken };
 export const mapStyleUrl = config.mapboxStyleUrl;
+/** Dark-theme counterpart, used instead of `mapStyleUrl` when the app is in
+ *  dark mode — Mapbox's own outdoors style stays light regardless of app theme. */
+export const darkMapStyleUrl = 'mapbox://styles/mapbox/dark-v11';
+
+/** The map style to use for the current theme (light: configured outdoors
+ *  style; dark: Mapbox's dark style). Use this instead of `mapStyleUrl`
+ *  directly on any screen with a MapView. */
+export function useMapStyleUrl(): string {
+  const isDark = useIsDark();
+  return isDark ? darkMapStyleUrl : mapStyleUrl;
+}
 
 /** Sensible default camera (centre of contiguous US) before routes load. */
 export const DEFAULT_CAMERA = {
