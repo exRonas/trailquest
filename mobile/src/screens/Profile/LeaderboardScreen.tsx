@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
-import { AppText, EmptyState, Loader } from '../../components/ui';
+import { AppText, Chip, EmptyState, Loader } from '../../components/ui';
 import { Avatar } from '../../components/forum/Avatar';
-import { colors, spacing, useThemeColors } from '../../theme';
+import { spacing, useThemeColors } from '../../theme';
 import { useLeaderboard } from '../../api/hooks/useProgress';
+import { LeaderboardPeriod } from '../../api/progress.api';
 import { useT, usePickLocalized } from '../../i18n';
 import { LeaderboardEntry } from '../../types/api';
 import { ProfileScreenProps } from '../../types/navigation';
@@ -12,31 +13,36 @@ export function LeaderboardScreen({
   navigation,
 }: ProfileScreenProps<'Leaderboard'>): React.ReactElement {
   const t = useT();
-  const { data, isLoading, refetch, isRefetching } = useLeaderboard();
+  const theme = useThemeColors();
+  const [period, setPeriod] = useState<LeaderboardPeriod>('all');
+  const { data, isLoading, refetch, isRefetching } = useLeaderboard(period);
 
   useEffect(() => {
     navigation.setOptions({ title: t('leaderboard.title') });
   }, [navigation, t]);
 
-  if (isLoading && !data) return <Loader message={t('leaderboard.title')} />;
-
   const top = data?.top ?? [];
   const me = data?.me ?? null;
 
-  if (top.length === 0) {
-    return (
-      <View style={styles.fill}>
-        <EmptyState
-          icon="podium"
-          title={t('leaderboard.title')}
-          message={t('leaderboard.empty')}
-        />
-      </View>
-    );
-  }
+  const periodTabs = (
+    <View style={styles.periodRow}>
+      <Chip
+        label={t('leaderboard.periodAll')}
+        icon="trophy-outline"
+        selected={period === 'all'}
+        onPress={() => setPeriod('all')}
+      />
+      <Chip
+        label={t('leaderboard.periodMonth')}
+        icon="calendar-month-outline"
+        selected={period === 'month'}
+        onPress={() => setPeriod('month')}
+      />
+    </View>
+  );
 
   return (
-    <View style={styles.fill}>
+    <View style={[styles.fill, { backgroundColor: theme.background }]}>
       <FlatList
         style={styles.fill}
         data={top}
@@ -45,15 +51,27 @@ export function LeaderboardScreen({
         onRefresh={refetch}
         refreshing={isRefetching}
         ListHeaderComponent={
-          <AppText variant="callout" color={colors.textSecondary} style={styles.subtitle}>
-            {t('leaderboard.subtitle')}
-          </AppText>
+          <View>
+            {periodTabs}
+            {isLoading && !data ? (
+              <Loader message={t('leaderboard.title')} />
+            ) : null}
+          </View>
         }
         renderItem={({ item }) => <Row entry={item} youLabel={t('leaderboard.you')} />}
+        ListEmptyComponent={
+          !isLoading ? (
+            <EmptyState
+              icon="podium"
+              title={t('leaderboard.title')}
+              message={t('leaderboard.empty')}
+            />
+          ) : null
+        }
         ListFooterComponent={
           me ? (
-            <View style={styles.meFooter}>
-              <AppText variant="overline" color={colors.textMuted} style={styles.meLabel}>
+            <View style={[styles.meFooter, { borderTopColor: theme.border }]}>
+              <AppText variant="overline" color={theme.textMuted} style={styles.meLabel}>
                 {t('leaderboard.yourPosition')}
               </AppText>
               <Row entry={me} youLabel={t('leaderboard.you')} />
@@ -89,7 +107,7 @@ function Row({
         {medal ? (
           <AppText variant="subheading">{medal}</AppText>
         ) : (
-          <AppText variant="bodyStrong" color={colors.textSecondary}>
+          <AppText variant="bodyStrong" color={theme.textSecondary}>
             {entry.rank}
           </AppText>
         )}
@@ -99,7 +117,7 @@ function Row({
         <AppText variant="bodyStrong" numberOfLines={1}>
           {entry.isMe ? youLabel : entry.user.name}
         </AppText>
-        <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
+        <AppText variant="caption" color={theme.textSecondary} numberOfLines={1}>
           {pickLocalized(entry.rankName)}
         </AppText>
       </View>
@@ -107,7 +125,7 @@ function Row({
         <AppText variant="bodyStrong" color={theme.primary}>
           {entry.xp}
         </AppText>
-        <AppText variant="overline" color={colors.textMuted}>
+        <AppText variant="overline" color={theme.textMuted}>
           XP
         </AppText>
       </View>
@@ -116,9 +134,9 @@ function Row({
 }
 
 const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: colors.background },
+  fill: { flex: 1 },
   content: { padding: spacing.lg, paddingBottom: spacing.huge },
-  subtitle: { marginBottom: spacing.md },
+  periodRow: { flexDirection: 'row', marginBottom: spacing.md },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -133,7 +151,6 @@ const styles = StyleSheet.create({
   meFooter: {
     marginTop: spacing.lg,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
     paddingTop: spacing.md,
   },
   meLabel: { marginBottom: spacing.xs },

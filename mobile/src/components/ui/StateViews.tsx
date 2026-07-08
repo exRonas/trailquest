@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
 import { Button } from './Button';
-import { colors, spacing, useThemeColors } from '../../theme';
+import { spacing, useThemeColors } from '../../theme';
 
 /** Centred full-area loading spinner. */
 export function Loader({ message }: { message?: string }): React.ReactElement {
@@ -14,7 +14,7 @@ export function Loader({ message }: { message?: string }): React.ReactElement {
       {message ? (
         <AppText
           variant="callout"
-          color={colors.textSecondary}
+          color={theme.textSecondary}
           style={styles.spaced}
           center
         >
@@ -52,7 +52,7 @@ export function EmptyState({
       {message ? (
         <AppText
           variant="callout"
-          color={colors.textSecondary}
+          color={theme.textSecondary}
           center
           style={styles.message}
         >
@@ -83,17 +83,18 @@ export function ErrorState({
   message,
   onRetry,
 }: ErrorStateProps): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <View style={styles.center}>
-      <View style={[styles.iconCircle, styles.errorCircle]}>
-        <Icon name="alert-circle-outline" size={34} color={colors.danger} />
+      <View style={[styles.iconCircle, { backgroundColor: theme.dangerSoft }]}>
+        <Icon name="alert-circle-outline" size={34} color={theme.danger} />
       </View>
       <AppText variant="heading" center style={styles.spaced}>
         {title}
       </AppText>
       <AppText
         variant="callout"
-        color={colors.textSecondary}
+        color={theme.textSecondary}
         center
         style={styles.message}
       >
@@ -127,7 +128,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  errorCircle: { backgroundColor: colors.dangerSoft },
   spaced: { marginTop: spacing.lg },
   message: { marginTop: spacing.sm, maxWidth: 300 },
   action: { marginTop: spacing.xl },

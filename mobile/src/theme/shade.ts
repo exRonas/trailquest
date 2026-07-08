@@ -41,13 +41,19 @@ export interface BrandShades {
   primaryTint: string;
 }
 
-/** Derive the same 5-step shade ramp the static pine palette uses, from any base hue. */
-export function shadeSet(base: string): BrandShades {
+/** Dark-theme surface the soft/tint shades blend toward instead of white, so a
+ *  brand accent's soft background stays dark rather than washing out. */
+const DARK_SURFACE: [number, number, number] = [21, 28, 24];
+
+/** Derive the same 5-step shade ramp the static pine palette uses, from any
+ *  base hue. In dark mode the soft/tint steps blend toward the dark surface
+ *  instead of white so pills/backgrounds read correctly. */
+export function shadeSet(base: string, dark = false): BrandShades {
   return {
     primary: base,
     primaryDark: darken(base, 0.18),
-    primaryEmphasis: darken(base, 0.42),
-    primarySoft: lighten(base, 0.82),
-    primaryTint: lighten(base, 0.92),
+    primaryEmphasis: dark ? lighten(base, 0.3) : darken(base, 0.42),
+    primarySoft: dark ? mix(base, DARK_SURFACE, 0.72) : lighten(base, 0.82),
+    primaryTint: dark ? mix(base, DARK_SURFACE, 0.85) : lighten(base, 0.92),
   };
 }

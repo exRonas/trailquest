@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Alert, ScrollView, Share, StyleSheet, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   AppText,
@@ -10,11 +10,14 @@ import {
 } from '../../components/ui';
 import { StatTile } from '../../components/StatTile';
 import { TrackMap } from '../../components/map/TrackMap';
+import { ShareableStatsCard } from '../../components/ShareableStatsCard';
+import { shareViewAsImage } from '../../services/shareCard';
 import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import {
   formatClock,
   formatDateTime,
   formatDistanceKm,
+  formatSpeed,
 } from '../../utils/format';
 import { useMyProgress } from '../../api/hooks/useProgress';
 import {
@@ -34,6 +37,7 @@ export function ActivityDetailScreen({
   const { progressId } = route.params;
   const { data } = useMyProgress();
   const session = (data ?? []).find((s) => s.id === progressId);
+  const shareRef = useRef<View>(null);
 
   const setVisibility = useSetProgressVisibility();
   const deleteProgress = useDeleteProgress();
@@ -49,14 +53,22 @@ export function ActivityDetailScreen({
       ? session.totalDistanceKm / (session.movingSeconds / 3600)
       : 0;
 
+  const routeTitle = pickLocalized(session.route.title);
+  const shareStats = [
+    { icon: 'map-marker-distance', value: formatDistanceKm(session.totalDistanceKm), label: t('summary.distance') },
+    { icon: 'timer-outline', value: formatClock(session.movingSeconds), label: t('summary.time') },
+    { icon: 'speedometer', value: formatSpeed(avgSpeed), label: t('summary.avgSpeed') },
+  ];
+
   const onShare = () => {
-    void Share.share({
-      message: t('summary.shareMessage', {
-        title: pickLocalized(session.route.title),
+    void shareViewAsImage(
+      shareRef,
+      t('summary.shareMessage', {
+        title: routeTitle,
         distance: formatDistanceKm(session.totalDistanceKm),
         time: formatClock(session.movingSeconds),
       }),
-    });
+    );
   };
 
   const onToggleHide = () => {
@@ -178,6 +190,11 @@ export function ActivityDetailScreen({
         loading={deleteProgress.isPending}
         style={styles.action}
       />
+
+      {/* Off-screen card captured for image sharing. */}
+      <View style={styles.offscreen} pointerEvents="none">
+        <ShareableStatsCard ref={shareRef} title={routeTitle} stats={shareStats} />
+      </View>
     </ScrollView>
   );
 }
@@ -185,6 +202,7 @@ export function ActivityDetailScreen({
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.xl, paddingBottom: spacing.huge },
+  offscreen: { position: 'absolute', left: -9999, top: 0 },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',

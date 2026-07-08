@@ -8,6 +8,7 @@ import { AllActivitiesScreen } from '../screens/Profile/AllActivitiesScreen';
 import { LeaderboardScreen } from '../screens/Profile/LeaderboardScreen';
 import { AchievementsScreen } from '../screens/Profile/AchievementsScreen';
 import { SettingsScreen } from '../screens/Profile/SettingsScreen';
+import { FriendsScreen } from '../screens/Profile/FriendsScreen';
 import { translate, useLocaleStore } from '../i18n';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -46,6 +47,11 @@ export function ProfileStack(): React.ReactElement {
         name="Settings"
         component={SettingsScreen}
         options={{ title: translate(language, 'settings.title') }}
+      />
+      <Stack.Screen
+        name="Friends"
+        component={FriendsScreen}
+        options={{ title: translate(language, 'friends.title') }}
       />
     </Stack.Navigator>
   );

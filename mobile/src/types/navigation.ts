@@ -37,6 +37,7 @@ export type ProfileStackParamList = {
   Leaderboard: undefined;
   Achievements: undefined;
   Settings: undefined;
+  Friends: undefined;
 };
 
 export type MainTabParamList = {
@@ -62,4 +63,7 @@ export type ForumScreenProps<T extends keyof ForumStackParamList> =
   >;
 
 export type ProfileScreenProps<T extends keyof ProfileStackParamList> =
-  NativeStackScreenProps<ProfileStackParamList, T>;
+  CompositeScreenProps<
+    NativeStackScreenProps<ProfileStackParamList, T>,
+    BottomTabScreenProps<MainTabParamList>
+  >;

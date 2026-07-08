@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
-import { AppText, Button, Card, TextField } from '../../components/ui';
-import { colors, spacing } from '../../theme';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { AppText, Button, Card, Chip, TextField } from '../../components/ui';
+import { spacing, useThemeColors, useThemeStore, THEME_MODES } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
 import { useUpdateName, useChangePassword } from '../../api/hooks/useUsers';
 import { getApiErrorMessage } from '../../api/client';
@@ -9,11 +9,26 @@ import { validateName, validatePassword } from '../../utils/validation';
 import { useT } from '../../i18n';
 import { ProfileScreenProps } from '../../types/navigation';
 
+const THEME_LABEL_KEY: Record<string, string> = {
+  system: 'settings.themeSystem',
+  light: 'settings.themeLight',
+  dark: 'settings.themeDark',
+};
+
+const THEME_ICON: Record<string, string> = {
+  system: 'theme-light-dark',
+  light: 'white-balance-sunny',
+  dark: 'moon-waning-crescent',
+};
+
 export function SettingsScreen({
   navigation,
 }: ProfileScreenProps<'Settings'>): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const user = useAuthStore((s) => s.user);
+  const themeMode = useThemeStore((s) => s.mode);
+  const setThemeMode = useThemeStore((s) => s.setMode);
   const updateName = useUpdateName();
   const changePassword = useChangePassword();
 
@@ -77,11 +92,31 @@ export function SettingsScreen({
 
   return (
     <ScrollView
-      style={styles.fill}
+      style={[styles.fill, { backgroundColor: theme.background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <AppText variant="overline" color={colors.textMuted} style={styles.sectionTitle}>
+      <AppText variant="overline" color={theme.textMuted} style={styles.sectionTitle}>
+        {t('settings.appearance')}
+      </AppText>
+      <Card style={styles.card}>
+        <AppText variant="label" color={theme.textSecondary} style={styles.fieldLabel}>
+          {t('settings.theme')}
+        </AppText>
+        <View style={styles.themeRow}>
+          {THEME_MODES.map((m) => (
+            <Chip
+              key={m}
+              label={t(THEME_LABEL_KEY[m])}
+              icon={THEME_ICON[m]}
+              selected={themeMode === m}
+              onPress={() => setThemeMode(m)}
+            />
+          ))}
+        </View>
+      </Card>
+
+      <AppText variant="overline" color={theme.textMuted} style={styles.sectionTitle}>
         {t('settings.profileSection')}
       </AppText>
       <Card style={styles.card}>
@@ -101,7 +136,7 @@ export function SettingsScreen({
         />
       </Card>
 
-      <AppText variant="overline" color={colors.textMuted} style={styles.sectionTitle}>
+      <AppText variant="overline" color={theme.textMuted} style={styles.sectionTitle}>
         {t('settings.passwordSection')}
       </AppText>
       <Card style={styles.card}>
@@ -142,8 +177,10 @@ export function SettingsScreen({
 }
 
 const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: colors.background },
+  fill: { flex: 1 },
   content: { padding: spacing.xl, paddingBottom: spacing.huge },
   sectionTitle: { marginBottom: spacing.sm, marginTop: spacing.lg },
   card: { marginBottom: spacing.lg },
+  fieldLabel: { marginBottom: spacing.sm },
+  themeRow: { flexDirection: 'row', flexWrap: 'wrap' },
 });

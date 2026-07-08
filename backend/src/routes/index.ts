@@ -6,6 +6,8 @@ import tipRoutes from './tip.routes';
 import progressRoutes from './progress.routes';
 import forumRoutes from './forum.routes';
 import reviewRoutes from './review.routes';
+import friendRoutes from './friend.routes';
+import adminRoutes from './admin.routes';
 import userRoutes from './user.routes';
 import imageRoutes from './image.routes';
 import { appVersion } from '../config/appVersion';
@@ -27,6 +29,8 @@ router.use('/tips', tipRoutes);
 router.use('/progress', progressRoutes);
 router.use('/posts', forumRoutes);
 router.use('/reviews', reviewRoutes);
+router.use('/friends', friendRoutes);
+router.use('/admin', adminRoutes);
 router.use('/users', userRoutes);
 router.use('/images', imageRoutes);
 

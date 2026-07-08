@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { colors, radius, spacing, useThemeColors, ThemeColors } from '../../theme';
+import { radius, spacing, useThemeColors, ThemeColors } from '../../theme';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
@@ -107,14 +107,14 @@ function getVariantStyle(
 } {
   switch (variant) {
     case 'secondary':
-      return { bg: colors.surface, fg: theme.primary, border: theme.primary };
+      return { bg: theme.surface, fg: theme.primary, border: theme.primary };
     case 'ghost':
       return { bg: 'transparent', fg: theme.primary };
     case 'danger':
-      return { bg: colors.danger, fg: colors.textInverse };
+      return { bg: theme.danger, fg: theme.textInverse };
     case 'primary':
     default:
-      return { bg: theme.primary, fg: colors.textInverse };
+      return { bg: theme.primary, fg: theme.textInverse };
   }
 }
 

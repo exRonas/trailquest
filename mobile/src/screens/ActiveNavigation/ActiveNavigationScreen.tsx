@@ -101,7 +101,7 @@ function NavigationActive({
       setScanResult(result);
       qc.invalidateQueries({ queryKey: queryKeys.myLevels() });
       qc.invalidateQueries({ queryKey: queryKeys.myAchievements() });
-      qc.invalidateQueries({ queryKey: queryKeys.leaderboard() });
+      qc.invalidateQueries({ queryKey: ['leaderboard'] });
     } catch (err) {
       Alert.alert(t('scan.failedTitle'), getApiErrorMessage(err));
     }
@@ -147,7 +147,7 @@ function NavigationActive({
       qc.invalidateQueries({ queryKey: queryKeys.myLevels() });
       qc.invalidateQueries({ queryKey: queryKeys.myLevel() });
       qc.invalidateQueries({ queryKey: queryKeys.myAchievements() });
-      qc.invalidateQueries({ queryKey: queryKeys.leaderboard() });
+      qc.invalidateQueries({ queryKey: ['leaderboard'] });
       setSummary(progress);
     }
   };

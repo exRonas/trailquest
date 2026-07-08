@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   Modal,
   Pressable,
-  Share,
   StyleSheet,
   View,
 } from 'react-native';
@@ -10,6 +9,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Button } from './ui';
 import { StatTile } from './StatTile';
 import { TrackMap } from './map/TrackMap';
+import { ShareableStatsCard } from './ShareableStatsCard';
+import { shareViewAsImage } from '../services/shareCard';
 import { colors, radius, shadow, spacing } from '../theme';
 import {
   formatClock,
@@ -54,18 +55,27 @@ export function RunSummaryOverlay({
   onSave,
 }: RunSummaryOverlayProps): React.ReactElement {
   const t = useT();
+  const shareRef = useRef<View>(null);
   const avgSpeed =
     movingSeconds > 0 ? distanceKm / (movingSeconds / 3600) : 0;
 
   const onShare = () => {
-    void Share.share({
-      message: t('summary.shareMessage', {
+    void shareViewAsImage(
+      shareRef,
+      t('summary.shareMessage', {
         title: routeTitle,
         distance: formatDistanceKm(distanceKm),
         time: formatClock(movingSeconds),
       }),
-    });
+    );
   };
+
+  const shareStats = [
+    { icon: 'map-marker-distance', value: formatDistanceKm(distanceKm), label: t('summary.distance') },
+    { icon: 'timer-outline', value: formatClock(movingSeconds), label: t('summary.time') },
+    { icon: 'speedometer', value: formatSpeed(avgSpeed), label: t('summary.avgSpeed') },
+    { icon: 'flag-variant-outline', value: `${reachedCount}/${totalCheckpoints}`, label: t('summary.checkpoints') },
+  ];
 
   return (
     <Modal
@@ -147,6 +157,11 @@ export function RunSummaryOverlay({
             />
           </View>
         </View>
+
+        {/* Off-screen card captured for image sharing. */}
+        <View style={styles.offscreen} pointerEvents="none">
+          <ShareableStatsCard ref={shareRef} title={routeTitle} stats={shareStats} />
+        </View>
       </View>
     </Modal>
   );
@@ -200,4 +215,5 @@ const styles = StyleSheet.create({
   },
   actions: { marginTop: spacing.xl },
   actionBtn: { marginBottom: spacing.sm },
+  offscreen: { position: 'absolute', left: -9999, top: 0 },
 });

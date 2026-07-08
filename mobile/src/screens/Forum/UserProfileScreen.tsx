@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Card, EmptyState, ErrorState, Loader } from '../../components/ui';
 import { Avatar } from '../../components/forum/Avatar';
 import { StatTile } from '../../components/StatTile';
+import { FriendButton } from '../../components/FriendButton';
 import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { usePublicProfile } from '../../api/hooks/useUsers';
@@ -41,6 +42,8 @@ export function UserProfileScreen({
           </AppText>
         </View>
       </Card>
+
+      <FriendButton userId={userId} userName={data.user.name} />
 
       <View style={styles.summary}>
         <StatTile

@@ -40,10 +40,10 @@ export function useAchievements() {
   });
 }
 
-export function useLeaderboard() {
+export function useLeaderboard(period: 'all' | 'month' = 'all') {
   return useQuery({
-    queryKey: queryKeys.leaderboard(),
-    queryFn: fetchLeaderboard,
+    queryKey: queryKeys.leaderboard(period),
+    queryFn: () => fetchLeaderboard(period),
   });
 }
 
@@ -63,7 +63,7 @@ export function useCompleteRoute() {
       qc.invalidateQueries({ queryKey: queryKeys.myLevels() });
       qc.invalidateQueries({ queryKey: queryKeys.myLevel() });
       qc.invalidateQueries({ queryKey: queryKeys.myAchievements() });
-      qc.invalidateQueries({ queryKey: queryKeys.leaderboard() });
+      qc.invalidateQueries({ queryKey: ['leaderboard'] });
     },
   });
 }

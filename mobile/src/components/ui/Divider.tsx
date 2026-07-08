@@ -1,15 +1,15 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
-import { colors, spacing } from '../../theme';
+import { spacing, useThemeColors } from '../../theme';
 
 export function Divider({ style }: { style?: ViewStyle }): React.ReactElement {
-  return <View style={[styles.divider, style]} />;
+  const theme = useThemeColors();
+  return <View style={[styles.divider, { backgroundColor: theme.border }, style]} />;
 }
 
 const styles = StyleSheet.create({
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.border,
     marginVertical: spacing.md,
   },
 });

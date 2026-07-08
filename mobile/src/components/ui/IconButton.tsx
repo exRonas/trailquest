@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, ViewStyle } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { colors, hitSlop, shadow } from '../../theme';
+import { hitSlop, shadow, useThemeColors } from '../../theme';
 
 interface IconButtonProps {
   name: string;
@@ -18,24 +18,25 @@ export function IconButton({
   name,
   onPress,
   size = 22,
-  color = colors.text,
-  background = colors.surface,
+  color,
+  background,
   elevated = true,
   style,
 }: IconButtonProps): React.ReactElement {
+  const theme = useThemeColors();
   return (
     <Pressable
       onPress={onPress}
       hitSlop={hitSlop}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: background },
+        { backgroundColor: background ?? theme.surface },
         elevated ? shadow.sm : null,
         pressed ? styles.pressed : null,
         style,
       ]}
     >
-      <Icon name={name} size={size} color={color} />
+      <Icon name={name} size={size} color={color ?? theme.text} />
     </Pressable>
   );
 }

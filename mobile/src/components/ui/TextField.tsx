@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { colors, radius, spacing, typography, useThemeColors } from '../../theme';
+import { radius, spacing, typography, useThemeColors } from '../../theme';
 
 interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   label?: string;
@@ -31,15 +31,15 @@ export function TextField({
   const [hidden, setHidden] = useState(secure);
 
   const borderColor = error
-    ? colors.danger
+    ? theme.danger
     : focused
     ? theme.primary
-    : colors.border;
+    : theme.border;
 
   return (
     <View style={styles.wrapper}>
       {label ? (
-        <AppText variant="label" color={colors.textSecondary} style={styles.label}>
+        <AppText variant="label" color={theme.textSecondary} style={styles.label}>
           {label}
         </AppText>
       ) : null}
@@ -47,7 +47,7 @@ export function TextField({
         collapsable={false}
         style={[
           styles.inputRow,
-          { borderColor },
+          { borderColor, backgroundColor: theme.surface },
           focused ? [styles.focusedShadow, { shadowColor: theme.primary }] : null,
         ]}
       >
@@ -55,13 +55,13 @@ export function TextField({
           <Icon
             name={icon}
             size={20}
-            color={focused ? theme.primary : colors.textMuted}
+            color={focused ? theme.primary : theme.textMuted}
             style={styles.leftIcon}
           />
         ) : null}
         <TextInput
-          style={styles.input}
-          placeholderTextColor={colors.textMuted}
+          style={[styles.input, { color: theme.text }]}
+          placeholderTextColor={theme.textMuted}
           secureTextEntry={hidden}
           autoCapitalize="none"
           onFocus={() => setFocused(true)}
@@ -77,13 +77,13 @@ export function TextField({
             <Icon
               name={hidden ? 'eye-outline' : 'eye-off-outline'}
               size={20}
-              color={colors.textMuted}
+              color={theme.textMuted}
             />
           </Pressable>
         ) : null}
       </View>
       {error ? (
-        <AppText variant="caption" color={colors.danger} style={styles.error}>
+        <AppText variant="caption" color={theme.danger} style={styles.error}>
           {error}
         </AppText>
       ) : null}
@@ -97,7 +97,6 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
     borderWidth: 1.5,
     borderRadius: radius.md,
     paddingHorizontal: spacing.lg,
@@ -113,7 +112,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: spacing.md,
     ...typography.body,
-    color: colors.text,
   },
   toggle: { paddingLeft: spacing.sm },
   error: { marginTop: spacing.xs },

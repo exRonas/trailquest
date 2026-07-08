@@ -25,6 +25,7 @@ import {
   useMyProgress,
 } from '../../api/hooks/useProgress';
 import { useUpdateAvatar } from '../../api/hooks/useUsers';
+import { useFriends } from '../../api/hooks/useFriends';
 import { getApiErrorMessage } from '../../api/client';
 import { LANGUAGES, useLocaleStore, useT, usePickLocalized } from '../../i18n';
 import { LevelInfo } from '../../types/api';
@@ -45,6 +46,8 @@ export function ProfileScreen({
   const { data, isLoading, isError, error, refetch, isRefetching } =
     useMyProgress();
   const { data: achievements } = useAchievements();
+  const { data: friendsData } = useFriends();
+  const incomingCount = friendsData?.incoming.length ?? 0;
   const [pickerOpen, setPickerOpen] = useState(false);
   const updateAvatar = useUpdateAvatar();
 
@@ -135,6 +138,24 @@ export function ProfileScreen({
             {t('leaderboard.subtitle')}
           </AppText>
         </View>
+        <Icon name="chevron-right" size={22} color={colors.textMuted} />
+      </Pressable>
+
+      <Pressable
+        style={[styles.leaderboardRow, { backgroundColor: theme.surface }]}
+        onPress={() => navigation.navigate('Friends')}
+      >
+        <Icon name="account-group" size={22} color={theme.primary} />
+        <View style={styles.leaderboardText}>
+          <AppText variant="bodyStrong">{t('friends.title')}</AppText>
+        </View>
+        {incomingCount > 0 ? (
+          <View style={[styles.friendBadge, { backgroundColor: theme.accent }]}>
+            <AppText variant="overline" color={colors.textInverse}>
+              {incomingCount}
+            </AppText>
+          </View>
+        ) : null}
         <Icon name="chevron-right" size={22} color={colors.textMuted} />
       </Pressable>
 
@@ -367,6 +388,15 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   leaderboardText: { flex: 1, marginLeft: spacing.md },
+  friendBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
   levelCard: { marginTop: spacing.lg, backgroundColor: colors.surface },
   levelHeader: { flexDirection: 'row', alignItems: 'center' },
   levelBadge: {

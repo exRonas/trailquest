@@ -63,7 +63,8 @@ export const myAchievements = asyncHandler(
 );
 
 export const leaderboard = asyncHandler(async (req: Request, res: Response) => {
-  const board = await progressService.getLeaderboard(userId(req));
+  const period = req.query.period === 'month' ? 'month' : 'all';
+  const board = await progressService.getLeaderboard(userId(req), period);
   sendData(res, board);
 });
 

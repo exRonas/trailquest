@@ -66,9 +66,14 @@ export async function fetchAchievements(): Promise<Achievement[]> {
   return unwrap(res.data);
 }
 
-export async function fetchLeaderboard(): Promise<LeaderboardResponse> {
+export type LeaderboardPeriod = 'all' | 'month';
+
+export async function fetchLeaderboard(
+  period: LeaderboardPeriod = 'all',
+): Promise<LeaderboardResponse> {
   const res = await api.get<{ data: LeaderboardResponse }>(
     '/progress/leaderboard',
+    { params: { period } },
   );
   return unwrap(res.data);
 }

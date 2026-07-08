@@ -5,6 +5,7 @@ import { RoutesListPage } from './pages/RoutesListPage';
 import { RouteEditorPage } from './pages/RouteEditorPage';
 import { ForumPage } from './pages/ForumPage';
 import { ReviewsPage } from './pages/ReviewsPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 
 function TopBar() {
   const { user, logout } = useAuth();
@@ -39,6 +40,12 @@ function TopBar() {
               style={{ fontWeight: location.pathname === '/reviews' ? 700 : 400 }}
             >
               Reviews
+            </Link>
+            <Link
+              to="/analytics"
+              style={{ fontWeight: location.pathname === '/analytics' ? 700 : 400 }}
+            >
+              Analytics
             </Link>
           </nav>
           <span className="muted">{user.email}</span>
@@ -107,6 +114,14 @@ export function App() {
           element={
             <Protected>
               <ReviewsPage />
+            </Protected>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <Protected>
+              <AnalyticsPage />
             </Protected>
           }
         />

@@ -16,11 +16,14 @@ export const theme = {
 
 export type AppTheme = typeof theme;
 
-export { colors, palette } from './colors';
+export { colors, palette, lightColors, darkColors, applyColorScheme } from './colors';
+export type { ColorScheme, AppColors } from './colors';
 export { typography, fontFamily, fontFamilyMedium } from './typography';
 export { spacing, radius, shadow, hitSlop } from './layout';
-export { useThemeColors } from './useThemeColors';
+export { useThemeColors, useIsDark } from './useThemeColors';
 export type { ThemeColors } from './useThemeColors';
+export { useThemeStore, resolveScheme, THEME_MODES } from './themeStore';
+export type { ThemeMode } from './themeStore';
 export type {
   CheckpointTypeKey,
   TipTypeKey,

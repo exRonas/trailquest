@@ -193,6 +193,29 @@ export interface ForumComment {
   user: ForumAuthor;
 }
 
+/** GET /admin/analytics dashboard payload. */
+export interface AnalyticsData {
+  totals: {
+    users: number;
+    routes: number;
+    completedSessions: number;
+    reviews: number;
+    posts: number;
+    friendships: number;
+  };
+  activity: {
+    newUsers30d: number;
+    activeUsers30d: number;
+  };
+  popularRoutes: { routeId: string; title: LocalizedText; value: number }[];
+  topRatedRoutes: {
+    routeId: string;
+    title: LocalizedText;
+    value: number;
+    count: number;
+  }[];
+}
+
 /** GET /reviews (admin-only, every review across every route) row shape. */
 export interface AdminReview {
   id: string;

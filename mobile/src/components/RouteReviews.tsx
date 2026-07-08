@@ -105,6 +105,7 @@ export function RouteReviews({ routeId }: { routeId: string }): React.ReactEleme
             onPress={onSubmit}
             disabled={rating < 1}
             loading={upsert.isPending}
+            fullWidth={false}
             style={styles.submitBtn}
           />
           {mine ? (
@@ -113,6 +114,8 @@ export function RouteReviews({ routeId }: { routeId: string }): React.ReactEleme
               variant="secondary"
               onPress={onRemove}
               loading={remove.isPending}
+              fullWidth={false}
+              style={styles.removeBtn}
             />
           ) : null}
         </View>
@@ -171,6 +174,7 @@ const styles = StyleSheet.create({
   editorStars: { marginVertical: spacing.md },
   editorActions: { flexDirection: 'row', marginTop: spacing.md },
   submitBtn: { flex: 1, marginRight: spacing.sm },
+  removeBtn: { flex: 1 },
   reviewRow: { flexDirection: 'row', paddingVertical: spacing.md },
   reviewBody: { flex: 1, marginLeft: spacing.md },
   reviewHead: {

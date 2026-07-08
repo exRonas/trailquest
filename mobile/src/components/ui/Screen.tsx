@@ -7,7 +7,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Edge, SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, useThemeColors } from '../../theme';
+import { spacing, useThemeColors } from '../../theme';
 
 interface ScreenProps {
   children: React.ReactNode;
@@ -29,17 +29,18 @@ export function Screen({
   style,
   contentStyle,
   edges = ['top'],
-  backgroundColor = colors.background,
+  backgroundColor,
   refreshing,
   onRefresh,
 }: ScreenProps): React.ReactElement {
   const theme = useThemeColors();
+  const bg = backgroundColor ?? theme.background;
   const inner: ViewStyle = {
     ...(padded ? { padding: spacing.xl } : null),
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor }, style]} edges={edges}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: bg }, style]} edges={edges}>
       {scroll ? (
         <ScrollView
           contentContainerStyle={[inner, contentStyle]}

@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { colors, radius, spacing, useThemeColors } from '../../theme';
+import { radius, spacing, useThemeColors } from '../../theme';
 
 interface ChipProps {
   label: string;
@@ -26,20 +26,20 @@ export function Chip({
         styles.chip,
         selected
           ? { backgroundColor: theme.primary, borderColor: theme.primary }
-          : styles.unselected,
+          : { backgroundColor: theme.surface, borderColor: theme.border },
       ]}
     >
       {icon ? (
         <Icon
           name={icon}
           size={14}
-          color={selected ? colors.textInverse : colors.textSecondary}
+          color={selected ? theme.textInverse : theme.textSecondary}
           style={styles.icon}
         />
       ) : null}
       <AppText
         variant="label"
-        color={selected ? colors.textInverse : colors.textSecondary}
+        color={selected ? theme.textInverse : theme.textSecondary}
       >
         {label}
       </AppText>
@@ -57,10 +57,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     marginRight: spacing.sm,
     marginBottom: spacing.sm,
-  },
-  unselected: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
   },
   icon: { marginRight: 4 },
 });

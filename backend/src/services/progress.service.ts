@@ -333,24 +333,58 @@ interface LeaderboardEntry {
   isMe: boolean;
 }
 
+export type LeaderboardPeriod = 'all' | 'month';
+
 /**
- * Global leaderboard by total XP across all countries. Returns the top N plus,
- * when the caller isn't in that top slice, their own entry appended so they can
- * always see where they stand. The userbase is small (test app) so the full
- * ranking is computed in memory rather than paginating in SQL.
+ * Compute each user's score for the requested period.
+ *  - 'all': the stored running XP total across every country.
+ *  - 'month': XP from checkpoint scans in the last 30 days
+ *    (scans × XP_PER_CHECKPOINT). Route-completion bonuses aren't stored
+ *    per-scan so they're excluded — this is an "activity this month" score,
+ *    not an exact XP replay.
  */
-export async function getLeaderboard(
-  userId: string,
-  limit = 50,
-): Promise<{ top: LeaderboardEntry[]; me: LeaderboardEntry | null }> {
+async function rankedScores(
+  period: LeaderboardPeriod,
+): Promise<{ userId: string; xp: number }[]> {
+  if (period === 'month') {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const scans = await prisma.checkpointScan.findMany({
+      where: { scannedAt: { gte: since } },
+      select: { progress: { select: { userId: true } } },
+    });
+    const byUser = new Map<string, number>();
+    for (const s of scans) {
+      const uid = s.progress.userId;
+      byUser.set(uid, (byUser.get(uid) ?? 0) + XP_PER_CHECKPOINT);
+    }
+    return [...byUser.entries()]
+      .map(([uid, xp]) => ({ userId: uid, xp }))
+      .filter((r) => r.xp > 0)
+      .sort((a, b) => b.xp - a.xp);
+  }
+
   const sums = await prisma.userCountryProgress.groupBy({
     by: ['userId'],
     _sum: { xp: true },
   });
-  const ranked = sums
+  return sums
     .map((s) => ({ userId: s.userId, xp: s._sum.xp ?? 0 }))
     .filter((r) => r.xp > 0)
     .sort((a, b) => b.xp - a.xp);
+}
+
+/**
+ * Global leaderboard for a period. Returns the top N plus, when the caller
+ * isn't in that top slice, their own entry appended so they can always see
+ * where they stand. The userbase is small (test app) so the full ranking is
+ * computed in memory rather than paginating in SQL.
+ */
+export async function getLeaderboard(
+  userId: string,
+  period: LeaderboardPeriod = 'all',
+  limit = 50,
+): Promise<{ top: LeaderboardEntry[]; me: LeaderboardEntry | null }> {
+  const ranked = await rankedScores(period);
 
   const myIndex = ranked.findIndex((r) => r.userId === userId);
   const topSlice = ranked.slice(0, limit);
@@ -358,18 +392,31 @@ export async function getLeaderboard(
   // Fetch display info for everyone we're about to return (top slice + me).
   const idsToFetch = new Set(topSlice.map((r) => r.userId));
   if (myIndex >= 0) idsToFetch.add(userId);
-  const users = await prisma.user.findMany({
-    where: { id: { in: [...idsToFetch] } },
-    select: { id: true, name: true, avatar: true },
-  });
+  const idList = [...idsToFetch];
+  const [users, allTimeSums] = await Promise.all([
+    prisma.user.findMany({
+      where: { id: { in: idList } },
+      select: { id: true, name: true, avatar: true },
+    }),
+    // Level/rank always reflects all-time XP so a monthly board doesn't demote
+    // a veteran to "Novice"; the row's `xp` still shows the period score.
+    prisma.userCountryProgress.groupBy({
+      by: ['userId'],
+      where: { userId: { in: idList } },
+      _sum: { xp: true },
+    }),
+  ]);
   const userById = new Map(users.map((u) => [u.id, u]));
+  const allTimeById = new Map(
+    allTimeSums.map((s) => [s.userId, s._sum.xp ?? 0]),
+  );
 
   const toEntry = (
     row: { userId: string; xp: number },
     index: number,
   ): LeaderboardEntry => {
     const u = userById.get(row.userId);
-    const level = levelForXp(row.xp);
+    const level = levelForXp(allTimeById.get(row.userId) ?? 0);
     return {
       rank: index + 1,
       user: {

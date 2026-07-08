@@ -300,6 +300,23 @@ export interface LeaderboardResponse {
   me: LeaderboardEntry | null;
 }
 
+/** A user as shown in friend lists. */
+export interface FriendUser {
+  id: string;
+  name: string;
+  avatar: string | null;
+  createdAt: string;
+}
+
+/** GET /friends — my accepted friends + incoming pending requests. */
+export interface FriendsResponse {
+  friends: FriendUser[];
+  incoming: FriendUser[];
+}
+
+/** My relationship to another user. */
+export type FriendStatus = 'none' | 'friends' | 'requested' | 'incoming';
+
 /** Backend error envelope. */
 export interface ApiErrorBody {
   error: {

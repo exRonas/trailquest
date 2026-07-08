@@ -1,6 +1,11 @@
 /**
  * TrailQuest palette — a warm, outdoorsy system built around pine green with a
  * clay-orange accent. Deliberately not the default RN look.
+ *
+ * Light + dark variants. The exported `colors` is baked from the OS color
+ * scheme at module load (see bottom) so static `StyleSheet.create` calls across
+ * the app pick up the right neutrals with zero per-component changes. Live
+ * theme reactivity for components that need it comes through `useThemeColors()`.
  */
 
 export const palette = {
@@ -44,58 +49,87 @@ export const palette = {
   purple600: '#6D4C9F',
 } as const;
 
-export const colors = {
-  primary: palette.pine600,
-  primaryDark: palette.pine700,
-  primaryEmphasis: palette.pine900,
-  primarySoft: palette.pine100,
-  primaryTint: palette.pine50,
+export type ColorScheme = 'light' | 'dark';
 
-  accent: palette.clay500,
-  accentDark: palette.clay600,
-  accentSoft: palette.clay100,
+/** Build the full semantic color set for a scheme. Same shape for light/dark
+ *  so `typeof lightColors` types both. */
+function buildColors(scheme: ColorScheme) {
+  const dark = scheme === 'dark';
+  return {
+    primary: palette.pine600,
+    primaryDark: palette.pine700,
+    primaryEmphasis: dark ? palette.pine500 : palette.pine900,
+    primarySoft: dark ? '#16261F' : palette.pine100,
+    primaryTint: dark ? '#12201A' : palette.pine50,
 
-  background: palette.paper,
-  surface: palette.white,
-  surfaceAlt: palette.mist100,
-  border: palette.mist200,
-  overlay: 'rgba(15, 44, 34, 0.55)',
+    accent: palette.clay500,
+    accentDark: palette.clay600,
+    accentSoft: dark ? '#2A1D15' : palette.clay100,
 
-  text: palette.ink,
-  textSecondary: palette.slate500,
-  textMuted: palette.slate400,
-  textInverse: palette.white,
+    background: dark ? '#0F1512' : palette.paper,
+    surface: dark ? '#171E1A' : palette.white,
+    surfaceAlt: dark ? '#1F2823' : palette.mist100,
+    border: dark ? '#2A332D' : palette.mist200,
+    overlay: dark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(15, 44, 34, 0.55)',
 
-  success: palette.pine500,
-  danger: palette.red500,
-  dangerSoft: palette.red100,
-  warning: palette.amber500,
-  warningSoft: palette.amber100,
-  info: palette.blue500,
-  infoSoft: palette.blue100,
+    text: dark ? '#EAF0EC' : palette.ink,
+    textSecondary: dark ? '#A6B1AA' : palette.slate500,
+    textMuted: dark ? '#78827B' : palette.slate400,
+    textInverse: palette.white,
 
-  // Checkpoint types (marker + accent colour pairs)
-  checkpoint: {
-    HISTORICAL: { main: palette.purple600, soft: '#EFE9F7' },
-    DANGER: { main: palette.red500, soft: palette.red100 },
-    UPCOMING: { main: palette.blue500, soft: palette.blue100 },
-    INFO: { main: palette.teal600, soft: palette.teal100 },
-  },
+    success: palette.pine500,
+    danger: palette.red500,
+    dangerSoft: dark ? '#2A1717' : palette.red100,
+    warning: palette.amber500,
+    warningSoft: dark ? '#2A2414' : palette.amber100,
+    info: palette.blue500,
+    infoSoft: dark ? '#15202B' : palette.blue100,
 
-  // Route tip types
-  tip: {
-    WARNING: { main: palette.red500, soft: palette.red100 },
-    ADVICE: { main: palette.teal600, soft: palette.teal100 },
-  },
+    // Checkpoint types (marker + accent colour pairs)
+    checkpoint: {
+      HISTORICAL: { main: palette.purple600, soft: dark ? '#241E33' : '#EFE9F7' },
+      DANGER: { main: palette.red500, soft: dark ? '#2A1717' : palette.red100 },
+      UPCOMING: { main: palette.blue500, soft: dark ? '#15202B' : palette.blue100 },
+      INFO: { main: palette.teal600, soft: dark ? '#12241F' : palette.teal100 },
+    },
 
-  // Difficulty
-  difficulty: {
-    EASY: { main: palette.pine500, soft: palette.pine100 },
-    MODERATE: { main: palette.amber500, soft: palette.amber100 },
-    HARD: { main: palette.red500, soft: palette.red100 },
-  },
-} as const;
+    // Route tip types
+    tip: {
+      WARNING: { main: palette.red500, soft: dark ? '#2A1717' : palette.red100 },
+      ADVICE: { main: palette.teal600, soft: dark ? '#12241F' : palette.teal100 },
+    },
 
-export type CheckpointTypeKey = keyof typeof colors.checkpoint;
-export type TipTypeKey = keyof typeof colors.tip;
-export type DifficultyKey = keyof typeof colors.difficulty;
+    // Difficulty
+    difficulty: {
+      EASY: { main: palette.pine500, soft: dark ? '#16261F' : palette.pine100 },
+      MODERATE: { main: palette.amber500, soft: dark ? '#2A2414' : palette.amber100 },
+      HARD: { main: palette.red500, soft: dark ? '#2A1717' : palette.red100 },
+    },
+  };
+}
+
+import { Appearance } from 'react-native';
+
+export const lightColors = buildColors('light');
+export const darkColors = buildColors('dark');
+
+export type AppColors = typeof lightColors;
+
+// Baked at module load from the OS scheme so static StyleSheets get the right
+// neutrals immediately (getColorScheme() is synchronous). Mutated in place by
+// applyColorScheme() when the user picks a manual override, so anything reading
+// `colors` after that sees the new values (already-created static styles keep
+// the boot value until the next launch — the hook path covers live updates).
+const bootScheme: ColorScheme =
+  Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
+export const colors: AppColors = {
+  ...(bootScheme === 'dark' ? darkColors : lightColors),
+};
+
+export function applyColorScheme(scheme: ColorScheme): void {
+  Object.assign(colors, scheme === 'dark' ? darkColors : lightColors);
+}
+
+export type CheckpointTypeKey = keyof typeof lightColors.checkpoint;
+export type TipTypeKey = keyof typeof lightColors.tip;
+export type DifficultyKey = keyof typeof lightColors.difficulty;

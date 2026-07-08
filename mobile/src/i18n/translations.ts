@@ -261,6 +261,7 @@ const en: Dict = {
   'achievements.title': 'Achievements',
   'achievements.count': '{unlocked} of {total}',
   'achievements.progress': '{current} / {threshold}',
+  'achievements.unlocked': 'Unlocked',
 
   // Leaderboard
   'leaderboard.title': 'Leaderboard',
@@ -268,6 +269,8 @@ const en: Dict = {
   'leaderboard.you': 'You',
   'leaderboard.empty': 'No rankings yet. Complete a route to get on the board.',
   'leaderboard.yourPosition': 'Your position',
+  'leaderboard.periodAll': 'All time',
+  'leaderboard.periodMonth': 'This month',
 
   // Settings
   'settings.title': 'Settings',
@@ -286,6 +289,27 @@ const en: Dict = {
   'settings.passwordMismatch': 'Passwords do not match',
   'settings.passwordSaveFailed': 'Could not change password',
   'settings.wrongCurrentPassword': 'Current password is incorrect',
+  'settings.appearance': 'Appearance',
+  'settings.theme': 'Theme',
+  'settings.themeSystem': 'System',
+  'settings.themeLight': 'Light',
+  'settings.themeDark': 'Dark',
+
+  // Friends
+  'friends.title': 'Friends',
+  'friends.add': 'Add friend',
+  'friends.requested': 'Request sent',
+  'friends.accept': 'Accept request',
+  'friends.friends': 'Friends',
+  'friends.decline': 'Decline',
+  'friends.remove': 'Remove',
+  'friends.myFriends': 'Friends',
+  'friends.requests': 'Requests',
+  'friends.none': 'No friends yet. Open someone\'s profile to add them.',
+  'friends.noRequests': 'No pending requests.',
+  'friends.unfriendTitle': 'Remove friend',
+  'friends.unfriendMsg': 'Remove {name} from your friends?',
+  'friends.actionFailed': 'Something went wrong. Try again.',
 
   // Public user profile
   'userProfile.title': 'Profile',
@@ -531,6 +555,7 @@ const ru: Dict = {
   'achievements.title': 'Достижения',
   'achievements.count': '{unlocked} из {total}',
   'achievements.progress': '{current} / {threshold}',
+  'achievements.unlocked': 'Получено',
 
   // Leaderboard
   'leaderboard.title': 'Таблица лидеров',
@@ -538,6 +563,8 @@ const ru: Dict = {
   'leaderboard.you': 'Вы',
   'leaderboard.empty': 'Пока нет рейтинга. Завершите маршрут, чтобы попасть в таблицу.',
   'leaderboard.yourPosition': 'Ваша позиция',
+  'leaderboard.periodAll': 'За всё время',
+  'leaderboard.periodMonth': 'За месяц',
 
   // Settings
   'settings.title': 'Настройки',
@@ -556,6 +583,27 @@ const ru: Dict = {
   'settings.passwordMismatch': 'Пароли не совпадают',
   'settings.passwordSaveFailed': 'Не удалось изменить пароль',
   'settings.wrongCurrentPassword': 'Текущий пароль неверен',
+  'settings.appearance': 'Внешний вид',
+  'settings.theme': 'Тема',
+  'settings.themeSystem': 'Системная',
+  'settings.themeLight': 'Светлая',
+  'settings.themeDark': 'Тёмная',
+
+  // Friends
+  'friends.title': 'Друзья',
+  'friends.add': 'Добавить в друзья',
+  'friends.requested': 'Запрос отправлен',
+  'friends.accept': 'Принять запрос',
+  'friends.friends': 'В друзьях',
+  'friends.decline': 'Отклонить',
+  'friends.remove': 'Удалить',
+  'friends.myFriends': 'Друзья',
+  'friends.requests': 'Запросы',
+  'friends.none': 'Пока нет друзей. Откройте чей-то профиль, чтобы добавить.',
+  'friends.noRequests': 'Нет входящих запросов.',
+  'friends.unfriendTitle': 'Удалить из друзей',
+  'friends.unfriendMsg': 'Удалить {name} из друзей?',
+  'friends.actionFailed': 'Что-то пошло не так. Попробуйте снова.',
 
   'userProfile.title': 'Профиль',
   'userProfile.completed': 'Пройдено',
@@ -800,6 +848,7 @@ const kk: Dict = {
   'achievements.title': 'Жетістіктер',
   'achievements.count': '{total} ішінен {unlocked}',
   'achievements.progress': '{current} / {threshold}',
+  'achievements.unlocked': 'Ашылды',
 
   // Leaderboard
   'leaderboard.title': 'Көшбасшылар кестесі',
@@ -807,6 +856,8 @@ const kk: Dict = {
   'leaderboard.you': 'Сіз',
   'leaderboard.empty': 'Әзірге рейтинг жоқ. Кестеге ену үшін маршрутты аяқтаңыз.',
   'leaderboard.yourPosition': 'Сіздің орныңыз',
+  'leaderboard.periodAll': 'Барлық уақыт',
+  'leaderboard.periodMonth': 'Осы ай',
 
   // Settings
   'settings.title': 'Баптаулар',
@@ -825,6 +876,27 @@ const kk: Dict = {
   'settings.passwordMismatch': 'Құпия сөздер сәйкес келмейді',
   'settings.passwordSaveFailed': 'Құпия сөзді өзгерту мүмкін болмады',
   'settings.wrongCurrentPassword': 'Ағымдағы құпия сөз қате',
+  'settings.appearance': 'Сыртқы түрі',
+  'settings.theme': 'Тақырып',
+  'settings.themeSystem': 'Жүйелік',
+  'settings.themeLight': 'Ашық',
+  'settings.themeDark': 'Қараңғы',
+
+  // Friends
+  'friends.title': 'Достар',
+  'friends.add': 'Дос қосу',
+  'friends.requested': 'Сұраныс жіберілді',
+  'friends.accept': 'Сұранысты қабылдау',
+  'friends.friends': 'Достарда',
+  'friends.decline': 'Бас тарту',
+  'friends.remove': 'Жою',
+  'friends.myFriends': 'Достар',
+  'friends.requests': 'Сұраныстар',
+  'friends.none': 'Әзірге дос жоқ. Қосу үшін біреудің профилін ашыңыз.',
+  'friends.noRequests': 'Кіріс сұраныстар жоқ.',
+  'friends.unfriendTitle': 'Достан алып тастау',
+  'friends.unfriendMsg': '{name} досыңыздан алып тастайсыз ба?',
+  'friends.actionFailed': 'Бірдеңе дұрыс болмады. Қайталап көріңіз.',
 
   'userProfile.title': 'Профиль',
   'userProfile.completed': 'Өтілді',

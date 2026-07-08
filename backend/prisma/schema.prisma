@@ -48,6 +48,11 @@ enum TipType {
   ADVICE
 }
 
+enum FriendStatus {
+  PENDING
+  ACCEPTED
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Models
 // ─────────────────────────────────────────────────────────────────────────────
@@ -67,6 +72,8 @@ model User {
   progress        UserRouteProgress[]
   countryProgress UserCountryProgress[]
   reviews         RouteReview[]
+  sentRequests     Friendship[] @relation("FriendRequester")
+  receivedRequests Friendship[] @relation("FriendAddressee")
 
   @@map("users")
 }
@@ -195,6 +202,26 @@ model RouteTip {
   @@index([routeId])
   @@index([checkpointId])
   @@map("route_tips")
+}
+
+// A friendship link between two users. Created PENDING by the requester; the
+// addressee accepts it to make it ACCEPTED (mutual). Only one row ever exists
+// per pair (enforced app-side by always checking both directions before
+// creating). Deleting the row covers cancel / decline / unfriend.
+model Friendship {
+  id          String       @id @default(uuid())
+  requesterId String
+  requester   User         @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addresseeId String
+  addressee   User         @relation("FriendAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+  status      FriendStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId])
+  @@index([requesterId])
+  @@map("friendships")
 }
 
 // One rating (1..5) + optional written review per user per route. Upserted, so
