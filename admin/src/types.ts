@@ -192,3 +192,16 @@ export interface ForumComment {
   createdAt: string;
   user: ForumAuthor;
 }
+
+/** GET /reviews (admin-only, every review across every route) row shape. */
+export interface AdminReview {
+  id: string;
+  routeId: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+  user: ForumAuthor;
+  route: { id: string; titleRu: string; titleEn: string; titleKk: string };
+}

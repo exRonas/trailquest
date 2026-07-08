@@ -36,7 +36,7 @@ export function StarRating({
           <Icon
             name={name}
             size={size}
-            color={value >= n - 0.5 ? color : colors.border}
+            color={value >= n - 0.5 ? color : colors.textMuted}
           />
         );
         if (!onChange) {

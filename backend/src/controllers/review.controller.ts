@@ -30,3 +30,13 @@ export const remove = asyncHandler(async (req: Request, res: Response) => {
   await reviewService.deleteReview(req.params.routeId, userId(req));
   res.status(204).send();
 });
+
+export const listAllAdmin = asyncHandler(async (_req: Request, res: Response) => {
+  const reviews = await reviewService.listAllReviewsAdmin();
+  sendData(res, reviews);
+});
+
+export const removeAdmin = asyncHandler(async (req: Request, res: Response) => {
+  await reviewService.deleteReviewAdmin(req.params.id);
+  res.status(204).send();
+});

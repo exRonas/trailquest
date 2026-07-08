@@ -5,6 +5,7 @@ import checkpointRoutes from './checkpoint.routes';
 import tipRoutes from './tip.routes';
 import progressRoutes from './progress.routes';
 import forumRoutes from './forum.routes';
+import reviewRoutes from './review.routes';
 import userRoutes from './user.routes';
 import imageRoutes from './image.routes';
 import { appVersion } from '../config/appVersion';
@@ -25,6 +26,7 @@ router.use('/checkpoints', checkpointRoutes);
 router.use('/tips', tipRoutes);
 router.use('/progress', progressRoutes);
 router.use('/posts', forumRoutes);
+router.use('/reviews', reviewRoutes);
 router.use('/users', userRoutes);
 router.use('/images', imageRoutes);
 

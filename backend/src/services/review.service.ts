@@ -107,3 +107,26 @@ export async function deleteReview(
 ): Promise<void> {
   await prisma.routeReview.deleteMany({ where: { routeId, userId } });
 }
+
+/** Every review across every route, newest first — admin moderation list. */
+export async function listAllReviewsAdmin() {
+  return prisma.routeReview.findMany({
+    orderBy: { updatedAt: 'desc' },
+    include: {
+      user: { select: reviewAuthorSelect },
+      route: { select: { id: true, titleRu: true, titleEn: true, titleKk: true } },
+    },
+  });
+}
+
+/** Delete any review by id, regardless of owner — admin moderation only. */
+export async function deleteReviewAdmin(reviewId: string): Promise<void> {
+  const review = await prisma.routeReview.findUnique({
+    where: { id: reviewId },
+    select: { id: true },
+  });
+  if (!review) {
+    throw AppError.notFound('Review not found');
+  }
+  await prisma.routeReview.delete({ where: { id: reviewId } });
+}
