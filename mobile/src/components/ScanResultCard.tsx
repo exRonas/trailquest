@@ -56,9 +56,17 @@ export function ScanResultCard({
           )}
 
           <View style={[styles.scanBadge, { backgroundColor: c.main }]}>
-            <Icon name="qrcode-scan" size={16} color={colors.textInverse} />
+            <Icon
+              name={result.pending ? 'cloud-upload-outline' : 'qrcode-scan'}
+              size={16}
+              color={colors.textInverse}
+            />
             <AppText variant="overline" color={colors.textInverse} style={styles.scanBadgeText}>
-              {result.alreadyScanned ? t('scan.alreadyTitle') : t('scan.title')}
+              {result.pending
+                ? t('scan.pendingTitle')
+                : result.alreadyScanned
+                  ? t('scan.alreadyTitle')
+                  : t('scan.title')}
             </AppText>
           </View>
 
@@ -78,7 +86,11 @@ export function ScanResultCard({
             ) : null}
 
             {/* XP */}
-            {!result.alreadyScanned ? (
+            {result.pending ? (
+              <AppText variant="callout" color={colors.textMuted} style={styles.alreadyNote}>
+                {t('scan.pendingNote')}
+              </AppText>
+            ) : !result.alreadyScanned ? (
               <View style={styles.xpRow}>
                 <View style={styles.xpPill}>
                   <Icon name="star-four-points" size={16} color={colors.accent} />
@@ -93,7 +105,7 @@ export function ScanResultCard({
               </AppText>
             )}
 
-            {result.bonusAwarded > 0 ? (
+            {!result.pending && result.bonusAwarded > 0 ? (
               <AppText variant="callout" color={colors.success} style={styles.bonus}>
                 🎉 {t('scan.routeBonus', { bonus: result.bonusAwarded })}
               </AppText>
@@ -106,14 +118,18 @@ export function ScanResultCard({
                 label={t('scan.checkpoints')}
                 value={`${result.reachedCount}/${result.totalCheckpoints}`}
               />
-              <View style={styles.statDivider} />
-              <Stat
-                icon="medal-outline"
-                label={pickLocalized(result.country)}
-                value={`${t('scan.level')} ${result.level.level} · ${pickLocalized(
-                  result.level.rank,
-                )}`}
-              />
+              {!result.pending ? (
+                <>
+                  <View style={styles.statDivider} />
+                  <Stat
+                    icon="medal-outline"
+                    label={pickLocalized(result.country)}
+                    value={`${t('scan.level')} ${result.level.level} · ${pickLocalized(
+                      result.level.rank,
+                    )}`}
+                  />
+                </>
+              ) : null}
             </View>
           </ScrollView>
 

@@ -236,6 +236,10 @@ export interface ScanResult {
   allScanned: boolean;
   country: LocalizedText;
   level: LevelInfo;
+  /** True when scanned with no connection — queued locally, XP/level here are
+   *  placeholders until offlineQueue syncs it and the server computes the
+   *  real numbers. */
+  pending?: boolean;
 }
 
 /** Backend error envelope. */

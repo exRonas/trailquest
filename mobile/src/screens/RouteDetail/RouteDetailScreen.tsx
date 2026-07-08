@@ -33,7 +33,8 @@ import {
 } from '../../utils/format';
 import { useRouteDetail } from '../../api/hooks/useRoutes';
 import { useStartRoute } from '../../api/hooks/useProgress';
-import { getApiErrorMessage } from '../../api/client';
+import { getApiErrorMessage, isNetworkError } from '../../api/client';
+import * as offlineQueue from '../../services/offlineQueue';
 import { useT, usePickLocalized, useLocaleStore } from '../../i18n';
 import { Checkpoint } from '../../types/api';
 import { ExploreScreenProps } from '../../types/navigation';
@@ -77,6 +78,18 @@ export function RouteDetailScreen({
   }, [data]);
 
   const onStart = async () => {
+    // Resume a not-yet-synced local session for this route instead of
+    // starting a duplicate one (e.g. the app was killed mid-hike offline).
+    const pending = await offlineQueue.findActiveSessionForRoute(routeId);
+    if (pending) {
+      navigation.navigate('ActiveNavigation', {
+        routeId,
+        progressId: pending.key,
+        reachedOrderIndices: pending.scans.map((s) => s.orderIndex),
+      });
+      return;
+    }
+
     try {
       const progress = await startMutation.mutateAsync(routeId);
       navigation.navigate('ActiveNavigation', {
@@ -85,6 +98,18 @@ export function RouteDetailScreen({
         reachedOrderIndices: progress.reachedOrderIndices ?? [],
       });
     } catch (err) {
+      if (isNetworkError(err)) {
+        // No signal even to start the session server-side — track locally
+        // and sync automatically once connectivity returns.
+        const localKey = offlineQueue.makeLocalKey();
+        await offlineQueue.getOrCreateSession(localKey, routeId, null);
+        navigation.navigate('ActiveNavigation', {
+          routeId,
+          progressId: localKey,
+          reachedOrderIndices: [],
+        });
+        return;
+      }
       Alert.alert(t('route.startFailed'), getApiErrorMessage(err));
     }
   };

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { AppState, View, StyleSheet } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import {
   NavigationContainer,
   DefaultTheme,
@@ -11,6 +12,7 @@ import { colors, useThemeColors } from '../theme';
 import { useAuthStore } from '../store/authStore';
 import { useLocaleStore } from '../i18n';
 import { initMapbox } from '../services/mapbox';
+import { syncAll } from '../services/offlineQueue';
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabs } from './MainTabs';
 
@@ -41,6 +43,25 @@ export function RootNavigator(): React.ReactElement {
     void hydrateLocale();
     void hydrate();
   }, [hydrate, hydrateLocale]);
+
+  // Flush any offline-queued route sessions (see offlineQueue.ts) whenever
+  // connectivity returns or the app comes back to the foreground.
+  useEffect(() => {
+    if (status !== 'authenticated') return undefined;
+
+    const netSub = NetInfo.addEventListener((state) => {
+      if (state.isConnected) void syncAll();
+    });
+    const appSub = AppState.addEventListener('change', (next) => {
+      if (next === 'active') void syncAll();
+    });
+    void syncAll();
+
+    return () => {
+      netSub();
+      appSub.remove();
+    };
+  }, [status]);
 
   if (status === 'loading') {
     return (

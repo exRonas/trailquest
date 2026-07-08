@@ -15,6 +15,7 @@ import { Avatar } from '../../components/forum/Avatar';
 import { AvatarPicker } from '../../components/AvatarPicker';
 import { StatTile } from '../../components/StatTile';
 import { ProgressRow } from '../../components/ProgressRow';
+import { PendingSyncBanner } from '../../components/PendingSyncBanner';
 import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { useAuthStore } from '../../store/authStore';
@@ -91,6 +92,8 @@ export function ProfileScreen({
       </Card>
 
       <LevelBlock />
+
+      <PendingSyncBanner />
 
       <View style={styles.summary}>
         <StatTile

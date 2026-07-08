@@ -6,6 +6,8 @@ import {
   scanCheckpoint,
   completeRoute,
 } from '../../api/progress.api';
+import { isNetworkError } from '../../api/client';
+import * as offlineQueue from '../../services/offlineQueue';
 import {
   PathLogPoint,
   RouteDetail,
@@ -33,6 +35,8 @@ export interface LiveStats {
 
 interface EngineArgs {
   route: RouteDetail;
+  /** Server progress id, or a `local-...` id when even the start call
+   *  couldn't reach the server (see RouteDetailScreen). */
   progressId: string;
   /** Checkpoint order-indices already scanned in a resumed session. */
   initialReachedIndices?: number[];
@@ -55,6 +59,14 @@ const ZERO_STATS: LiveStats = {
  * Checkpoints are no longer auto-triggered by proximity — they're marked by
  * scanning their physical QR (see `scan`). Progress is therefore checkpoint-
  * based: fraction = scanned / total.
+ *
+ * Offline-first: every server call here (log/scan/complete) falls back to
+ * `offlineQueue` when there's no connection, so a hike with no signal still
+ * tracks distance/checkpoints/completion locally and syncs automatically
+ * once back online (see RootNavigator's sync trigger). `route.checkpoints`
+ * already carries each checkpoint's `qrCode` (same payload the admin/scan
+ * flow always exposed), so a scanned code can be matched to a checkpoint
+ * entirely client-side without the server.
  */
 export function useNavigationEngine({
   route,
@@ -80,6 +92,7 @@ export function useNavigationEngine({
   // Mutable accumulators kept in refs so the location callback isn't re-created
   // and we avoid re-rendering on every raw sample.
   const samplesRef = useRef<TimedPoint[]>([]);
+  const allPointsRef = useRef<PathLogPoint[]>([]);
   const distanceMRef = useRef(0);
   const startTimeRef = useRef<number>(Date.now());
   const reachedRef = useRef<Set<number>>(new Set(initialReachedIndices ?? []));
@@ -90,18 +103,44 @@ export function useNavigationEngine({
   const handleLocationRef = useRef<
     ((sample: LocationSample) => void) | undefined
   >(undefined);
+  // The real server progress id once known — null while an offline-started
+  // session hasn't reached the server yet.
+  const serverIdRef = useRef<string | null>(
+    offlineQueue.isLocalKey(progressId) ? null : progressId,
+  );
+
+  // If resuming a session that was already queued (app restarted mid-hike
+  // before it synced), pick up whatever serverId a prior partial sync found.
+  useEffect(() => {
+    if (!offlineQueue.isLocalKey(progressId)) return;
+    (async () => {
+      const session = await offlineQueue.getSession(progressId);
+      if (session?.serverId) serverIdRef.current = session.serverId;
+    })();
+  }, [progressId]);
 
   const flush = useCallback(async () => {
     if (pendingRef.current.length === 0) return;
     const batch = pendingRef.current;
     pendingRef.current = [];
-    try {
-      await logPoints(progressId, batch);
-    } catch {
-      // Re-queue on failure so points aren't lost; next flush retries.
-      pendingRef.current = [...batch, ...pendingRef.current];
+
+    const serverId = serverIdRef.current;
+    if (serverId) {
+      try {
+        await logPoints(serverId, batch);
+        return;
+      } catch (err) {
+        if (!isNetworkError(err)) {
+          // Non-network rejection (e.g. session gone) — nothing to retry.
+          return;
+        }
+        // Network failure: fall through to the offline queue below.
+      }
     }
-  }, [progressId]);
+
+    await offlineQueue.getOrCreateSession(progressId, route.id, serverId);
+    await offlineQueue.appendPoints(progressId, batch);
+  }, [progressId, route.id]);
 
   const checkpointFraction = useCallback(
     () => (totalCheckpoints > 0 ? reachedRef.current.size / totalCheckpoints : 0),
@@ -145,29 +184,94 @@ export function useNavigationEngine({
         elapsedSeconds,
       });
 
-      // Buffer + batch-sync the path log.
-      pendingRef.current.push({
+      const logPoint: PathLogPoint = {
         lat: sample.lat,
         lng: sample.lng,
         speedKmh,
         timestamp: new Date(t).toISOString(),
-      });
+      };
+      // Kept in full regardless of sync state, so a route completed with no
+      // connection can still show its track in the run summary.
+      allPointsRef.current.push(logPoint);
+      // Buffer + batch-sync the path log.
+      pendingRef.current.push(logPoint);
       if (pendingRef.current.length >= BATCH_SIZE) void flush();
     },
     [flush, checkpointFraction, route.estimatedMinutes],
   );
 
-  // Scan a checkpoint QR. On success records the checkpoint locally (for map +
-  // progress) and returns the full scan result so the UI can show the card.
+  // Scan a checkpoint QR. Matches the code against this route's checkpoints
+  // client-side first (the route payload already carries each qrCode), then
+  // tries the server; falls back to the offline queue on a network failure.
   const scan = useCallback(
     async (qrCode: string): Promise<ScanResult> => {
-      const result = await scanCheckpoint(progressId, qrCode);
-      reachedRef.current.add(result.checkpoint.orderIndex);
+      const cp = route.checkpoints.find((c) => c.qrCode === qrCode);
+      if (!cp) {
+        throw new Error('Invalid checkpoint code');
+      }
+
+      const serverId = serverIdRef.current;
+      if (serverId) {
+        try {
+          const result = await scanCheckpoint(serverId, qrCode);
+          reachedRef.current.add(result.checkpoint.orderIndex);
+          setReachedIndices(Array.from(reachedRef.current));
+          setStats((s) => ({ ...s, progressFraction: checkpointFraction() }));
+          return result;
+        } catch (err) {
+          if (!isNetworkError(err)) throw err;
+          // Network failure: fall through to the offline queue below.
+        }
+      }
+
+      const alreadyReached = reachedRef.current.has(cp.orderIndex);
+      await offlineQueue.getOrCreateSession(progressId, route.id, serverId);
+      if (!alreadyReached) {
+        await offlineQueue.appendScan(progressId, {
+          qrCode,
+          checkpointId: cp.id,
+          orderIndex: cp.orderIndex,
+          scannedAt: new Date().toISOString(),
+          synced: false,
+        });
+      }
+      reachedRef.current.add(cp.orderIndex);
       setReachedIndices(Array.from(reachedRef.current));
       setStats((s) => ({ ...s, progressFraction: checkpointFraction() }));
-      return result;
+
+      return {
+        alreadyScanned: alreadyReached,
+        checkpoint: {
+          id: cp.id,
+          routeId: cp.routeId,
+          name: cp.name,
+          type: cp.type,
+          lat: cp.lat,
+          lng: cp.lng,
+          altitudeM: cp.altitudeM,
+          radiusTriggerM: cp.radiusTriggerM,
+          description: cp.description,
+          mediaUrl: cp.mediaUrl,
+          orderIndex: cp.orderIndex,
+        },
+        xpAwarded: 0,
+        bonusAwarded: 0,
+        reachedCount: reachedRef.current.size,
+        totalCheckpoints,
+        allScanned: reachedRef.current.size === totalCheckpoints,
+        country: { ru: '', en: '', kk: '' },
+        level: {
+          level: 0,
+          rank: { ru: '', en: '', kk: '' },
+          xp: 0,
+          xpIntoLevel: 0,
+          xpForNextLevel: null,
+          progress: 0,
+        },
+        pending: true,
+      };
     },
-    [progressId, checkpointFraction],
+    [progressId, route.checkpoints, route.id, totalCheckpoints, checkpointFraction],
   );
 
   // Keep refs pointed at the latest callbacks so the start-tracking effect
@@ -244,20 +348,51 @@ export function useNavigationEngine({
   const complete = useCallback(async (): Promise<UserRouteProgress | null> => {
     setStatus('completing');
     await flush();
-    try {
-      const progress = await completeRoute(progressId);
-      await stopRef.current?.();
-      stopRef.current = null;
-      setStatus('completed');
-      return progress;
-    } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : 'Failed to complete route',
-      );
-      setStatus('tracking');
-      return null;
+
+    const serverId = serverIdRef.current;
+    if (serverId) {
+      try {
+        const progress = await completeRoute(serverId);
+        await stopRef.current?.();
+        stopRef.current = null;
+        setStatus('completed');
+        return progress;
+      } catch (err) {
+        if (!isNetworkError(err)) {
+          setErrorMessage(
+            err instanceof Error ? err.message : 'Failed to complete route',
+          );
+          setStatus('tracking');
+          return null;
+        }
+        // Network failure: fall through to the offline queue below.
+      }
     }
-  }, [flush, progressId]);
+
+    const localStats = {
+      totalDistanceKm: Number((distanceMRef.current / 1000).toFixed(3)),
+      movingSeconds: Math.round((Date.now() - startTimeRef.current) / 1000),
+    };
+    await offlineQueue.getOrCreateSession(progressId, route.id, serverId);
+    await offlineQueue.markCompleted(progressId, localStats);
+    const session = await offlineQueue.getSession(progressId);
+    await stopRef.current?.();
+    stopRef.current = null;
+    setStatus('completed');
+
+    return {
+      id: progressId,
+      userId: '',
+      routeId: route.id,
+      startedAt: session?.startedAt ?? new Date().toISOString(),
+      completedAt: session?.completedAt ?? new Date().toISOString(),
+      hidden: false,
+      lastCheckpointIndex: reachedRef.current.size,
+      totalDistanceKm: localStats.totalDistanceKm,
+      movingSeconds: localStats.movingSeconds,
+      pathLog: allPointsRef.current,
+    };
+  }, [flush, progressId, route.id]);
 
   return {
     status,
@@ -267,6 +402,7 @@ export function useNavigationEngine({
     reachedIndices,
     reachedCount: reachedIndices.length,
     totalCheckpoints,
+    isOffline: !serverIdRef.current,
     scan,
     complete,
   };

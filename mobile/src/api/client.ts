@@ -103,6 +103,16 @@ api.interceptors.response.use(
 );
 
 /**
+ * True for a request that never reached the server (no signal, DNS failure,
+ * timeout) as opposed to one the server rejected (4xx/5xx). Callers use this
+ * to decide whether to fall back to the offline queue (see offlineQueue.ts)
+ * instead of surfacing an error.
+ */
+export function isNetworkError(error: unknown): boolean {
+  return axios.isAxiosError(error) && !error.response;
+}
+
+/**
  * Normalises any thrown error into a human-readable message, preferring the
  * backend's error envelope.
  */

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Alert, Linking, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Mapbox from '@rnmapbox/maps';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   AppText,
   Button,
@@ -295,6 +296,14 @@ function NavigationActive({
 
       {/* Top stats HUD */}
       <View style={[styles.hud, { top: insets.top + spacing.sm }]}>
+        {engine.isOffline ? (
+          <View style={styles.offlinePill}>
+            <Icon name="cloud-off-outline" size={13} color={colors.textInverse} />
+            <AppText variant="label" color={colors.textInverse} style={styles.offlineText}>
+              {t('nav.offline')}
+            </AppText>
+          </View>
+        ) : null}
         <View style={styles.hudRow}>
           <StatTile
             icon="speedometer"
@@ -401,6 +410,17 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     ...shadow.md,
   },
+  offlinePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: colors.textMuted,
+    borderRadius: 999,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    marginBottom: spacing.sm,
+  },
+  offlineText: { marginLeft: 4 },
   hudRow: { flexDirection: 'row', justifyContent: 'space-around' },
   progressWrap: { marginTop: spacing.lg },
   progressMeta: {
