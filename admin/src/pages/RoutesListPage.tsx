@@ -44,6 +44,9 @@ export function RoutesListPage() {
               <span className="pill">{r.difficulty}</span>
               {pickLocalizedText(r.country)} · {pickLocalizedText(r.region)} ·{' '}
               {r._count.checkpoints} checkpoints
+              {r.rating.count > 0
+                ? ` · ★ ${r.rating.average.toFixed(1)} (${r.rating.count})`
+                : ''}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>

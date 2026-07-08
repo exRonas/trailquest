@@ -3,6 +3,7 @@ import { Image, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Card } from './ui';
 import { CategoryBadge, DifficultyBadge } from './RouteBadges';
+import { StarRating } from './StarRating';
 import { colors, spacing, useThemeColors } from '../theme';
 import { categoryIcon } from '../theme/icons';
 import { formatDistanceKm, formatDuration } from '../utils/format';
@@ -63,6 +64,19 @@ export function RouteCard({ route, onPress }: RouteCardProps): React.ReactElemen
           </AppText>
         </View>
 
+        {route.rating.count > 0 ? (
+          <View style={styles.ratingRow}>
+            <StarRating value={route.rating.average} size={14} />
+            <AppText
+              variant="label"
+              color={colors.textSecondary}
+              style={styles.ratingText}
+            >
+              {route.rating.average.toFixed(1)} ({route.rating.count})
+            </AppText>
+          </View>
+        ) : null}
+
         <View style={styles.statsRow}>
           <Stat icon="map-marker-distance" text={formatDistanceKm(route.distanceKm)} />
           <Stat
@@ -118,6 +132,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   region: { marginLeft: 4, flex: 1 },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.xs,
+  },
+  ratingText: { marginLeft: spacing.xs },
   statsRow: {
     flexDirection: 'row',
     marginTop: spacing.md,

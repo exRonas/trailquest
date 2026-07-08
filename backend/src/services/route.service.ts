@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../utils/AppError';
 import { cleanupOrphanedImages } from './image.service';
+import { getRatingsForRoutes, getRouteRating } from './review.service';
 
 /** Generate a stable, URL-safe token to encode in a checkpoint's physical QR. */
 function generateQrCode(): string {
@@ -88,6 +89,8 @@ export async function listRoutes(query: RouteListQuery) {
     },
   });
 
+  const ratings = await getRatingsForRoutes(routes.map((r) => r.id));
+
   return routes.map((r) => {
     const start = firstPoint(r.pathPoints);
     return {
@@ -103,6 +106,7 @@ export async function listRoutes(query: RouteListQuery) {
       coverImageUrl: r.coverImageUrl,
       createdAt: r.createdAt,
       _count: r._count,
+      rating: ratings.get(r.id) ?? { average: 0, count: 0 },
       startLat: start?.lat ?? null,
       startLng: start?.lng ?? null,
     };
@@ -245,7 +249,8 @@ export async function getRouteById(id: string) {
   if (!route) {
     throw AppError.notFound('Route not found');
   }
-  return mapRoute(route);
+  const rating = await getRouteRating(id);
+  return { ...mapRoute(route), rating };
 }
 
 /** Scalars + JSON blobs shared by create and replace. */

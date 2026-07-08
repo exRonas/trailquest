@@ -22,6 +22,10 @@ router.get('/', progressController.listMine);
 router.get('/levels', progressController.myCountryLevels);
 // Overall level (total XP across countries) for the profile header.
 router.get('/level', progressController.myLevel);
+// Derived achievement badges for the Profile.
+router.get('/achievements', progressController.myAchievements);
+// Global XP leaderboard (top N + the caller's own position).
+router.get('/leaderboard', progressController.leaderboard);
 
 router.patch(
   '/:id/log',

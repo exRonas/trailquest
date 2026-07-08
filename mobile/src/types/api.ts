@@ -67,6 +67,12 @@ export interface RouteTip {
   text: LocalizedText;
 }
 
+/** Aggregate star rating for a route (0/0 when nobody has rated it yet). */
+export interface RouteRating {
+  average: number;
+  count: number;
+}
+
 /** Lightweight list item from GET /routes. */
 export interface RouteSummary {
   id: string;
@@ -80,6 +86,7 @@ export interface RouteSummary {
   country: LocalizedText;
   coverImageUrl: string | null;
   createdAt: string;
+  rating: RouteRating;
   /** Representative map coordinate (first path point); null if unavailable. */
   startLat: number | null;
   startLng: number | null;
@@ -111,7 +118,28 @@ export interface RouteDetail {
   routeGeometry: { lat: number; lng: number }[] | null;
   checkpoints: Checkpoint[];
   tips: RouteTip[];
+  rating: RouteRating;
   _count: { posts: number };
+}
+
+/** One review from GET /routes/:id/reviews. */
+export interface RouteReview {
+  id: string;
+  routeId: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+  user: PostAuthor;
+}
+
+/** GET /routes/:id/reviews response. */
+export interface RouteReviewsResponse {
+  summary: RouteRating;
+  /** The signed-in user's own review, pulled out for the "edit yours" state. */
+  mine: RouteReview | null;
+  reviews: RouteReview[];
 }
 
 export interface PathLogPoint {
@@ -240,6 +268,36 @@ export interface ScanResult {
    *  placeholders until offlineQueue syncs it and the server computes the
    *  real numbers. */
   pending?: boolean;
+}
+
+/** One achievement badge from GET /progress/achievements. */
+export interface Achievement {
+  id: string;
+  icon: string;
+  metric: 'routesCompleted' | 'distanceKm' | 'checkpointsScanned' | 'countries';
+  threshold: number;
+  title: LocalizedText;
+  description: LocalizedText;
+  unlocked: boolean;
+  current: number;
+  /** 0..1 toward threshold (1 when unlocked). */
+  progress: number;
+}
+
+/** One row of the global leaderboard (GET /progress/leaderboard). */
+export interface LeaderboardEntry {
+  rank: number;
+  user: { id: string; name: string; avatar: string | null };
+  xp: number;
+  level: number;
+  rankName: LocalizedText;
+  isMe: boolean;
+}
+
+export interface LeaderboardResponse {
+  top: LeaderboardEntry[];
+  /** The caller's own entry when they're below the returned top slice. */
+  me: LeaderboardEntry | null;
 }
 
 /** Backend error envelope. */

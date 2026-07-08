@@ -1,6 +1,8 @@
 import { api, unwrap } from './client';
 import {
+  Achievement,
   CountryLevel,
+  LeaderboardResponse,
   LevelInfo,
   PathLogPoint,
   ProgressWithRoute,
@@ -56,6 +58,18 @@ export async function fetchMyLevels(): Promise<CountryLevel[]> {
 /** Overall level (total XP across countries) for the profile header. */
 export async function fetchMyLevel(): Promise<LevelInfo> {
   const res = await api.get<{ data: LevelInfo }>('/progress/level');
+  return unwrap(res.data);
+}
+
+export async function fetchAchievements(): Promise<Achievement[]> {
+  const res = await api.get<{ data: Achievement[] }>('/progress/achievements');
+  return unwrap(res.data);
+}
+
+export async function fetchLeaderboard(): Promise<LeaderboardResponse> {
+  const res = await api.get<{ data: LeaderboardResponse }>(
+    '/progress/leaderboard',
+  );
   return unwrap(res.data);
 }
 

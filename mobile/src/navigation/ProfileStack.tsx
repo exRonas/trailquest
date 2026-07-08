@@ -5,6 +5,7 @@ import { useDefaultStackOptions } from './headerOptions';
 import { ProfileScreen } from '../screens/Profile/ProfileScreen';
 import { ActivityDetailScreen } from '../screens/Profile/ActivityDetailScreen';
 import { AllActivitiesScreen } from '../screens/Profile/AllActivitiesScreen';
+import { LeaderboardScreen } from '../screens/Profile/LeaderboardScreen';
 import { translate, useLocaleStore } from '../i18n';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -28,6 +29,11 @@ export function ProfileStack(): React.ReactElement {
         name="AllActivities"
         component={AllActivitiesScreen}
         options={{ title: translate(language, 'profile.yourRoutes') }}
+      />
+      <Stack.Screen
+        name="Leaderboard"
+        component={LeaderboardScreen}
+        options={{ title: translate(language, 'leaderboard.title') }}
       />
     </Stack.Navigator>
   );

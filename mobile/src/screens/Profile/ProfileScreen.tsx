@@ -16,10 +16,15 @@ import { AvatarPicker } from '../../components/AvatarPicker';
 import { StatTile } from '../../components/StatTile';
 import { ProgressRow } from '../../components/ProgressRow';
 import { PendingSyncBanner } from '../../components/PendingSyncBanner';
+import { AchievementsSection } from '../../components/AchievementsSection';
 import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { useAuthStore } from '../../store/authStore';
-import { useMyLevel, useMyProgress } from '../../api/hooks/useProgress';
+import {
+  useAchievements,
+  useMyLevel,
+  useMyProgress,
+} from '../../api/hooks/useProgress';
 import { useUpdateAvatar } from '../../api/hooks/useUsers';
 import { getApiErrorMessage } from '../../api/client';
 import { LANGUAGES, useLocaleStore, useT, usePickLocalized } from '../../i18n';
@@ -40,6 +45,7 @@ export function ProfileScreen({
   const setLanguage = useLocaleStore((s) => s.setLanguage);
   const { data, isLoading, isError, error, refetch, isRefetching } =
     useMyProgress();
+  const { data: achievements } = useAchievements();
   const [pickerOpen, setPickerOpen] = useState(false);
   const updateAvatar = useUpdateAvatar();
 
@@ -93,6 +99,20 @@ export function ProfileScreen({
 
       <LevelBlock />
 
+      <Pressable
+        style={[styles.leaderboardRow, { backgroundColor: theme.primarySoft }]}
+        onPress={() => navigation.navigate('Leaderboard')}
+      >
+        <Icon name="podium-gold" size={22} color={theme.primary} />
+        <View style={styles.leaderboardText}>
+          <AppText variant="bodyStrong">{t('leaderboard.title')}</AppText>
+          <AppText variant="caption" color={colors.textSecondary}>
+            {t('leaderboard.subtitle')}
+          </AppText>
+        </View>
+        <Icon name="chevron-right" size={22} color={colors.textMuted} />
+      </Pressable>
+
       <PendingSyncBanner />
 
       <View style={styles.summary}>
@@ -114,6 +134,10 @@ export function ProfileScreen({
           label={t('profile.movingTime')}
         />
       </View>
+
+      {achievements ? (
+        <AchievementsSection achievements={achievements} />
+      ) : null}
 
       {/* Language selector */}
       <AppText variant="overline" color={colors.textMuted} style={styles.langTitle}>
@@ -304,6 +328,14 @@ const styles = StyleSheet.create({
   },
   langTitle: { marginTop: spacing.xxl, marginBottom: spacing.sm },
   langRow: { flexDirection: 'row', flexWrap: 'wrap' },
+  leaderboardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    padding: spacing.lg,
+    marginTop: spacing.lg,
+  },
+  leaderboardText: { flex: 1, marginLeft: spacing.md },
   levelCard: { marginTop: spacing.lg, backgroundColor: colors.surface },
   levelHeader: { flexDirection: 'row', alignItems: 'center' },
   levelBadge: {

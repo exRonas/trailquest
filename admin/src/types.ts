@@ -95,6 +95,7 @@ export interface RouteSummary {
   country: LocalizedText;
   coverImageUrl: string | null;
   createdAt: string;
+  rating: { average: number; count: number };
   startLat: number | null;
   startLng: number | null;
   _count: { checkpoints: number; tips: number; posts: number };

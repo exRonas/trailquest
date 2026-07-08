@@ -810,3 +810,60 @@ none.
 > flow (offline start → scan → finish → reconnect → auto-sync) needs a real
 > end-to-end pass next time the phone's plugged in, ideally in the same
 > no-signal spot that surfaced the original bug.
+
+---
+
+## Round 14 — engagement batch: offline routes cache, reviews, achievements,
+## leaderboard (2026-07-08)
+
+User asked "what else can we add?" then "do them all one by one, verify
+everything, deploy as v2.3". Shipped four self-contained features (push
+notifications + password reset deferred — they need external Firebase/SMTP
+accounts the user has to set up first).
+
+- [x] **E1 Offline routes list cache.** Cold-starting offline showed
+      "Маршрутов: 0" because React Query's cache is in-memory only. New
+      `mobile/src/services/routesCache.ts` persists the unfiltered list to
+      AsyncStorage on every successful fetch (`routes.api.fetchRoutes`, only
+      when no filters) and `hydrateRoutesCache(queryClient)` seeds the query
+      cache on launch from `RootNavigator` (only if still empty, so a live
+      fetch always wins). No new dependency (didn't pull in the
+      react-query persist-client packages).
+- [x] **E2 Route ratings & reviews.** New `RouteReview` model (1..5 + optional
+      comment, `@@unique([userId,routeId])`, additive migration
+      `20260708114849_add_route_reviews`). Backend: `review.service/
+      controller/schema`, wired under `route.routes.ts` — `GET
+      /routes/:id/reviews` (optionalAuth, returns `{summary, mine, reviews}`),
+      `PUT /routes/:id/reviews` (upsert), `DELETE /routes/:id/reviews`. Route
+      list + detail now carry a `rating: {average, count}` aggregate
+      (`getRatingsForRoutes` groupBy for the list, `getRouteRating` for
+      detail). Mobile: `StarRating` component (display + interactive),
+      `RouteReviews` section on Route Detail (aggregate + your-rating editor +
+      others' reviews), stars on `RouteCard` + detail header,
+      `reviews.api`/`useReviews`. Admin: rating shown on the routes list.
+      Smoke-tested live: PUT 5★ → avg updates on list+detail, GET shows
+      `mine`, invalid rating 6 → 422, DELETE → avg back to 0/0.
+- [x] **E3 Achievements.** Derived on read (no table, no double-award) from
+      four aggregate stats — `backend/src/lib/achievements.ts` catalog (9
+      badges across routesCompleted / distanceKm / checkpointsScanned /
+      countries), `progress.service.getAchievements` runs 4 COUNT/SUM
+      queries, `GET /progress/achievements`. Mobile `AchievementsSection`
+      badge grid on Profile (unlocked = accent disc, locked = greyed +
+      current/threshold). Unit test added (`achievements.test.ts`, +5 tests).
+- [x] **E4 Global leaderboard.** `progress.service.getLeaderboard` ranks users
+      by total XP across countries (in-memory sort — tiny userbase), returns
+      top 50 + the caller's own row if below the cut. `GET
+      /progress/leaderboard`. Mobile `LeaderboardScreen` (medals for top 3,
+      "you" highlight) in the Profile stack, opened from a row on Profile.
+- All three apps `tsc --noEmit` clean; backend jest 29/29, mobile jest 11/11.
+  Achievements/leaderboard/reviews query caches invalidated after
+  scan/complete (ActiveNavigation, offlineQueue.syncAll, useCompleteRoute).
+- Shipped as v2.3 (versionCode 14).
+
+> Deferred, need external setup by the user first:
+> - **Push notifications** — needs a Firebase/FCM project + native config.
+> - **Password reset** — needs an SMTP/email delivery service.
+> Not verified on device this round (adb was unauthorized after killing a
+> stuck process during the v2.2 build) — the reviews editor, achievements
+> grid, and leaderboard screen went out on tsc+jest+curl trust; worth a real
+> look next time the phone's connected and authorized.

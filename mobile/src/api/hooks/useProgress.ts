@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   completeRoute,
   deleteProgress,
+  fetchAchievements,
+  fetchLeaderboard,
   fetchMyLevel,
   fetchMyLevels,
   fetchMyProgress,
@@ -31,6 +33,20 @@ export function useMyLevel() {
   });
 }
 
+export function useAchievements() {
+  return useQuery({
+    queryKey: queryKeys.myAchievements(),
+    queryFn: fetchAchievements,
+  });
+}
+
+export function useLeaderboard() {
+  return useQuery({
+    queryKey: queryKeys.leaderboard(),
+    queryFn: fetchLeaderboard,
+  });
+}
+
 export function useStartRoute() {
   return useMutation({
     mutationFn: (routeId: string) => startRoute(routeId),
@@ -46,6 +62,8 @@ export function useCompleteRoute() {
       qc.invalidateQueries({ queryKey: queryKeys.myProgress() });
       qc.invalidateQueries({ queryKey: queryKeys.myLevels() });
       qc.invalidateQueries({ queryKey: queryKeys.myLevel() });
+      qc.invalidateQueries({ queryKey: queryKeys.myAchievements() });
+      qc.invalidateQueries({ queryKey: queryKeys.leaderboard() });
     },
   });
 }

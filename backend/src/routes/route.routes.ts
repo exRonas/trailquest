@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { validate } from '../middleware/validate';
-import { requireAuth, requireAdmin } from '../middleware/auth';
+import { requireAuth, requireAdmin, optionalAuth } from '../middleware/auth';
 import {
   countriesQuerySchema,
   fullRouteSchema,
@@ -11,10 +11,12 @@ import { idParamSchema, routeIdParamSchema } from '../schemas/common.schema';
 import {
   createPostSchema,
 } from '../schemas/forum.schema';
+import { upsertReviewSchema } from '../schemas/review.schema';
 import * as routeController from '../controllers/route.controller';
 import * as checkpointController from '../controllers/checkpoint.controller';
 import * as tipController from '../controllers/tip.controller';
 import * as forumController from '../controllers/forum.controller';
+import * as reviewController from '../controllers/review.controller';
 import * as progressController from '../controllers/progress.controller';
 
 const router = Router();
@@ -44,8 +46,27 @@ router.get(
   validate({ params: routeIdParamSchema }),
   forumController.listPosts,
 );
+// Reviews list is public but personalises ("your review") when signed in.
+router.get(
+  '/:routeId/reviews',
+  optionalAuth,
+  validate({ params: routeIdParamSchema }),
+  reviewController.list,
+);
 
 // ─── Authenticated user actions ──────────────────────────────────────────────
+router.put(
+  '/:routeId/reviews',
+  requireAuth,
+  validate({ params: routeIdParamSchema, body: upsertReviewSchema }),
+  reviewController.upsert,
+);
+router.delete(
+  '/:routeId/reviews',
+  requireAuth,
+  validate({ params: routeIdParamSchema }),
+  reviewController.remove,
+);
 router.post(
   '/:routeId/posts',
   requireAuth,

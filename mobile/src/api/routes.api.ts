@@ -1,5 +1,6 @@
 import { api, unwrap } from './client';
 import { Language } from '../i18n/translations';
+import { saveRoutesCache } from '../services/routesCache';
 import {
   CountryOption,
   RouteDetail,
@@ -17,7 +18,12 @@ export async function fetchRoutes(
   if (filters.country) params.country = filters.country;
 
   const res = await api.get<{ data: RouteSummary[] }>('/routes', { params });
-  return unwrap(res.data);
+  const routes = unwrap(res.data);
+  // Persist the unfiltered list for offline cold starts (see routesCache.ts).
+  if (Object.keys(params).length === 0) {
+    void saveRoutesCache(routes);
+  }
+  return routes;
 }
 
 export async function fetchCountries(lang: Language): Promise<CountryOption[]> {

@@ -242,6 +242,8 @@ export async function syncAll(): Promise<{ synced: number; remaining: number }> 
     void queryClient.invalidateQueries({ queryKey: queryKeys.myProgress() });
     void queryClient.invalidateQueries({ queryKey: queryKeys.myLevels() });
     void queryClient.invalidateQueries({ queryKey: queryKeys.myLevel() });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.myAchievements() });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.leaderboard() });
   }
   return { synced, remaining: Object.keys(all).length };
 }

@@ -19,6 +19,8 @@ import {
 } from '../../components/ui';
 import { CategoryBadge, DifficultyBadge } from '../../components/RouteBadges';
 import { StatTile } from '../../components/StatTile';
+import { StarRating } from '../../components/StarRating';
+import { RouteReviews } from '../../components/RouteReviews';
 import { TipCard } from '../../components/TipCard';
 import { RoutePreviewMap } from '../../components/map/RoutePreviewMap';
 import { CheckpointModal } from '../../components/CheckpointModal';
@@ -164,6 +166,19 @@ export function RouteDetailScreen({
             </AppText>
           </View>
 
+          {data.rating.count > 0 ? (
+            <View style={styles.ratingRow}>
+              <StarRating value={data.rating.average} size={16} />
+              <AppText
+                variant="callout"
+                color={colors.textSecondary}
+                style={styles.ratingText}
+              >
+                {data.rating.average.toFixed(1)} ({data.rating.count})
+              </AppText>
+            </View>
+          ) : null}
+
           <View style={styles.statsCard}>
             <StatTile
               icon="map-marker-distance"
@@ -225,6 +240,10 @@ export function RouteDetailScreen({
               onPress={() => setSelected(cp)}
             />
           ))}
+
+          {/* Reviews */}
+          <SectionTitle icon="star-outline" title={t('review.title')} />
+          <RouteReviews routeId={data.id} />
 
           {/* Discussion */}
           <Divider />
@@ -350,6 +369,8 @@ const styles = StyleSheet.create({
   },
   regionRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs },
   region: { marginLeft: 4 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
+  ratingText: { marginLeft: spacing.sm },
   statsCard: {
     flexDirection: 'row',
     backgroundColor: colors.surface,

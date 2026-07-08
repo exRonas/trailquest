@@ -13,6 +13,7 @@ import {
   XP_PER_CHECKPOINT,
   XP_ROUTE_COMPLETE_BONUS,
 } from '../lib/levels';
+import { computeAchievements } from '../lib/achievements';
 
 /**
  * Start a route. If the user already has an in-progress (not completed) session
@@ -294,6 +295,102 @@ export async function getOverallLevel(userId: string) {
     _sum: { xp: true },
   });
   return levelForXp(agg._sum.xp ?? 0);
+}
+
+/**
+ * Achievement badges for the signed-in user, derived from aggregate stats
+ * (see src/lib/achievements.ts) — nothing is stored, so the catalog can change
+ * freely. Runs four cheap COUNT/SUM queries and maps them through the catalog.
+ */
+export async function getAchievements(userId: string) {
+  const [routesCompleted, distanceAgg, checkpointsScanned, countries] =
+    await Promise.all([
+      prisma.userRouteProgress.count({
+        where: { userId, completedAt: { not: null } },
+      }),
+      prisma.userRouteProgress.aggregate({
+        where: { userId, completedAt: { not: null } },
+        _sum: { totalDistanceKm: true },
+      }),
+      prisma.checkpointScan.count({ where: { progress: { userId } } }),
+      prisma.userCountryProgress.count({ where: { userId } }),
+    ]);
+
+  return computeAchievements({
+    routesCompleted,
+    distanceKm: distanceAgg._sum.totalDistanceKm ?? 0,
+    checkpointsScanned,
+    countries,
+  });
+}
+
+interface LeaderboardEntry {
+  rank: number;
+  user: { id: string; name: string; avatar: string | null };
+  xp: number;
+  level: number;
+  rankName: { ru: string; en: string; kk: string };
+  isMe: boolean;
+}
+
+/**
+ * Global leaderboard by total XP across all countries. Returns the top N plus,
+ * when the caller isn't in that top slice, their own entry appended so they can
+ * always see where they stand. The userbase is small (test app) so the full
+ * ranking is computed in memory rather than paginating in SQL.
+ */
+export async function getLeaderboard(
+  userId: string,
+  limit = 50,
+): Promise<{ top: LeaderboardEntry[]; me: LeaderboardEntry | null }> {
+  const sums = await prisma.userCountryProgress.groupBy({
+    by: ['userId'],
+    _sum: { xp: true },
+  });
+  const ranked = sums
+    .map((s) => ({ userId: s.userId, xp: s._sum.xp ?? 0 }))
+    .filter((r) => r.xp > 0)
+    .sort((a, b) => b.xp - a.xp);
+
+  const myIndex = ranked.findIndex((r) => r.userId === userId);
+  const topSlice = ranked.slice(0, limit);
+
+  // Fetch display info for everyone we're about to return (top slice + me).
+  const idsToFetch = new Set(topSlice.map((r) => r.userId));
+  if (myIndex >= 0) idsToFetch.add(userId);
+  const users = await prisma.user.findMany({
+    where: { id: { in: [...idsToFetch] } },
+    select: { id: true, name: true, avatar: true },
+  });
+  const userById = new Map(users.map((u) => [u.id, u]));
+
+  const toEntry = (
+    row: { userId: string; xp: number },
+    index: number,
+  ): LeaderboardEntry => {
+    const u = userById.get(row.userId);
+    const level = levelForXp(row.xp);
+    return {
+      rank: index + 1,
+      user: {
+        id: row.userId,
+        name: u?.name ?? '—',
+        avatar: u?.avatar ?? null,
+      },
+      xp: row.xp,
+      level: level.level,
+      rankName: level.rank,
+      isMe: row.userId === userId,
+    };
+  };
+
+  const top = topSlice.map((row, i) => toEntry(row, i));
+  const me =
+    myIndex >= 0 && myIndex >= limit
+      ? toEntry(ranked[myIndex], myIndex)
+      : null;
+
+  return { top, me };
 }
 
 /**

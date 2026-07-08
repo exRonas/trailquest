@@ -66,6 +66,7 @@ model User {
   comments        ForumComment[]
   progress        UserRouteProgress[]
   countryProgress UserCountryProgress[]
+  reviews         RouteReview[]
 
   @@map("users")
 }
@@ -109,6 +110,7 @@ model Route {
   tips        RouteTip[]
   posts       ForumPost[]
   progress    UserRouteProgress[]
+  reviews     RouteReview[]
 
   @@index([category])
   @@index([difficulty])
@@ -193,6 +195,26 @@ model RouteTip {
   @@index([routeId])
   @@index([checkpointId])
   @@map("route_tips")
+}
+
+// One rating (1..5) + optional written review per user per route. Upserted, so
+// a user editing their review updates the same row. Aggregated into an average
+// + count on the route summary/detail for display.
+model RouteReview {
+  id        String   @id @default(uuid())
+  routeId   String
+  route     Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, routeId])
+  @@index([routeId])
+  @@index([userId])
+  @@map("route_reviews")
 }
 
 model ForumPost {

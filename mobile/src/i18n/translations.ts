@@ -243,6 +243,32 @@ const en: Dict = {
   'route.stopsOne': '1 stop',
   'route.startFailed': 'Could not start route',
 
+  // Reviews & ratings
+  'review.title': 'Reviews',
+  'review.none': 'No reviews yet. Be the first to rate this route.',
+  'review.rateThis': 'Rate this route',
+  'review.yourRating': 'Your rating',
+  'review.commentPlaceholder': 'Share your experience (optional)',
+  'review.submit': 'Post review',
+  'review.update': 'Update review',
+  'review.remove': 'Remove',
+  'review.saveFailed': 'Could not save your review',
+  'review.count': '{count} reviews',
+  'review.countOne': '1 review',
+  'review.edited': 'edited',
+
+  // Achievements
+  'achievements.title': 'Achievements',
+  'achievements.count': '{unlocked} of {total}',
+  'achievements.progress': '{current} / {threshold}',
+
+  // Leaderboard
+  'leaderboard.title': 'Leaderboard',
+  'leaderboard.subtitle': 'Top hikers by XP',
+  'leaderboard.you': 'You',
+  'leaderboard.empty': 'No rankings yet. Complete a route to get on the board.',
+  'leaderboard.yourPosition': 'Your position',
+
   // Public user profile
   'userProfile.title': 'Profile',
   'userProfile.completed': 'Completed',
@@ -469,6 +495,32 @@ const ru: Dict = {
   'route.stopsOne': '1 точка',
   'route.startFailed': 'Не удалось начать маршрут',
 
+  // Reviews & ratings
+  'review.title': 'Отзывы',
+  'review.none': 'Пока нет отзывов. Оцените маршрут первым.',
+  'review.rateThis': 'Оцените маршрут',
+  'review.yourRating': 'Ваша оценка',
+  'review.commentPlaceholder': 'Поделитесь впечатлением (необязательно)',
+  'review.submit': 'Оставить отзыв',
+  'review.update': 'Обновить отзыв',
+  'review.remove': 'Удалить',
+  'review.saveFailed': 'Не удалось сохранить отзыв',
+  'review.count': '{count} отзывов',
+  'review.countOne': '1 отзыв',
+  'review.edited': 'изменён',
+
+  // Achievements
+  'achievements.title': 'Достижения',
+  'achievements.count': '{unlocked} из {total}',
+  'achievements.progress': '{current} / {threshold}',
+
+  // Leaderboard
+  'leaderboard.title': 'Таблица лидеров',
+  'leaderboard.subtitle': 'Лучшие по опыту',
+  'leaderboard.you': 'Вы',
+  'leaderboard.empty': 'Пока нет рейтинга. Завершите маршрут, чтобы попасть в таблицу.',
+  'leaderboard.yourPosition': 'Ваша позиция',
+
   'userProfile.title': 'Профиль',
   'userProfile.completed': 'Пройдено',
   'userProfile.totalDist': 'Всего км',
@@ -693,6 +745,32 @@ const kk: Dict = {
   'route.stops': '{count} нүкте',
   'route.stopsOne': '1 нүкте',
   'route.startFailed': 'Маршрутты бастау мүмкін болмады',
+
+  // Reviews & ratings
+  'review.title': 'Пікірлер',
+  'review.none': 'Әзірге пікір жоқ. Маршрутты бірінші болып бағалаңыз.',
+  'review.rateThis': 'Маршрутты бағалаңыз',
+  'review.yourRating': 'Сіздің бағаңыз',
+  'review.commentPlaceholder': 'Әсеріңізбен бөлісіңіз (міндетті емес)',
+  'review.submit': 'Пікір қалдыру',
+  'review.update': 'Пікірді жаңарту',
+  'review.remove': 'Жою',
+  'review.saveFailed': 'Пікірді сақтау мүмкін болмады',
+  'review.count': '{count} пікір',
+  'review.countOne': '1 пікір',
+  'review.edited': 'өзгертілді',
+
+  // Achievements
+  'achievements.title': 'Жетістіктер',
+  'achievements.count': '{total} ішінен {unlocked}',
+  'achievements.progress': '{current} / {threshold}',
+
+  // Leaderboard
+  'leaderboard.title': 'Көшбасшылар кестесі',
+  'leaderboard.subtitle': 'XP бойынша үздіктер',
+  'leaderboard.you': 'Сіз',
+  'leaderboard.empty': 'Әзірге рейтинг жоқ. Кестеге ену үшін маршрутты аяқтаңыз.',
+  'leaderboard.yourPosition': 'Сіздің орныңыз',
 
   'userProfile.title': 'Профиль',
   'userProfile.completed': 'Өтілді',

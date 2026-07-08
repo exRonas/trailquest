@@ -40,4 +40,7 @@ export const queryKeys = {
   post: (postId: string) => ['post', postId] as const,
   comments: (postId: string) => ['comments', postId] as const,
   publicProfile: (userId: string) => ['users', 'profile', userId] as const,
+  reviews: (routeId: string) => ['reviews', routeId] as const,
+  leaderboard: () => ['leaderboard'] as const,
+  myAchievements: () => ['achievements', 'mine'] as const,
 };

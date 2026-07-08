@@ -13,6 +13,8 @@ import { useAuthStore } from '../store/authStore';
 import { useLocaleStore } from '../i18n';
 import { initMapbox } from '../services/mapbox';
 import { syncAll } from '../services/offlineQueue';
+import { hydrateRoutesCache } from '../services/routesCache';
+import { queryClient } from '../api/queryClient';
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabs } from './MainTabs';
 
@@ -42,6 +44,8 @@ export function RootNavigator(): React.ReactElement {
     initMapbox();
     void hydrateLocale();
     void hydrate();
+    // Seed the Explore list from disk so a cold offline launch isn't empty.
+    void hydrateRoutesCache(queryClient);
   }, [hydrate, hydrateLocale]);
 
   // Flush any offline-queued route sessions (see offlineQueue.ts) whenever

@@ -55,6 +55,18 @@ export const myLevel = asyncHandler(async (req: Request, res: Response) => {
   sendData(res, level);
 });
 
+export const myAchievements = asyncHandler(
+  async (req: Request, res: Response) => {
+    const achievements = await progressService.getAchievements(userId(req));
+    sendData(res, achievements);
+  },
+);
+
+export const leaderboard = asyncHandler(async (req: Request, res: Response) => {
+  const board = await progressService.getLeaderboard(userId(req));
+  sendData(res, board);
+});
+
 export const complete = asyncHandler(async (req: Request, res: Response) => {
   const progress = await progressService.completeRoute(
     req.params.id,
