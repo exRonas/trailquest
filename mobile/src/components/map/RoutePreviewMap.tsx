@@ -85,16 +85,6 @@ export function RoutePreviewMap({
     );
   }
 
-  const typeColorMatch = [
-    'match',
-    ['get', 'type'],
-    'HISTORICAL', colors.checkpoint.HISTORICAL.main,
-    'DANGER', colors.checkpoint.DANGER.main,
-    'UPCOMING', colors.checkpoint.UPCOMING.main,
-    'INFO', colors.checkpoint.INFO.main,
-    colors.checkpoint.INFO.main,
-  ] as unknown as string;
-
   return (
     <View style={[styles.wrap, { height }]}>
       <Mapbox.MapView
@@ -143,7 +133,7 @@ export function RoutePreviewMap({
           <Mapbox.CircleLayer
             id="checkpoint-circles"
             style={{
-              circleColor: typeColorMatch,
+              circleColor: theme.primary,
               circleRadius: 11,
               circleStrokeWidth: 3,
               circleStrokeColor: colors.surface,

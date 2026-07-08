@@ -68,8 +68,14 @@ async function refreshAccessToken(): Promise<string | null> {
         onTokensRefreshed?.(auth);
         return auth.accessToken;
       })
-      .catch(() => {
-        onUnauthorized?.();
+      .catch((err) => {
+        // Only a real rejection (invalid/expired refresh token) means the
+        // session is actually dead. A network failure just means we
+        // couldn't reach the server right now — logging out here would
+        // wipe a perfectly good session the moment signal drops.
+        if (!isNetworkError(err)) {
+          onUnauthorized?.();
+        }
         return null;
       })
       .finally(() => {

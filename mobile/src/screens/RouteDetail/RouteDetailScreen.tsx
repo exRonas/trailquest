@@ -22,8 +22,6 @@ import { StatTile } from '../../components/StatTile';
 import { TipCard } from '../../components/TipCard';
 import { RoutePreviewMap } from '../../components/map/RoutePreviewMap';
 import { CheckpointModal } from '../../components/CheckpointModal';
-import { OfflineMapCard } from '../../components/OfflineMapCard';
-import { hasMapboxToken } from '../../services/mapbox';
 import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { checkpointIcon, categoryIcon } from '../../theme/icons';
 import {
@@ -49,7 +47,7 @@ export function RouteDetailScreen({
   const pickLocalized = usePickLocalized();
   const language = useLocaleStore((s) => s.language);
   const insets = useSafeAreaInsets();
-  const { data, isLoading, isError, error, refetch } = useRouteDetail(routeId);
+  const { data, isLoading, error, refetch } = useRouteDetail(routeId);
   const startMutation = useStartRoute();
 
   const [selected, setSelected] = useState<Checkpoint | null>(null);
@@ -61,20 +59,6 @@ export function RouteDetailScreen({
       warnings: tips.filter((t) => t.type === 'WARNING'),
       advice: tips.filter((t) => t.type === 'ADVICE'),
     };
-  }, [data]);
-
-  // Every coordinate touched by the route (line + checkpoints) — the offline
-  // tile pack needs to cover all of it, not just the path.
-  const offlineCoords = useMemo<[number, number][]>(() => {
-    if (!data) return [];
-    const line =
-      data.routeGeometry && data.routeGeometry.length > 1
-        ? data.routeGeometry.map((p) => [p.lng, p.lat] as [number, number])
-        : data.pathPoints.map((p) => [p.lng, p.lat] as [number, number]);
-    const checkpointCoords = data.checkpoints.map(
-      (c) => [c.lng, c.lat] as [number, number],
-    );
-    return [...line, ...checkpointCoords];
   }, [data]);
 
   const onStart = async () => {
@@ -114,10 +98,13 @@ export function RouteDetailScreen({
     }
   };
 
-  if (isLoading) {
+  // Only bail to a full error screen when there's truly nothing cached to
+  // show — a background refetch failing (e.g. signal drops while the route
+  // is already open) must not blank out a screen the user is actively using.
+  if (isLoading && !data) {
     return <Loader message={t('route.loading')} />;
   }
-  if (isError || !data) {
+  if (!data) {
     return (
       <View style={styles.fill}>
         <BackButton top={insets.top} onPress={() => navigation.goBack()} />
@@ -212,9 +199,6 @@ export function RouteDetailScreen({
               setSelected(data.checkpoints.find((c) => c.id === id) ?? null)
             }
           />
-          {hasMapboxToken ? (
-            <OfflineMapCard routeId={data.id} coords={offlineCoords} />
-          ) : null}
 
           {/* Tips & warnings */}
           {warnings.length + advice.length > 0 ? (

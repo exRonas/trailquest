@@ -1,4 +1,19 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, onlineManager } from '@tanstack/react-query';
+import NetInfo from '@react-native-community/netinfo';
+
+// Without this, React Query has no idea the device is offline — it just
+// retries each failed fetch (with backoff, on top of axios's own 15s
+// timeout per attempt), so a query with no cached data sits in `isLoading`
+// through several slow, doomed attempts before finally erroring. Wiring
+// NetInfo in makes it mark queries "paused" the instant connectivity drops:
+// no more attempts, no more waiting, and it resumes automatically the
+// moment `isConnected` flips back — this is the fix for "app hangs / waits
+// for internet" reported after finishing a route with no signal.
+onlineManager.setEventListener((setOnline) => {
+  return NetInfo.addEventListener((state) => {
+    setOnline(!!state.isConnected);
+  });
+});
 
 export const queryClient = new QueryClient({
   defaultOptions: {

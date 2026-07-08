@@ -8,12 +8,14 @@ import {
 import {
   registerAuthHandlers,
   setAuthTokens,
+  isNetworkError,
 } from '../api/client';
 import {
   clearTokens,
   loadTokens,
   saveTokens,
 } from '../services/keychain';
+import { clearCachedUser, loadCachedUser, saveCachedUser } from '../services/userCache';
 
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
@@ -53,9 +55,21 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       // Validates the token (and transparently refreshes it if expired).
       const user = await fetchMe();
+      void saveCachedUser(user);
       set({ status: 'authenticated', user });
-    } catch {
+    } catch (err) {
+      if (isNetworkError(err)) {
+        // Couldn't reach the server to validate — that's not the same as an
+        // invalid session. Stay logged in with the last-known profile so
+        // opening the app with no signal doesn't bounce you to the login
+        // screen; the request interceptor's real 401 handling still logs
+        // out properly once a genuinely rejected token is used.
+        const cachedUser = await loadCachedUser();
+        set({ status: 'authenticated', user: cachedUser });
+        return;
+      }
       await clearTokens();
+      await clearCachedUser();
       setAuthTokens(null);
       set({ status: 'unauthenticated', user: null });
     }
@@ -64,17 +78,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email, password) => {
     const auth = await loginRequest({ email, password });
     await persist(auth);
+    void saveCachedUser(auth.user);
     set({ status: 'authenticated', user: auth.user });
   },
 
   register: async (email, password, name) => {
     const auth = await registerRequest({ email, password, name });
     await persist(auth);
+    void saveCachedUser(auth.user);
     set({ status: 'authenticated', user: auth.user });
   },
 
   logout: async () => {
     await clearTokens();
+    await clearCachedUser();
     setAuthTokens(null);
     set({ status: 'unauthenticated', user: null });
   },
@@ -88,10 +105,12 @@ registerAuthHandlers({
       accessToken: auth.accessToken,
       refreshToken: auth.refreshToken,
     });
+    void saveCachedUser(auth.user);
     useAuthStore.setState({ user: auth.user, status: 'authenticated' });
   },
   onUnauthorized: () => {
     void clearTokens();
+    void clearCachedUser();
     setAuthTokens(null);
     useAuthStore.setState({ status: 'unauthenticated', user: null });
   },

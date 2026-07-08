@@ -154,8 +154,11 @@ export function ProfileScreen({
     />
   );
 
-  if (isLoading) return <Loader message={t('profile.loading')} />;
-  if (isError) {
+  // Only bail to a full loading/error screen when there's truly nothing
+  // cached — a background refetch pausing/failing offline must not blank a
+  // screen the user is already looking at (see RouteDetailScreen).
+  if (isLoading && !data) return <Loader message={t('profile.loading')} />;
+  if (isError && !data) {
     return (
       <View style={styles.fill}>
         <ErrorState
