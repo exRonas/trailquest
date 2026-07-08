@@ -13,7 +13,7 @@ import { TrackMap } from '../../components/map/TrackMap';
 import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import {
   formatClock,
-  formatDate,
+  formatDateTime,
   formatDistanceKm,
 } from '../../utils/format';
 import { useMyProgress } from '../../api/hooks/useProgress';
@@ -140,14 +140,14 @@ export function ActivityDetailScreen({
           <AppText variant="callout" color={colors.textSecondary}>
             {t('activity.started')}
           </AppText>
-          <AppText variant="callout">{formatDate(session.startedAt)}</AppText>
+          <AppText variant="callout">{formatDateTime(session.startedAt)}</AppText>
         </View>
         {session.completedAt ? (
           <View style={styles.metaRow}>
             <AppText variant="callout" color={colors.textSecondary}>
               {t('activity.finished')}
             </AppText>
-            <AppText variant="callout">{formatDate(session.completedAt)}</AppText>
+            <AppText variant="callout">{formatDateTime(session.completedAt)}</AppText>
           </View>
         ) : null}
       </Card>

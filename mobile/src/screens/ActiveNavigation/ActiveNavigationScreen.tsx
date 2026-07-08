@@ -142,6 +142,8 @@ function NavigationActive({
     const progress = await engine.complete();
     if (progress) {
       qc.invalidateQueries({ queryKey: queryKeys.myProgress() });
+      qc.invalidateQueries({ queryKey: queryKeys.myLevels() });
+      qc.invalidateQueries({ queryKey: queryKeys.myLevel() });
       setSummary(progress);
     }
   };

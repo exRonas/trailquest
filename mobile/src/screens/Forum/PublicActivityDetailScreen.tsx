@@ -5,7 +5,7 @@ import { AppText, Card, Loader } from '../../components/ui';
 import { StatTile } from '../../components/StatTile';
 import { TrackMap } from '../../components/map/TrackMap';
 import { colors, shadow, spacing } from '../../theme';
-import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
+import { formatClock, formatDateTime, formatDistanceKm } from '../../utils/format';
 import { usePublicProfile } from '../../api/hooks/useUsers';
 import { useT, usePickLocalized } from '../../i18n';
 import { ForumScreenProps } from '../../types/navigation';
@@ -75,14 +75,14 @@ export function PublicActivityDetailScreen({
           <AppText variant="callout" color={colors.textSecondary}>
             {t('activity.started')}
           </AppText>
-          <AppText variant="callout">{formatDate(session.startedAt)}</AppText>
+          <AppText variant="callout">{formatDateTime(session.startedAt)}</AppText>
         </View>
         {session.completedAt ? (
           <View style={styles.metaRow}>
             <AppText variant="callout" color={colors.textSecondary}>
               {t('activity.finished')}
             </AppText>
-            <AppText variant="callout">{formatDate(session.completedAt)}</AppText>
+            <AppText variant="callout">{formatDateTime(session.completedAt)}</AppText>
           </View>
         ) : null}
       </Card>

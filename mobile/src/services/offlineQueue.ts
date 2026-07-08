@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isNetworkError } from '../api/client';
 import { logPoints, scanCheckpoint, startRoute, completeRoute } from '../api/progress.api';
+import { queryClient, queryKeys } from '../api/queryClient';
 import { PathLogPoint } from '../types/api';
 
 /**
@@ -233,6 +234,15 @@ export async function syncAll(): Promise<{ synced: number; remaining: number }> 
     }
   }
   await saveAll(all);
+  if (synced > 0) {
+    // A queued session finishing here can award XP/level-ups server-side,
+    // but nothing else in the app knows to refetch — without this, the
+    // profile/levels screens keep showing stale numbers until some other
+    // action happens to invalidate them (e.g. completing a later route).
+    void queryClient.invalidateQueries({ queryKey: queryKeys.myProgress() });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.myLevels() });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.myLevel() });
+  }
   return { synced, remaining: Object.keys(all).length };
 }
 

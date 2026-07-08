@@ -44,6 +44,8 @@ export function useCompleteRoute() {
       completeRoute(vars.progressId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.myProgress() });
+      qc.invalidateQueries({ queryKey: queryKeys.myLevels() });
+      qc.invalidateQueries({ queryKey: queryKeys.myLevel() });
     },
   });
 }
