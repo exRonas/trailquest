@@ -193,29 +193,6 @@ function NavigationActive({
     );
   }
 
-  // Type color is always visible (as the stroke, or the fill once reached) —
-  // unvisited reads as a tinted ring with its order number, visited as a
-  // solid disc of the same color + checkmark, so "what kind of checkpoint"
-  // never gets overridden by "done", and the sequence stays legible.
-  const typeColorMatch = [
-    'match',
-    ['get', 'type'],
-    'HISTORICAL', colors.checkpoint.HISTORICAL.main,
-    'DANGER', colors.checkpoint.DANGER.main,
-    'UPCOMING', colors.checkpoint.UPCOMING.main,
-    'INFO', colors.checkpoint.INFO.main,
-    colors.checkpoint.INFO.main,
-  ] as unknown as string;
-  const typeSoftMatch = [
-    'match',
-    ['get', 'type'],
-    'HISTORICAL', colors.checkpoint.HISTORICAL.soft,
-    'DANGER', colors.checkpoint.DANGER.soft,
-    'UPCOMING', colors.checkpoint.UPCOMING.soft,
-    'INFO', colors.checkpoint.INFO.soft,
-    colors.checkpoint.INFO.soft,
-  ] as unknown as string;
-
   return (
     <View style={styles.fill}>
       {hasMapboxToken ? (
@@ -258,11 +235,11 @@ function NavigationActive({
               id="nav-checkpoint-circles"
               style={{
                 // Unreached: soft tinted ring showing its order number.
-                // Reached: solid disc in that same type color + checkmark.
-                circleColor: ['case', ['get', 'reached'], typeColorMatch, typeSoftMatch],
+                // Reached: solid disc in the brand accent + checkmark.
+                circleColor: ['case', ['get', 'reached'], theme.primary, theme.primarySoft],
                 circleRadius: 11,
                 circleStrokeWidth: 3,
-                circleStrokeColor: typeColorMatch,
+                circleStrokeColor: theme.primary,
               }}
             />
             <Mapbox.SymbolLayer
@@ -271,7 +248,7 @@ function NavigationActive({
               style={{
                 textField: ['get', 'order'],
                 textSize: 12,
-                textColor: typeColorMatch,
+                textColor: theme.primary,
                 textFont: ['Open Sans Bold', 'Arial Unicode MS Bold'],
                 textAllowOverlap: true,
                 textIgnorePlacement: true,

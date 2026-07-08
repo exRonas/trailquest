@@ -27,6 +27,12 @@ export function darken(hex: string, amount: number): string {
   return mix(hex, [0, 0, 0], amount);
 }
 
+/** Nudge `base` toward `target` by `amount` (0..1) — keeps base's hue
+ *  dominant at small amounts while giving it some of target's cast. */
+export function blend(base: string, target: string, amount: number): string {
+  return mix(base, hexToRgb(target), amount);
+}
+
 export interface BrandShades {
   primary: string;
   primaryDark: string;
