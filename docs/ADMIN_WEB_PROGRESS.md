@@ -867,3 +867,66 @@ accounts the user has to set up first).
 > stuck process during the v2.2 build) — the reviews editor, achievements
 > grid, and leaderboard screen went out on tsc+jest+curl trust; worth a real
 > look next time the phone's connected and authorized.
+
+---
+
+## Round 15 — dark mode, friends, monthly leaderboard, achievement popups,
+## share-as-card, admin analytics + admin tests (2026-07-08/09)
+
+Big engagement batch (7 items). Phone was disconnected partway through, so the
+back half went out on tsc/jest/gradle-build verification, not on-device.
+
+- [x] **Dark mode.** `colors.ts` now builds `lightColors`/`darkColors`; the
+      exported `colors` is baked from `Appearance.getColorScheme()` at module
+      load so static `StyleSheet.create` calls across ~57 files get the right
+      neutrals with zero churn (system-follow is fully correct). `useThemeColors`
+      is reactive to a new `themeStore` (mode system|light|dark, persisted) + OS
+      scheme; UI primitives (AppText, Card, Screen, Chip, Banner, Button,
+      TextField, Divider, IconButton, ProgressBar, StateViews, tab bar, headers)
+      converted to read theme colors live so a manual override also reflows.
+      `shadeSet(base, dark)` darkens brand soft/tint in dark mode. StatusBar +
+      NavigationContainer theme wired. Settings → Appearance selector.
+      NOTE: manual Light/Dark override on a light-OS phone fully themes the
+      primitive-driven chrome live, but a few screen-specific static
+      `styles.fill` backgrounds only flip on next launch / when the OS matches —
+      acceptable since system-follow is the primary path.
+- [x] **Achievement popups.** Tapping a badge opens a detail modal
+      (icon + description + unlocked pill or progress bar). `achievements.unlocked`
+      i18n key added.
+- [x] **Monthly leaderboard.** `getLeaderboard(userId, period)` — 'month' scores
+      by checkpoint scans in the last 30 days × XP_PER_CHECKPOINT (route bonus
+      excluded, documented); level/rank always from all-time XP so a veteran
+      isn't shown as Novice on the monthly board. Mobile All-time/This-month
+      chip toggle. Leaderboard invalidation switched to the `['leaderboard']`
+      prefix so both periods refresh.
+- [x] **Friends.** `Friendship` model (PENDING/ACCEPTED, migration
+      add_friendships). `friend.service` (send/auto-accept-on-mutual/accept/
+      remove/list/incoming/status) + `/api/friends` routes. Mobile
+      `FriendButton` on public profiles (add/requested/incoming/friends states),
+      `FriendsScreen` (friends + incoming requests) in Profile stack with an
+      incoming-count badge on the Profile row. `ProfileScreenProps` made
+      composite so Friends can deep-link into the Forum tab's UserProfile.
+      Integration test covers the full lifecycle (backend jest 37/37).
+- [x] **Share as image card.** Added `react-native-view-shot` +
+      `react-native-share`. `ShareableStatsCard` (fixed-color branded card, no
+      native map) rendered off-screen and captured to PNG by
+      `services/shareCard.ts`; RunSummaryOverlay + ActivityDetailScreen share the
+      image instead of plain text. **Release APK build succeeds with both new
+      native modules** (autolinked) — but the actual share sheet is UNTESTED on
+      device (phone disconnected).
+- [x] **Admin analytics.** `GET /api/admin/analytics` (totals, 30-day new/active
+      users, most-completed + top-rated routes). Admin web `AnalyticsPage` +
+      nav link.
+- [x] **Admin tests.** Vitest added to `admin/` (`npm test`); 10 unit tests
+      (pickLocalizedText, apiErrorMessage, snapToRoads straight-line fallback
+      with fetch mocked).
+- [x] Fix: review editor Remove button overlapped Submit (both full-width in a
+      row) — now sized side by side. (Star-visibility fix shipped separately in
+      v2.5.)
+- Shipped as v2.6 (versionCode 17). backend jest 37/37, mobile jest 11/11,
+  admin vitest 10/10, all tsc clean, release APK builds.
+
+> Still deferred (need the user's external accounts): push notifications
+> (Firebase/FCM), password reset (SMTP).
+> Not on-device verified this round: dark mode look across every screen, the
+> share sheet, friends UI, monthly board. Worth a pass when the phone's back.
