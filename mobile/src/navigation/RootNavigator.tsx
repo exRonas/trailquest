@@ -8,7 +8,6 @@ import {
   Theme,
 } from '@react-navigation/native';
 import { Loader } from '../components/ui';
-import { UpdateBanner } from '../components/UpdateBanner';
 import { useThemeColors, useIsDark, useThemeStore } from '../theme';
 import { useAuthStore } from '../store/authStore';
 import { useLocaleStore } from '../i18n';
@@ -91,7 +90,6 @@ export function RootNavigator(): React.ReactElement {
     <NavigationContainer theme={navTheme}>
       {statusBar}
       {status === 'authenticated' ? <MainTabs /> : <AuthNavigator />}
-      <UpdateBanner />
     </NavigationContainer>
   );
 }

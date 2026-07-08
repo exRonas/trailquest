@@ -1,34 +1,58 @@
 import React from 'react';
-import { Linking, Pressable, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Banner } from './ui';
-import { spacing } from '../theme';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { AppText } from './ui';
+import { spacing, useThemeColors } from '../theme';
 import { useT } from '../i18n';
-import { useAppVersion } from '../api/hooks/useAppVersion';
-import { CURRENT_VERSION_CODE } from '../config/appVersion';
+import { useUpdateAvailable } from '../api/hooks/useAppVersion';
 
+/**
+ * In-flow "update available" row for the top of Profile. Dismissible (X) —
+ * once closed, it stays hidden for that version (see useUpdateAvailable) and
+ * reappears only when an even newer version ships.
+ *
+ * This deliberately does NOT float over the header/tab bar (an earlier
+ * version did, positioned at `insets.top`, which sat exactly where the native
+ * header lives and silently blocked taps on header buttons like Settings —
+ * a real bug, not just a cosmetic overlap). Living in-flow inside Profile's
+ * content means it can never block anything.
+ */
 export function UpdateBanner(): React.ReactElement | null {
   const t = useT();
-  const insets = useSafeAreaInsets();
-  const { data } = useAppVersion();
+  const theme = useThemeColors();
+  const { data, dismissed, dismiss } = useUpdateAvailable();
 
-  if (!data || data.latestVersionCode <= CURRENT_VERSION_CODE) return null;
+  if (!data || dismissed) return null;
 
   return (
     <Pressable
+      style={[styles.row, { backgroundColor: theme.infoSoft }]}
       onPress={() => Linking.openURL(data.downloadUrl)}
-      style={[styles.wrap, { top: insets.top + spacing.sm }]}
     >
-      <Banner tone="info" message={`${t('update.available')} — ${t('update.message')} ${t('update.action')}`} />
+      <Icon name="cloud-download-outline" size={20} color={theme.info} />
+      <View style={styles.rowText}>
+        <AppText variant="bodyStrong" color={theme.info}>
+          {t('update.available')}
+        </AppText>
+        <AppText variant="caption" color={theme.textSecondary}>
+          {t('update.message')}
+        </AppText>
+      </View>
+      <Pressable onPress={dismiss} hitSlop={10} style={styles.closeBtn}>
+        <Icon name="close" size={18} color={theme.textMuted} />
+      </Pressable>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    position: 'absolute',
-    left: spacing.md,
-    right: spacing.md,
-    zIndex: 100,
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
   },
+  rowText: { flex: 1, marginLeft: spacing.md },
+  closeBtn: { padding: spacing.xs, marginLeft: spacing.sm },
 });

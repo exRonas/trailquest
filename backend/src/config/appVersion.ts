@@ -6,5 +6,5 @@ export const appVersion = {
   downloadUrl:
     'https://github.com/exRonas/trailquest/releases/latest/download/TrailQuest.apk',
   notes:
-    'Fixed: the map now switches to a dark style in dark mode instead of staying light.',
+    "Fixed: map now switches to dark style in dark mode; update banner no longer covers the header (now closable, moved into Profile); dark theme lightened to a softer charcoal instead of near-black.",
 };

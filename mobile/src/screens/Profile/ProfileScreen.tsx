@@ -16,6 +16,7 @@ import { AvatarPicker } from '../../components/AvatarPicker';
 import { StatTile } from '../../components/StatTile';
 import { ProgressRow } from '../../components/ProgressRow';
 import { PendingSyncBanner } from '../../components/PendingSyncBanner';
+import { UpdateBanner } from '../../components/UpdateBanner';
 import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { useAuthStore } from '../../store/authStore';
@@ -93,6 +94,7 @@ export function ProfileScreen({
 
   const header = (
     <View>
+      <UpdateBanner />
       <Card style={styles.profileCard}>
         <Pressable onPress={() => setPickerOpen(true)} hitSlop={8}>
           <Avatar name={user?.name ?? 'You'} avatar={user?.avatar} size={64} />
