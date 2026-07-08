@@ -9,7 +9,7 @@ import {
 } from '../utils/jwt';
 import { LoginInput, RegisterInput } from '../schemas/auth.schema';
 
-const BCRYPT_ROUNDS = 12;
+export const BCRYPT_ROUNDS = 12;
 
 /** Public-safe user shape — never leaks the password hash. */
 export type SafeUser = Omit<User, 'passwordHash'>;

@@ -1,5 +1,10 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { fetchPublicProfile, updateMyAvatar } from '../users.api';
+import {
+  changeMyPassword,
+  fetchPublicProfile,
+  updateMyAvatar,
+  updateMyName,
+} from '../users.api';
 import { queryKeys } from '../queryClient';
 import { useAuthStore } from '../../store/authStore';
 
@@ -16,5 +21,21 @@ export function useUpdateAvatar() {
     onSuccess: (user) => {
       useAuthStore.setState({ user });
     },
+  });
+}
+
+export function useUpdateName() {
+  return useMutation({
+    mutationFn: (name: string) => updateMyName(name),
+    onSuccess: (user) => {
+      useAuthStore.setState({ user });
+    },
+  });
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (input: { currentPassword: string; newPassword: string }) =>
+      changeMyPassword(input.currentPassword, input.newPassword),
   });
 }

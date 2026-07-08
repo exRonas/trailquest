@@ -14,3 +14,10 @@ export const updateMe = asyncHandler(async (req: Request, res: Response) => {
   const user = await userService.updateMe(req.user!.sub, req.body);
   sendData(res, user);
 });
+
+export const changePassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    await userService.changePassword(req.user!.sub, req.body);
+    res.status(204).send();
+  },
+);

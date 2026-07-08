@@ -1,6 +1,8 @@
+import bcrypt from 'bcryptjs';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../utils/AppError';
-import { UpdateMeInput } from '../schemas/user.schema';
+import { BCRYPT_ROUNDS } from './auth.service';
+import { ChangePasswordInput, UpdateMeInput } from '../schemas/user.schema';
 
 const publicUserSelect = {
   id: true,
@@ -47,14 +49,39 @@ function mapActivityRoute<
   };
 }
 
-/** Update the signed-in user's own editable fields (currently just avatar). */
+/** Update the signed-in user's own editable fields (name and/or avatar). */
 export async function updateMe(userId: string, input: UpdateMeInput) {
   const user = await prisma.user.update({
     where: { id: userId },
-    data: { avatar: input.avatar },
+    data: {
+      ...(input.avatar !== undefined ? { avatar: input.avatar } : null),
+      ...(input.name !== undefined ? { name: input.name } : null),
+    },
   });
   const { passwordHash: _passwordHash, ...safe } = user;
   return safe;
+}
+
+/**
+ * Change the signed-in user's password. Requires the current password to
+ * match — this endpoint is reachable by anyone holding a valid access token,
+ * so a stolen/left-open session alone must not be enough to lock the real
+ * owner out.
+ */
+export async function changePassword(
+  userId: string,
+  input: ChangePasswordInput,
+): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw AppError.notFound('User not found');
+  }
+  const ok = await bcrypt.compare(input.currentPassword, user.passwordHash);
+  if (!ok) {
+    throw AppError.unauthorized('Current password is incorrect');
+  }
+  const passwordHash = await bcrypt.hash(input.newPassword, BCRYPT_ROUNDS);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
 }
 
 /**

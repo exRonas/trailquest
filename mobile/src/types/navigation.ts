@@ -35,6 +35,8 @@ export type ProfileStackParamList = {
   ActivityDetail: { progressId: string };
   AllActivities: undefined;
   Leaderboard: undefined;
+  Achievements: undefined;
+  Settings: undefined;
 };
 
 export type MainTabParamList = {

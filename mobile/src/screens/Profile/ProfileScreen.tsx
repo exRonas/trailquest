@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
@@ -16,7 +16,6 @@ import { AvatarPicker } from '../../components/AvatarPicker';
 import { StatTile } from '../../components/StatTile';
 import { ProgressRow } from '../../components/ProgressRow';
 import { PendingSyncBanner } from '../../components/PendingSyncBanner';
-import { AchievementsSection } from '../../components/AchievementsSection';
 import { colors, shadow, spacing, useThemeColors } from '../../theme';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { useAuthStore } from '../../store/authStore';
@@ -48,6 +47,20 @@ export function ProfileScreen({
   const { data: achievements } = useAchievements();
   const [pickerOpen, setPickerOpen] = useState(false);
   const updateAvatar = useUpdateAvatar();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          onPress={() => navigation.navigate('Settings')}
+          hitSlop={10}
+          style={styles.headerButton}
+        >
+          <Icon name="cog-outline" size={24} color={theme.primary} />
+        </Pressable>
+      ),
+    });
+  }, [navigation, theme.primary]);
 
   const onSaveAvatar = (avatarId: string | null) => {
     updateAvatar.mutate(avatarId, {
@@ -95,6 +108,18 @@ export function ProfileScreen({
             </AppText>
           ) : null}
         </View>
+        {achievements ? (
+          <Pressable
+            style={[styles.achievementsChip, { backgroundColor: theme.primarySoft }]}
+            onPress={() => navigation.navigate('Achievements')}
+            hitSlop={6}
+          >
+            <Icon name="trophy" size={18} color={theme.primary} />
+            <AppText variant="label" color={theme.primary} style={styles.achievementsChipText}>
+              {achievements.filter((a) => a.unlocked).length}/{achievements.length}
+            </AppText>
+          </Pressable>
+        ) : null}
       </Card>
 
       <LevelBlock />
@@ -134,10 +159,6 @@ export function ProfileScreen({
           label={t('profile.movingTime')}
         />
       </View>
-
-      {achievements ? (
-        <AchievementsSection achievements={achievements} />
-      ) : null}
 
       {/* Language selector */}
       <AppText variant="overline" color={colors.textMuted} style={styles.langTitle}>
@@ -311,6 +332,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   since: { marginTop: spacing.xs },
+  achievementsChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    borderRadius: 14,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+  },
+  achievementsChipText: { marginLeft: 4 },
+  headerButton: { padding: spacing.xs, marginRight: spacing.xs },
   summary: {
     flexDirection: 'row',
     alignItems: 'center',
