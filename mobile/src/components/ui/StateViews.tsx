@@ -3,7 +3,9 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
 import { Button } from './Button';
-import { spacing, useThemeColors } from '../../theme';
+import { PatchBadge } from '../decor/PatchBadge';
+import { TopoPattern } from '../decor/TopoPattern';
+import { spacing, useDesignVersion, useThemeColors } from '../../theme';
 
 /** Centred full-area loading spinner. */
 export function Loader({ message }: { message?: string }): React.ReactElement {
@@ -41,11 +43,21 @@ export function EmptyState({
   onAction,
 }: EmptyStateProps): React.ReactElement {
   const theme = useThemeColors();
+  const design = useDesignVersion();
   return (
     <View style={styles.center}>
-      <View style={[styles.iconCircle, { backgroundColor: theme.primarySoft }]}>
-        <Icon name={icon} size={34} color={theme.primary} />
-      </View>
+      {design === 'v3' ? (
+        <>
+          <TopoPattern color={theme.primary} opacity={0.1} />
+          <PatchBadge fill={theme.primarySoft} stitch={theme.primary} size={76}>
+            <Icon name={icon} size={30} color={theme.primary} />
+          </PatchBadge>
+        </>
+      ) : (
+        <View style={[styles.iconCircle, { backgroundColor: theme.primarySoft }]}>
+          <Icon name={icon} size={34} color={theme.primary} />
+        </View>
+      )}
       <AppText variant="heading" center style={styles.spaced}>
         {title}
       </AppText>

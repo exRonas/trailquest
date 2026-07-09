@@ -31,11 +31,13 @@ const THEME_ICON: Record<string, string> = {
 const DESIGN_LABEL_KEY: Record<string, string> = {
   v1: 'settings.designV1',
   v2: 'settings.designV2',
+  v3: 'settings.designV3',
 };
 
 const DESIGN_ICON: Record<string, string> = {
   v1: 'pine-tree',
   v2: 'image-filter-hdr',
+  v3: 'compass-rose',
 };
 
 export function SettingsScreen({

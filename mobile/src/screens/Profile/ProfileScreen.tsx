@@ -19,7 +19,8 @@ import { StatTile } from '../../components/StatTile';
 import { ProgressRow } from '../../components/ProgressRow';
 import { PendingSyncBanner } from '../../components/PendingSyncBanner';
 import { UpdateBanner } from '../../components/UpdateBanner';
-import { colors, shadow, spacing, useThemeColors } from '../../theme';
+import { colors, shadow, spacing, useDesignVersion, useThemeColors } from '../../theme';
+import { MountainScene, TopoPattern } from '../../components/decor';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { useAuthStore } from '../../store/authStore';
 import {
@@ -42,6 +43,7 @@ export function ProfileScreen({
 }: ProfileScreenProps<'Profile'>): React.ReactElement {
   const t = useT();
   const theme = useThemeColors();
+  const design = useDesignVersion();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const language = useLocaleStore((s) => s.language);
@@ -94,9 +96,58 @@ export function ProfileScreen({
 
   const openAllActivities = () => navigation.navigate('AllActivities');
 
+  // Atlas ('v3') hero — expedition-poster header: centered big avatar over a
+  // topo-textured card with a layered mountain ridge along the bottom.
+  const atlasHero = (
+    <View style={[styles.atlasHero, { backgroundColor: theme.primaryTint, borderColor: theme.border }]}>
+      <TopoPattern color={theme.primary} opacity={0.2} />
+      <View style={styles.atlasHeroBody}>
+        <Pressable onPress={() => setPickerOpen(true)} hitSlop={8}>
+          <Avatar name={user?.name ?? 'You'} avatar={user?.avatar} size={84} />
+          <View style={[styles.editBadge, { backgroundColor: theme.primary, borderColor: theme.surface }]}>
+            <Icon name="pencil" size={12} color={theme.textInverse} />
+          </View>
+        </Pressable>
+        <AppText variant="title" style={styles.atlasName}>
+          {user?.name ?? 'Hiker'}
+        </AppText>
+        <AppText variant="caption" color={theme.textSecondary}>
+          {user?.email}
+        </AppText>
+        {user?.createdAt ? (
+          <AppText variant="overline" color={theme.textMuted} style={styles.since}>
+            {t('profile.memberSince', { date: formatDate(user.createdAt) })}
+          </AppText>
+        ) : null}
+        {achievements ? (
+          <Pressable
+            style={[styles.achievementsChip, styles.atlasChip, { backgroundColor: theme.accentSoft }]}
+            onPress={() => navigation.navigate('Achievements')}
+            hitSlop={6}
+          >
+            <Icon name="trophy" size={18} color={theme.accent} />
+            <AppText variant="label" color={theme.accent} style={styles.achievementsChipText}>
+              {achievements.filter((a) => a.unlocked).length}/{achievements.length}
+            </AppText>
+          </Pressable>
+        ) : null}
+      </View>
+      <MountainScene
+        far={theme.primary}
+        mid={theme.primary}
+        near={theme.primaryDark}
+        sun={theme.accent}
+        height={72}
+      />
+    </View>
+  );
+
   const header = (
     <View>
       <UpdateBanner />
+      {design === 'v3' ? (
+        atlasHero
+      ) : (
       <Card style={styles.profileCard}>
         <Pressable onPress={() => setPickerOpen(true)} hitSlop={8}>
           <Avatar name={user?.name ?? 'You'} avatar={user?.avatar} size={64} />
@@ -128,6 +179,7 @@ export function ProfileScreen({
           </Pressable>
         ) : null}
       </Card>
+      )}
 
       <LevelBlock />
 
@@ -165,7 +217,14 @@ export function ProfileScreen({
 
       <PendingSyncBanner />
 
-      <View style={[styles.summary, { backgroundColor: theme.surface }]}>
+      <View
+        style={[
+          styles.summary,
+          { backgroundColor: design === 'v3' ? theme.primaryTint : theme.surface },
+          design === 'v3' ? styles.atlasSummary : null,
+        ]}
+      >
+        {design === 'v3' ? <TopoPattern color={theme.primary} opacity={0.14} /> : null}
         <StatTile
           icon="trophy-outline"
           value={`${summary.completedCount}`}
@@ -302,10 +361,19 @@ function LevelRow({
   t: ReturnType<typeof useT>;
 }): React.ReactElement {
   const theme = useThemeColors();
+  const design = useDesignVersion();
   const maxed = level.xpForNextLevel == null;
 
   return (
-    <Card style={[styles.levelCard, { backgroundColor: theme.surface }]} elevated={false}>
+    <Card
+      style={[
+        styles.levelCard,
+        { backgroundColor: design === 'v3' ? theme.primaryTint : theme.surface },
+        design === 'v3' ? styles.atlasLevelCard : null,
+      ]}
+      elevated={false}
+    >
+      {design === 'v3' ? <TopoPattern color={theme.primary} opacity={0.16} /> : null}
       <View style={styles.levelHeader}>
         <View style={[styles.levelBadge, { backgroundColor: theme.primary }]}>
           <AppText variant="bodyStrong" color={theme.textInverse}>
@@ -425,4 +493,20 @@ const styles = StyleSheet.create({
   },
   footer: { marginTop: spacing.lg },
   logoutFloating: { padding: spacing.xl },
+
+  // Atlas (v3)
+  atlasHero: {
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+  },
+  atlasHeroBody: {
+    alignItems: 'center',
+    paddingTop: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+  },
+  atlasName: { marginTop: spacing.md },
+  atlasChip: { alignSelf: 'center', marginTop: spacing.md },
+  atlasLevelCard: { borderRadius: 20, overflow: 'hidden' },
+  atlasSummary: { borderRadius: 20, overflow: 'hidden' },
 });

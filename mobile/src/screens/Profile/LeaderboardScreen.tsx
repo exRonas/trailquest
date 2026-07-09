@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Chip, EmptyState, Loader } from '../../components/ui';
 import { Avatar } from '../../components/forum/Avatar';
-import { spacing, useThemeColors } from '../../theme';
+import { MountainScene, TopoPattern } from '../../components/decor';
+import { spacing, useDesignVersion, useThemeColors } from '../../theme';
 import { useLeaderboard } from '../../api/hooks/useProgress';
 import { LeaderboardPeriod } from '../../api/progress.api';
 import { useT, usePickLocalized } from '../../i18n';
@@ -14,6 +16,7 @@ export function LeaderboardScreen({
 }: ProfileScreenProps<'Leaderboard'>): React.ReactElement {
   const t = useT();
   const theme = useThemeColors();
+  const design = useDesignVersion();
   const [period, setPeriod] = useState<LeaderboardPeriod>('all');
   const { data, isLoading, refetch, isRefetching } = useLeaderboard(period);
 
@@ -52,6 +55,32 @@ export function LeaderboardScreen({
         refreshing={isRefetching}
         ListHeaderComponent={
           <View>
+            {design === 'v3' ? (
+              <View
+                style={[
+                  styles.atlasBanner,
+                  { backgroundColor: theme.primaryTint, borderColor: theme.border },
+                ]}
+              >
+                <TopoPattern color={theme.primary} opacity={0.2} />
+                <View style={styles.atlasBannerBody}>
+                  <Icon name="podium-gold" size={34} color={theme.accent} />
+                  <AppText variant="heading" style={styles.atlasBannerTitle}>
+                    {t('leaderboard.title')}
+                  </AppText>
+                  <AppText variant="caption" color={theme.textSecondary}>
+                    {t('leaderboard.subtitle')}
+                  </AppText>
+                </View>
+                <MountainScene
+                  far={theme.primary}
+                  mid={theme.primary}
+                  near={theme.primaryDark}
+                  sun={theme.accent}
+                  height={48}
+                />
+              </View>
+            ) : null}
             {periodTabs}
             {isLoading && !data ? (
               <Loader message={t('leaderboard.title')} />
@@ -154,4 +183,19 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
   },
   meLabel: { marginBottom: spacing.xs },
+
+  // Atlas (v3)
+  atlasBanner: {
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+    marginBottom: spacing.lg,
+  },
+  atlasBannerBody: {
+    alignItems: 'center',
+    paddingTop: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xs,
+  },
+  atlasBannerTitle: { marginTop: spacing.sm },
 });

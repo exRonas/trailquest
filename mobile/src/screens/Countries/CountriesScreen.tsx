@@ -8,7 +8,8 @@ import {
   ErrorState,
   Loader,
 } from '../../components/ui';
-import { colors, spacing, useThemeColors } from '../../theme';
+import { TopoPattern } from '../../components/decor';
+import { colors, spacing, useDesignVersion, useThemeColors } from '../../theme';
 import { useCountries } from '../../api/hooks/useRoutes';
 import { getApiErrorMessage } from '../../api/client';
 import { useT } from '../../i18n';
@@ -19,6 +20,7 @@ export function CountriesScreen({
 }: ExploreScreenProps<'Countries'>): React.ReactElement {
   const t = useT();
   const theme = useThemeColors();
+  const design = useDesignVersion();
   const { data, isLoading, isError, error, refetch } = useCountries();
 
   if (isLoading) return <Loader message={t('explore.finding')} />;
@@ -49,6 +51,7 @@ export function CountriesScreen({
           }
           style={styles.row}
         >
+          {design === 'v3' ? <TopoPattern color={theme.primary} opacity={0.12} /> : null}
           <View style={styles.rowInner}>
             <View style={[styles.flagDot, { backgroundColor: theme.primarySoft }]}>
               <Icon name="map-marker" size={20} color={theme.primary} />

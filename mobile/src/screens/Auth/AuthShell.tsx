@@ -9,7 +9,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from '../../components/ui';
-import { colors, radius, spacing, useThemeColors } from '../../theme';
+import { MountainScene, TopoPattern } from '../../components/decor';
+import { colors, radius, spacing, useDesignVersion, useThemeColors } from '../../theme';
 
 interface AuthShellProps {
   title: string;
@@ -24,6 +25,63 @@ export function AuthShell({
   children,
 }: AuthShellProps): React.ReactElement {
   const theme = useThemeColors();
+  const design = useDesignVersion();
+
+  if (design === 'v3') {
+    // Atlas: full-bleed expedition poster — topo contours across the whole
+    // page, the brand block sitting on a mountain-ridge hero card.
+    return (
+      <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]} edges={['top', 'bottom']}>
+        <TopoPattern color={theme.primary} opacity={0.1} />
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <ScrollView
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View
+              style={[
+                styles.atlasHero,
+                { backgroundColor: theme.primaryTint, borderColor: theme.border },
+              ]}
+            >
+              <TopoPattern color={theme.primary} opacity={0.2} />
+              <View style={styles.atlasHeroBody}>
+                <View style={[styles.logo, { backgroundColor: theme.primary }]}>
+                  <Icon name="compass-rose" size={38} color={theme.textInverse} />
+                </View>
+                <AppText variant="overline" color={theme.accent} style={styles.brand}>
+                  TrailQuest
+                </AppText>
+                <AppText variant="title" style={styles.title}>
+                  {title}
+                </AppText>
+                <AppText
+                  variant="callout"
+                  color={theme.textSecondary}
+                  style={styles.subtitle}
+                >
+                  {subtitle}
+                </AppText>
+              </View>
+              <MountainScene
+                far={theme.primary}
+                mid={theme.primary}
+                near={theme.primaryDark}
+                sun={theme.accent}
+                height={64}
+              />
+            </View>
+            {children}
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
@@ -80,4 +138,18 @@ const styles = StyleSheet.create({
   brand: { letterSpacing: 2 },
   title: { marginTop: spacing.xs },
   subtitle: { marginTop: spacing.xs, textAlign: 'center' },
+
+  // Atlas (v3)
+  atlasHero: {
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+    marginBottom: spacing.xxl,
+  },
+  atlasHeroBody: {
+    alignItems: 'center',
+    paddingTop: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.sm,
+  },
 });

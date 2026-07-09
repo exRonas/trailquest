@@ -297,6 +297,7 @@ const en: Dict = {
   'settings.design': 'Design',
   'settings.designV1': 'Pine (classic)',
   'settings.designV2': 'Terra (new)',
+  'settings.designV3': 'Atlas (expedition)',
 
   // Friends
   'friends.title': 'Friends',
@@ -594,6 +595,7 @@ const ru: Dict = {
   'settings.design': 'Дизайн',
   'settings.designV1': 'Пайн (классика)',
   'settings.designV2': 'Терра (новый)',
+  'settings.designV3': 'Атлас (экспедиция)',
 
   // Friends
   'friends.title': 'Друзья',
@@ -890,6 +892,7 @@ const kk: Dict = {
   'settings.design': 'Дизайн',
   'settings.designV1': 'Пайн (классика)',
   'settings.designV2': 'Терра (жаңа)',
+  'settings.designV3': 'Атлас (экспедиция)',
 
   // Friends
   'friends.title': 'Достар',

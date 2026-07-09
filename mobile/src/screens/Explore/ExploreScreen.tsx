@@ -9,7 +9,8 @@ import { RouteCard } from '../../components/RouteCard';
 import { FilterBar } from '../../components/explore/FilterBar';
 import { MapPlaceholder } from '../../components/map/MapPlaceholder';
 import { LocationPermissionBanner } from '../../components/LocationPermissionBanner';
-import { colors, shadow, spacing, useThemeColors } from '../../theme';
+import { colors, shadow, spacing, useDesignVersion, useThemeColors } from '../../theme';
+import { TopoPattern } from '../../components/decor';
 import { hasMapboxToken, useMapStyleUrl, DEFAULT_CAMERA } from '../../services/mapbox';
 import { getCurrentPosition } from '../../services/geolocation';
 import { haversineMeters } from '../../utils/geo';
@@ -49,6 +50,7 @@ export function ExploreScreen({
   const insets = useSafeAreaInsets();
   const t = useT();
   const theme = useThemeColors();
+  const design = useDesignVersion();
   const mapStyleUrl = useMapStyleUrl();
   const language = useLocaleStore((s) => s.language);
   const [filters, setFilters] = useState<RouteFilters>({});
@@ -312,6 +314,9 @@ export function ExploreScreen({
           contentContainerStyle={styles.sheetContent}
           ListHeaderComponent={
             <View style={styles.sheetHeader}>
+              {design === 'v3' ? (
+                <TopoPattern color={theme.primary} opacity={0.14} />
+              ) : null}
               <AppText variant="subheading">
                 {userPos ? t('explore.nearYou') : t('explore.allRoutes')}
               </AppText>

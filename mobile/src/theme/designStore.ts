@@ -32,13 +32,14 @@ export const useDesignStore = create<DesignState>((set) => ({
   },
   hydrate: async () => {
     const saved = await loadPref(DESIGN_KEY);
-    const version: DesignVersion = saved === 'v2' ? 'v2' : 'v1';
+    const version: DesignVersion =
+      saved === 'v2' || saved === 'v3' ? saved : 'v1';
     set({ version });
     apply(version);
   },
 }));
 
-export const DESIGN_VERSIONS: DesignVersion[] = ['v1', 'v2'];
+export const DESIGN_VERSIONS: DesignVersion[] = ['v1', 'v2', 'v3'];
 
 /** Convenience selector for components that only need the active version. */
 export function useDesignVersion(): DesignVersion {

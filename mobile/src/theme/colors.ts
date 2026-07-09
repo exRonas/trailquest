@@ -51,14 +51,17 @@ export const palette = {
 
 export type ColorScheme = 'light' | 'dark';
 
-/** Two selectable design languages, both kept in the app so they can be
+/** Three selectable design languages, all kept in the app so they can be
  *  compared side by side:
  *  - 'v1' "Pine" — the original warm green-tinted look.
  *  - 'v2' "Terra" — an editorial style modeled on AllTrails/Airbnb: neutral
  *    true-white surfaces, near-black ink, a single deep forest accent, no
  *    green cast on grays, and a neutral (not green) dark mode.
+ *  - 'v3' "Atlas" — expedition / vintage-field-guide: warm cream paper,
+ *    olive-green primary, terracotta accent, serif display type and SVG
+ *    decor (topo contours, mountain scenes, scout patches).
  */
-export type DesignVersion = 'v1' | 'v2';
+export type DesignVersion = 'v1' | 'v2' | 'v3';
 
 /** Terra additions to the raw palette. */
 export const terra = {
@@ -81,6 +84,37 @@ export const terra = {
   night800: '#1E211E',
   night700: '#262A26',
   night600: '#363A36',
+} as const;
+
+/** Atlas ('v3') additions — expedition field-guide palette: aged paper,
+ *  olive, terracotta, warm espresso darks. */
+export const atlas = {
+  olive700: '#3C4D2A',
+  olive600: '#4A5D33',
+  olive500: '#5C7040',
+  olive200: '#CDD4B8',
+  olive100: '#E8ECDA',
+  olive50: '#F1F4E8',
+
+  terracotta600: '#A84325',
+  terracotta500: '#C2532C',
+  terracotta100: '#F7E3D8',
+
+  // Warm paper neutrals (cream, not gray)
+  ink: '#2B261C',
+  umber600: '#6B6353',
+  umber400: '#9C927D',
+  sand300: '#DDD3BC',
+  sand200: '#EAE2CE',
+  sand100: '#F2ECDC',
+  paper: '#F8F4E9',
+  parchment: '#FFFDF6',
+
+  // Espresso dark mode — warm brown-charcoal, no blue cast
+  night900: '#1E1A13',
+  night800: '#28231A',
+  night700: '#322C21',
+  night600: '#453D2E',
 } as const;
 
 /** Build the full semantic color set for a scheme. Same shape for light/dark
@@ -175,6 +209,45 @@ function buildTerraColors(scheme: ColorScheme) {
   };
 }
 
+/** Atlas ('v3') semantic set. Keeps the severity sub-palettes recognizable
+ *  (difficulty stays traffic-light) but re-tints everything chrome-level to
+ *  the warm expedition paper + olive + terracotta scheme. */
+function buildAtlasColors(scheme: ColorScheme) {
+  const dark = scheme === 'dark';
+  const v1 = buildColors(scheme);
+  return {
+    ...v1,
+
+    primary: dark ? atlas.olive500 : atlas.olive600,
+    primaryDark: atlas.olive700,
+    primaryEmphasis: dark ? atlas.olive200 : atlas.olive700,
+    primarySoft: dark ? '#333425' : atlas.olive100,
+    primaryTint: dark ? '#2A2B1E' : atlas.olive50,
+
+    accent: atlas.terracotta500,
+    accentDark: atlas.terracotta600,
+    accentSoft: dark ? '#3A2A1E' : atlas.terracotta100,
+
+    background: dark ? atlas.night900 : atlas.paper,
+    surface: dark ? atlas.night800 : atlas.parchment,
+    surfaceAlt: dark ? atlas.night700 : atlas.sand100,
+    border: dark ? atlas.night600 : atlas.sand300,
+    overlay: dark ? 'rgba(0, 0, 0, 0.65)' : 'rgba(43, 38, 28, 0.55)',
+
+    text: dark ? '#F0EBDD' : atlas.ink,
+    textSecondary: dark ? '#C4BBA6' : atlas.umber600,
+    textMuted: dark ? '#948A73' : atlas.umber400,
+
+    success: atlas.olive500,
+
+    difficulty: {
+      EASY: { main: atlas.olive500, soft: dark ? '#333425' : atlas.olive100 },
+      MODERATE: v1.difficulty.MODERATE,
+      HARD: v1.difficulty.HARD,
+    },
+  };
+}
+
 import { Appearance } from 'react-native';
 
 export const lightColors = buildColors('light');
@@ -189,6 +262,7 @@ export type AppColors = Widen<typeof lightColors>;
 export const colorSets: Record<DesignVersion, Record<ColorScheme, AppColors>> = {
   v1: { light: lightColors, dark: darkColors },
   v2: { light: buildTerraColors('light'), dark: buildTerraColors('dark') },
+  v3: { light: buildAtlasColors('light'), dark: buildAtlasColors('dark') },
 };
 
 // The design version behind the mutable `colors` object. Persisted prefs load

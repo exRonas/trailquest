@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, ProgressBar } from './ui';
-import { radius, spacing, useThemeColors, ThemeColors } from '../theme';
+import { PatchBadge } from './decor';
+import { radius, spacing, useDesignVersion, useThemeColors, ThemeColors } from '../theme';
 import { useT, usePickLocalized } from '../i18n';
 import { Achievement } from '../types/api';
 
@@ -61,9 +62,27 @@ function Badge({
 }): React.ReactElement {
   const t = useT();
   const pickLocalized = usePickLocalized();
+  const design = useDesignVersion();
   const { unlocked } = achievement;
   return (
     <Pressable style={styles.badge} onPress={onPress} hitSlop={4}>
+      {design === 'v3' ? (
+        // Atlas: scout-patch style — scalloped disc with a stitch ring.
+        <View style={styles.patchWrap}>
+          <PatchBadge
+            fill={unlocked ? theme.primary : theme.surfaceAlt}
+            stitch={unlocked ? theme.accentSoft : theme.border}
+            size={62}
+            muted={!unlocked}
+          >
+            <Icon
+              name={achievement.icon}
+              size={24}
+              color={unlocked ? theme.textInverse : theme.textMuted}
+            />
+          </PatchBadge>
+        </View>
+      ) : (
       <View
         style={[
           styles.disc,
@@ -79,6 +98,7 @@ function Badge({
           color={unlocked ? theme.textInverse : theme.textMuted}
         />
       </View>
+      )}
       <AppText
         variant="label"
         center
@@ -203,6 +223,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   badgeTitle: { minHeight: 32 },
+  patchWrap: { marginBottom: spacing.xs },
   backdrop: {
     flex: 1,
     alignItems: 'center',

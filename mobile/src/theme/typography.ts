@@ -170,7 +170,85 @@ const typographyV2: Record<Variant, TextStyle> = {
   },
 };
 
-const typographySets = { v1: typographyV1, v2: typographyV2 } as const;
+/** Serif family for Atlas display type — Noto Serif on Android, New York-ish
+ *  Georgia fallback elsewhere. System-provided, no font files to bundle. */
+export const fontFamilySerif = Platform.select({
+  ios: 'Georgia',
+  android: 'serif',
+  default: 'Georgia',
+});
+
+/** Atlas ('v3') scale — vintage field-guide: serif headlines, roomy body,
+ *  wide-tracked expedition-poster overlines. */
+const typographyV3: Record<Variant, TextStyle> = {
+  display: {
+    fontFamily: fontFamilySerif,
+    fontSize: 34,
+    lineHeight: 41,
+    fontWeight: '700',
+    letterSpacing: 0,
+  },
+  title: {
+    fontFamily: fontFamilySerif,
+    fontSize: 27,
+    lineHeight: 34,
+    fontWeight: '700',
+    letterSpacing: 0,
+  },
+  heading: {
+    fontFamily: fontFamilySerif,
+    fontSize: 21,
+    lineHeight: 27,
+    fontWeight: '700',
+  },
+  subheading: {
+    fontFamily: fontFamilyMedium,
+    fontSize: 17,
+    lineHeight: 23,
+    fontWeight: '600',
+  },
+  body: {
+    fontFamily,
+    fontSize: 15,
+    lineHeight: 23,
+    fontWeight: '400',
+  },
+  bodyStrong: {
+    fontFamily: fontFamilyMedium,
+    fontSize: 15,
+    lineHeight: 23,
+    fontWeight: '600',
+  },
+  callout: {
+    fontFamily,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '400',
+  },
+  label: {
+    fontFamily: fontFamilyMedium,
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  caption: {
+    fontFamily,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '400',
+  },
+  overline: {
+    fontFamily: fontFamilyMedium,
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '700',
+    letterSpacing: 1.8,
+    textTransform: 'uppercase',
+  },
+};
+
+const typographySets = { v1: typographyV1, v2: typographyV2, v3: typographyV3 } as const;
 
 /** The live type scale. AppText spreads `typography[variant]` on every render,
  *  so mutating these objects in place (applyDesignTypography) restyles all
@@ -188,7 +266,7 @@ export const typography: Record<Variant, TextStyle> = {
   overline: { ...typographyV1.overline },
 };
 
-export function applyDesignTypography(design: 'v1' | 'v2'): void {
+export function applyDesignTypography(design: 'v1' | 'v2' | 'v3'): void {
   const source = typographySets[design];
   (Object.keys(typography) as Variant[]).forEach((variant) => {
     const target = typography[variant] as Record<string, unknown>;
