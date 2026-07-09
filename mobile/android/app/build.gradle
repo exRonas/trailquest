@@ -85,6 +85,21 @@ android {
         versionCode 25
         versionName "2.14"
     }
+    // Emit one APK per real CPU architecture instead of a single universal
+    // one that bundles native libs for all of them (Mapbox + Hermes + RN =
+    // ~46MB per arch). x86/x86_64 are already excluded via
+    // reactNativeArchitectures in gradle.properties, so this splits the two
+    // remaining ARM targets: app-arm64-v8a-release.apk (modern phones, the
+    // one the download button points at) and app-armeabi-v7a-release.apk
+    // (older 32-bit phones). No universal APK — nothing needs it.
+    splits {
+        abi {
+            enable true
+            reset()
+            include "arm64-v8a", "armeabi-v7a"
+            universalApk false
+        }
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')

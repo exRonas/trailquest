@@ -6,9 +6,11 @@ export const appVersion = {
   // Must be the asset's actual uploaded filename, not its display "label" —
   // GitHub's label-based /download/<tag>/<label> alias 404s intermittently
   // (confirmed: HEAD redirects fine, a real GET 404s) while the raw filename
-  // is reliable.
+  // is reliable. arm64-v8a is the modern-phone build (see the ABI `splits`
+  // block in android/app/build.gradle); the in-app update banner sends
+  // everyone here since ~99% of real devices are arm64.
   downloadUrl:
-    'https://github.com/exRonas/trailquest/releases/latest/download/app-release.apk',
+    'https://github.com/exRonas/trailquest/releases/latest/download/app-arm64-v8a-release.apk',
   notes:
     'Atlas is now the app\'s one and only look — the design switcher in Settings is gone. Also launches a new landing page (exronas.github.io/trailquest) with a direct download link.',
 };
