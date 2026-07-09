@@ -166,6 +166,11 @@
   .hero-meta b { color: var(--verdigris-700); }
   .hero-meta .sep { margin: 0 10px; color: var(--umber-400); }
 
+  /* Version number is filled in by JS once (from the GitHub API) rather than
+     hardcoded, so it can never show a stale number that then flips to the
+     real one on load — these stay hidden until that happens. */
+  #version-top-wrap, #version-bottom-wrap { display: none; }
+
   /* Горная сцена внизу hero */
   .hero-scene {
     position: relative;
@@ -509,7 +514,7 @@
         Скачать для Android
       </a>
       <div class="hero-meta">
-        <b id="version-top">v2.13</b><span class="sep">·</span>APK<span class="sep">·</span>бесплатно, без регистрации на сайте
+        <span id="version-top-wrap"><b id="version-top"></b><span class="sep">·</span></span>APK<span class="sep">·</span>бесплатно, без регистрации на сайте
       </div>
     </div>
   </div>
@@ -668,7 +673,7 @@
         Скачать APK
       </a>
 
-      <div class="version-line">Текущая версия: <b id="version-bottom">v2.13</b><span id="version-date"></span></div>
+      <div class="version-line">Кнопка всегда ведёт на последний выпуск<span id="version-bottom-wrap"> · <b id="version-bottom"></b></span><span id="version-date"></span></div>
     </div>
 
     <p class="dl-hint">Android может спросить разрешение на установку из неизвестных источников — это стандартно для APK вне Play Market. Исходный код открыт на <a href="https://github.com/exRonas/trailquest">GitHub</a>.<br />Совсем старый телефон (до 2017 г.)? <a href="https://github.com/exRonas/trailquest/releases/latest/download/app-armeabi-v7a-release.apk">Скачать 32-битную версию</a>.</p>
@@ -707,8 +712,11 @@
     sun.style.top = topPct + '%';
   })();
 
-  // Номер и дата версии — из GitHub Releases API. Кнопка на API не завязана:
-  // ссылка /releases/latest/download/ работает и без JS, это только подпись.
+  // Номер и дата версии — из GitHub Releases API, а не захардкожены: так
+  // цифра никогда не показывает устаревшее значение, которое потом на
+  // глазах меняется на настоящее (что и было при ручной синхронизации).
+  // Кнопка на API не завязана: ссылка /releases/latest/download/ работает и
+  // без JS, это только подпись — до её появления элементы скрыты (см. CSS).
   fetch('https://api.github.com/repos/exRonas/trailquest/releases/latest')
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (rel) {
@@ -716,6 +724,8 @@
       var v = rel.tag_name.replace(/^v?/, 'v');
       document.getElementById('version-top').textContent = v;
       document.getElementById('version-bottom').textContent = v;
+      document.getElementById('version-top-wrap').style.display = '';
+      document.getElementById('version-bottom-wrap').style.display = '';
       if (rel.published_at) {
         var d = new Date(rel.published_at);
         document.getElementById('version-date').textContent =
