@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from '../../components/ui';
-import { MountainScene, TopoPattern } from '../../components/decor';
+import { CloudDrift, MountainScene, Sway, TopoPattern } from '../../components/decor';
 import { colors, radius, spacing, useDesignVersion, useThemeColors } from '../../theme';
 
 interface AuthShellProps {
@@ -49,9 +49,13 @@ export function AuthShell({
               ]}
             >
               <TopoPattern color={theme.primary} opacity={0.2} />
+              <CloudDrift color={theme.surface} top={18} size={58} crossSeconds={56} phase={0.3} opacity={0.8} />
+              <CloudDrift color={theme.surface} top={54} size={38} crossSeconds={80} phase={0.7} opacity={0.55} />
               <View style={styles.atlasHeroBody}>
                 <View style={[styles.logo, { backgroundColor: theme.primary }]}>
-                  <Icon name="compass-rose" size={38} color={theme.textInverse} />
+                  <Sway deg={9} duration={3400}>
+                    <Icon name="compass-rose" size={38} color={theme.textInverse} />
+                  </Sway>
                 </View>
                 <AppText variant="overline" color={theme.accent} style={styles.brand}>
                   TrailQuest

@@ -320,7 +320,7 @@ export function ExploreScreen({
               <AppText variant="subheading">
                 {userPos ? t('explore.nearYou') : t('explore.allRoutes')}
               </AppText>
-              <AppText variant="caption" color={colors.textMuted}>
+              <AppText variant="caption" color={theme.textMuted}>
                 {isFetching && !isLoading
                   ? t('common.updating')
                   : t('common.routesCount', { count: displayed.length })}
@@ -331,18 +331,30 @@ export function ExploreScreen({
               </View>
 
               <Pressable
-                style={[styles.browseRow, { backgroundColor: theme.primarySoft }]}
+                style={
+                  design === 'v3'
+                    ? [
+                        styles.browseRow,
+                        styles.atlasTicket,
+                        { backgroundColor: theme.accentSoft, borderColor: theme.accent },
+                      ]
+                    : [styles.browseRow, { backgroundColor: theme.primarySoft }]
+                }
                 onPress={openCountries}
               >
-                <Icon name="earth" size={20} color={theme.primary} />
+                <Icon
+                  name={design === 'v3' ? 'compass-rose' : 'earth'}
+                  size={20}
+                  color={design === 'v3' ? theme.accent : theme.primary}
+                />
                 <AppText
                   variant="bodyStrong"
-                  color={theme.primary}
+                  color={design === 'v3' ? theme.accentDark : theme.primary}
                   style={styles.browseText}
                 >
                   {t('explore.browseByCountry')}
                 </AppText>
-                <Icon name="chevron-right" size={22} color={colors.textMuted} />
+                <Icon name="chevron-right" size={22} color={theme.textMuted} />
               </Pressable>
 
               {!hasMapboxToken ? (
@@ -411,6 +423,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   browseText: { flex: 1, marginLeft: spacing.sm },
+  // Atlas: expedition-ticket look — dashed terracotta border.
+  atlasTicket: { borderWidth: 1.2, borderStyle: 'dashed' },
   sheetBanner: { marginTop: spacing.sm },
   showMore: { marginTop: spacing.sm },
   empty: { height: 320 },

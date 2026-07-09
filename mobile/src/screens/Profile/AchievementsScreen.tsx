@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Loader } from '../../components/ui';
 import { AchievementsSection } from '../../components/AchievementsSection';
-import { MountainScene, PatchBadge, TopoPattern } from '../../components/decor';
+import { CloudDrift, Drift, MountainScene, PatchBadge, TopoPattern } from '../../components/decor';
 import { colors, spacing, useDesignVersion, useThemeColors } from '../../theme';
 import { useAchievements } from '../../api/hooks/useProgress';
 import { useT } from '../../i18n';
@@ -40,10 +40,13 @@ export function AchievementsScreen({
           ]}
         >
           <TopoPattern color={theme.primary} opacity={0.2} />
+          <CloudDrift color={theme.surface} top={20} size={54} crossSeconds={60} phase={0.4} opacity={0.75} />
           <View style={styles.atlasBannerBody}>
-            <PatchBadge fill={theme.primary} stitch={theme.accentSoft} size={72}>
-              <Icon name="trophy" size={28} color={theme.textInverse} />
-            </PatchBadge>
+            <Drift range={4} duration={3000}>
+              <PatchBadge fill={theme.primary} stitch={theme.accentSoft} size={72}>
+                <Icon name="trophy" size={28} color={theme.textInverse} />
+              </PatchBadge>
+            </Drift>
             <AppText variant="title" style={styles.atlasCount}>
               {unlocked} / {total}
             </AppText>

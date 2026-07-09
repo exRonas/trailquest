@@ -20,7 +20,7 @@ import { ProgressRow } from '../../components/ProgressRow';
 import { PendingSyncBanner } from '../../components/PendingSyncBanner';
 import { UpdateBanner } from '../../components/UpdateBanner';
 import { colors, shadow, spacing, useDesignVersion, useThemeColors } from '../../theme';
-import { MountainScene, TopoPattern } from '../../components/decor';
+import { CloudDrift, MountainScene, Pulse, TopoPattern } from '../../components/decor';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { useAuthStore } from '../../store/authStore';
 import {
@@ -101,6 +101,8 @@ export function ProfileScreen({
   const atlasHero = (
     <View style={[styles.atlasHero, { backgroundColor: theme.primaryTint, borderColor: theme.border }]}>
       <TopoPattern color={theme.primary} opacity={0.2} />
+      <CloudDrift color={theme.surface} top={22} size={64} crossSeconds={52} phase={0.25} opacity={0.85} />
+      <CloudDrift color={theme.surface} top={64} size={42} crossSeconds={74} phase={0.65} opacity={0.6} />
       <View style={styles.atlasHeroBody}>
         <Pressable onPress={() => setPickerOpen(true)} hitSlop={8}>
           <Avatar name={user?.name ?? 'You'} avatar={user?.avatar} size={84} />
@@ -120,16 +122,18 @@ export function ProfileScreen({
           </AppText>
         ) : null}
         {achievements ? (
-          <Pressable
-            style={[styles.achievementsChip, styles.atlasChip, { backgroundColor: theme.accentSoft }]}
-            onPress={() => navigation.navigate('Achievements')}
-            hitSlop={6}
-          >
-            <Icon name="trophy" size={18} color={theme.accent} />
-            <AppText variant="label" color={theme.accent} style={styles.achievementsChipText}>
-              {achievements.filter((a) => a.unlocked).length}/{achievements.length}
-            </AppText>
-          </Pressable>
+          <Pulse to={1.045} duration={2600}>
+            <Pressable
+              style={[styles.achievementsChip, styles.atlasChip, { backgroundColor: theme.accentSoft }]}
+              onPress={() => navigation.navigate('Achievements')}
+              hitSlop={6}
+            >
+              <Icon name="trophy" size={18} color={theme.accent} />
+              <AppText variant="label" color={theme.accent} style={styles.achievementsChipText}>
+                {achievements.filter((a) => a.unlocked).length}/{achievements.length}
+              </AppText>
+            </Pressable>
+          </Pulse>
         ) : null}
       </View>
       <MountainScene

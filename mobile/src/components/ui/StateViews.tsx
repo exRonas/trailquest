@@ -5,6 +5,7 @@ import { AppText } from './AppText';
 import { Button } from './Button';
 import { PatchBadge } from '../decor/PatchBadge';
 import { TopoPattern } from '../decor/TopoPattern';
+import { Drift } from '../decor/motion';
 import { spacing, useDesignVersion, useThemeColors } from '../../theme';
 
 /** Centred full-area loading spinner. */
@@ -49,9 +50,11 @@ export function EmptyState({
       {design === 'v3' ? (
         <>
           <TopoPattern color={theme.primary} opacity={0.1} />
-          <PatchBadge fill={theme.primarySoft} stitch={theme.primary} size={76}>
-            <Icon name={icon} size={30} color={theme.primary} />
-          </PatchBadge>
+          <Drift range={5} duration={2800}>
+            <PatchBadge fill={theme.primarySoft} stitch={theme.primary} size={76}>
+              <Icon name={icon} size={30} color={theme.primary} />
+            </PatchBadge>
+          </Drift>
         </>
       ) : (
         <View style={[styles.iconCircle, { backgroundColor: theme.primarySoft }]}>
