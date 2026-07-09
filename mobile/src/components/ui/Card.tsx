@@ -1,6 +1,5 @@
 import React from 'react';
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { Pressable } from 'react-native-gesture-handler';
+import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { radius, shadow, spacing, useDesignVersion, useThemeColors } from '../../theme';
 
 interface CardProps {
