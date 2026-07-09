@@ -188,24 +188,44 @@ export function ProfileScreen({
       <LevelBlock />
 
       <Pressable
-        style={[styles.leaderboardRow, { backgroundColor: theme.primarySoft }]}
+        style={
+          design === 'v3'
+            ? [styles.leaderboardRow, styles.atlasRow, { backgroundColor: theme.surface, borderColor: theme.border }]
+            : [styles.leaderboardRow, { backgroundColor: theme.primarySoft }]
+        }
         onPress={() => navigation.navigate('Leaderboard')}
       >
-        <Icon name="podium-gold" size={22} color={theme.primary} />
+        {design === 'v3' ? (
+          <View style={[styles.atlasRowIcon, { backgroundColor: theme.primarySoft }]}>
+            <Icon name="podium-gold" size={22} color={theme.primary} />
+          </View>
+        ) : (
+          <Icon name="podium-gold" size={22} color={theme.primary} />
+        )}
         <View style={styles.leaderboardText}>
           <AppText variant="bodyStrong">{t('leaderboard.title')}</AppText>
           <AppText variant="caption" color={theme.textSecondary}>
             {t('leaderboard.subtitle')}
           </AppText>
         </View>
-        <Icon name="chevron-right" size={22} color={theme.textMuted} />
+        <Icon name="chevron-right" size={22} color={design === 'v3' ? theme.accent : theme.textMuted} />
       </Pressable>
 
       <Pressable
-        style={[styles.leaderboardRow, { backgroundColor: theme.surface }]}
+        style={
+          design === 'v3'
+            ? [styles.leaderboardRow, styles.atlasRow, { backgroundColor: theme.surface, borderColor: theme.border }]
+            : [styles.leaderboardRow, { backgroundColor: theme.surface }]
+        }
         onPress={() => navigation.navigate('Friends')}
       >
-        <Icon name="account-group" size={22} color={theme.primary} />
+        {design === 'v3' ? (
+          <View style={[styles.atlasRowIcon, { backgroundColor: theme.primarySoft }]}>
+            <Icon name="account-group" size={22} color={theme.primary} />
+          </View>
+        ) : (
+          <Icon name="account-group" size={22} color={theme.primary} />
+        )}
         <View style={styles.leaderboardText}>
           <AppText variant="bodyStrong">{t('friends.title')}</AppText>
         </View>
@@ -216,7 +236,7 @@ export function ProfileScreen({
             </AppText>
           </View>
         ) : null}
-        <Icon name="chevron-right" size={22} color={theme.textMuted} />
+        <Icon name="chevron-right" size={22} color={design === 'v3' ? theme.accent : theme.textMuted} />
       </Pressable>
 
       <PendingSyncBanner />
@@ -265,7 +285,12 @@ export function ProfileScreen({
       </View>
 
       <View style={styles.historyHeader}>
-        <AppText variant="subheading">{t('profile.yourRoutes')}</AppText>
+        <View>
+          <AppText variant="subheading">{t('profile.yourRoutes')}</AppText>
+          {design === 'v3' ? (
+            <View style={[styles.atlasUnderline, { borderColor: theme.accent }]} />
+          ) : null}
+        </View>
         {(data ?? []).length > RECENT_COUNT ? (
           <Pressable onPress={openAllActivities} hitSlop={8}>
             <AppText variant="bodyStrong" color={theme.primary}>
@@ -513,4 +538,18 @@ const styles = StyleSheet.create({
   atlasChip: { alignSelf: 'center', marginTop: spacing.md },
   atlasLevelCard: { borderRadius: 20, overflow: 'hidden' },
   atlasSummary: { borderRadius: 20, overflow: 'hidden' },
+  atlasRow: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 18 },
+  atlasRowIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  atlasUnderline: {
+    width: 42,
+    borderBottomWidth: 2,
+    borderStyle: 'dashed',
+    marginTop: 3,
+  },
 });

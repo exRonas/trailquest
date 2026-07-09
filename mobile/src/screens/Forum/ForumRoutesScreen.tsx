@@ -3,7 +3,8 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, ErrorState, EmptyState, Loader } from '../../components/ui';
 import { RouteCard } from '../../components/RouteCard';
-import { colors, spacing, useThemeColors } from '../../theme';
+import { CloudDrift, MountainScene, TopoPattern } from '../../components/decor';
+import { colors, spacing, useDesignVersion, useThemeColors } from '../../theme';
 import { useRoutes } from '../../api/hooks/useRoutes';
 import { getApiErrorMessage } from '../../api/client';
 import { getCurrentPosition } from '../../services/geolocation';
@@ -17,6 +18,7 @@ export function ForumRoutesScreen({
 }: ForumScreenProps<'ForumRoutes'>): React.ReactElement {
   const t = useT();
   const theme = useThemeColors();
+  const design = useDesignVersion();
   const pickLocalized = usePickLocalized();
   const { data, isLoading, isError, error, refetch, isRefetching } = useRoutes();
 
@@ -71,27 +73,60 @@ export function ForumRoutesScreen({
       refreshing={isRefetching}
       ListHeaderComponent={
         <View style={styles.header}>
-          <AppText variant="title">{t('tab.forum')}</AppText>
-          <AppText variant="callout" color={colors.textSecondary} style={styles.sub}>
-            {t('forum.subtitle')}
-          </AppText>
-          <AppText variant="caption" color={colors.textMuted} style={styles.sub}>
-            {userPos ? t('explore.nearYou') : t('explore.allRoutes')}
-          </AppText>
+          {design === 'v3' ? (
+            <View style={[styles.atlasBanner, { backgroundColor: theme.primaryTint, borderColor: theme.border }]}>
+              <TopoPattern color={theme.primary} opacity={0.18} />
+              <CloudDrift color={theme.surface} top={14} size={50} crossSeconds={58} phase={0.35} opacity={0.75} />
+              <View style={styles.atlasBannerBody}>
+                <AppText variant="title">{t('tab.forum')}</AppText>
+                <AppText variant="callout" color={theme.textSecondary} style={styles.sub}>
+                  {t('forum.subtitle')}
+                </AppText>
+                <AppText variant="overline" color={theme.textMuted} style={styles.sub}>
+                  {userPos ? t('explore.nearYou') : t('explore.allRoutes')}
+                </AppText>
+              </View>
+              <MountainScene
+                far={theme.primary}
+                mid={theme.primary}
+                near={theme.primaryDark}
+                sun={theme.accent}
+                height={44}
+              />
+            </View>
+          ) : (
+            <>
+              <AppText variant="title">{t('tab.forum')}</AppText>
+              <AppText variant="callout" color={theme.textSecondary} style={styles.sub}>
+                {t('forum.subtitle')}
+              </AppText>
+              <AppText variant="caption" color={theme.textMuted} style={styles.sub}>
+                {userPos ? t('explore.nearYou') : t('explore.allRoutes')}
+              </AppText>
+            </>
+          )}
 
           <Pressable
-            style={[styles.browseRow, { backgroundColor: theme.primarySoft }]}
+            style={
+              design === 'v3'
+                ? [styles.browseRow, styles.atlasTicket, { backgroundColor: theme.accentSoft, borderColor: theme.accent }]
+                : [styles.browseRow, { backgroundColor: theme.primarySoft }]
+            }
             onPress={openCountries}
           >
-            <Icon name="earth" size={20} color={theme.primary} />
+            <Icon
+              name={design === 'v3' ? 'compass-rose' : 'earth'}
+              size={20}
+              color={design === 'v3' ? theme.accent : theme.primary}
+            />
             <AppText
               variant="bodyStrong"
-              color={theme.primary}
+              color={design === 'v3' ? theme.accentDark : theme.primary}
               style={styles.browseText}
             >
               {t('explore.browseByCountry')}
             </AppText>
-            <Icon name="chevron-right" size={22} color={colors.textMuted} />
+            <Icon name="chevron-right" size={22} color={theme.textMuted} />
           </Pressable>
         </View>
       }
@@ -132,4 +167,17 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   browseText: { flex: 1, marginLeft: spacing.sm },
+
+  // Atlas (v3)
+  atlasBanner: {
+    borderRadius: 22,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+  },
+  atlasBannerBody: {
+    paddingTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xs,
+  },
+  atlasTicket: { borderWidth: 1.2, borderStyle: 'dashed' },
 });

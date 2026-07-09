@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './ui';
-import { colors, spacing, useThemeColors } from '../theme';
+import { spacing, useDesignVersion, useThemeColors } from '../theme';
 
 interface StatTileProps {
   icon: string;
@@ -19,20 +19,21 @@ export function StatTile({
   value,
   label,
   emphasis = false,
-  color = colors.text,
+  color,
   style,
 }: StatTileProps): React.ReactElement {
   const theme = useThemeColors();
+  const design = useDesignVersion();
+  // Atlas: stat icons carry the terracotta accent so number blocks read as
+  // field-guide annotations rather than gray chrome.
+  const iconColor =
+    design === 'v3' ? theme.accent : emphasis ? theme.primary : theme.textMuted;
   return (
     <View style={[styles.tile, style]}>
-      <Icon
-        name={icon}
-        size={emphasis ? 22 : 16}
-        color={emphasis ? theme.primary : colors.textMuted}
-      />
+      <Icon name={icon} size={emphasis ? 22 : 16} color={iconColor} />
       <AppText
         variant={emphasis ? 'title' : 'bodyStrong'}
-        color={color}
+        color={color ?? theme.text}
         style={styles.value}
         numberOfLines={1}
         adjustsFontSizeToFit
@@ -41,7 +42,7 @@ export function StatTile({
       </AppText>
       <AppText
         variant={emphasis ? 'caption' : 'overline'}
-        color={colors.textMuted}
+        color={theme.textMuted}
         style={styles.label}
         numberOfLines={2}
       >

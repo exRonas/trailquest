@@ -7,7 +7,7 @@ import { CategoryBadge, DifficultyBadge } from './RouteBadges';
 import { StarRating } from './StarRating';
 import { colors, spacing, useDesignVersion, useThemeColors } from '../theme';
 import { TopoPattern } from './decor';
-import { categoryIcon } from '../theme/icons';
+import { categoryIcon, difficultyIcon } from '../theme/icons';
 import { formatDistanceKm, formatDuration } from '../utils/format';
 import { useT, usePickLocalized, useLocaleStore } from '../i18n';
 import { RouteSummary } from '../types/api';
@@ -127,6 +127,7 @@ function AtlasRouteCard({
   const theme = useThemeColors();
   const pickLocalized = usePickLocalized();
   const language = useLocaleStore((s) => s.language);
+  const gradeColor = theme.difficulty[route.difficulty].main;
 
   return (
     <Card onPress={onPress} padded={false} style={styles.atlasCard}>
@@ -163,9 +164,21 @@ function AtlasRouteCard({
         )}
 
         <View style={styles.badgeRow}>
-          <CategoryBadge category={route.category} />
+          {/* Parchment "stamps" instead of the generic pills: localized,
+              uppercase, sitting on the paper color of the design. */}
+          <View style={[styles.atlasStamp, { backgroundColor: theme.background }]}>
+            <Icon name={categoryIcon[route.category]} size={13} color={theme.primary} />
+            <AppText variant="overline" color={theme.primaryEmphasis} style={styles.atlasStampText}>
+              {t(`category.${route.category}`)}
+            </AppText>
+          </View>
           <View style={styles.badgeGap} />
-          <DifficultyBadge difficulty={route.difficulty} />
+          <View style={[styles.atlasStamp, { backgroundColor: theme.background }]}>
+            <Icon name={difficultyIcon[route.difficulty]} size={13} color={gradeColor} />
+            <AppText variant="overline" color={gradeColor} style={styles.atlasStampText}>
+              {t(`difficulty.${route.difficulty}`)}
+            </AppText>
+          </View>
         </View>
 
         <View style={styles.atlasOverlay}>
@@ -205,6 +218,8 @@ function AtlasRouteCard({
         </View>
       </View>
 
+      {/* Ticket tear line between photo and stats */}
+      <View style={[styles.atlasTear, { borderColor: theme.border }]} />
       <View style={[styles.atlasStats, { backgroundColor: theme.surfaceAlt }]}>
         <AtlasStat icon="map-marker-distance" text={formatDistanceKm(route.distanceKm)} />
         <View style={[styles.atlasStatDivider, { backgroundColor: theme.border }]} />
@@ -222,6 +237,8 @@ function AtlasRouteCard({
           }
         />
       </View>
+      {/* Difficulty grade edge — thin severity-colored spine down the left */}
+      <View style={[styles.atlasSpine, { backgroundColor: gradeColor }]} />
     </Card>
   );
 }
@@ -308,4 +325,22 @@ const styles = StyleSheet.create({
   },
   atlasStat: { flexDirection: 'row', alignItems: 'center' },
   atlasStatDivider: { width: StyleSheet.hairlineWidth, alignSelf: 'stretch' },
+  atlasStamp: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+  },
+  atlasStampText: { marginLeft: 4 },
+  atlasTear: { borderTopWidth: 1.2, borderStyle: 'dashed' },
+  atlasSpine: {
+    position: 'absolute',
+    left: 0,
+    top: 14,
+    bottom: 14,
+    width: 4,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
+  },
 });
