@@ -4,3 +4,5 @@ export { WaveDivider } from './WaveDivider';
 export { PatchBadge } from './PatchBadge';
 export { CloudDrift } from './CloudDrift';
 export { Drift, Sway, Pulse } from './motion';
+export { StampEdge } from './StampEdge';
+export { Postmark } from './Postmark';

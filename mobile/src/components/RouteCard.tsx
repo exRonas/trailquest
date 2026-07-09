@@ -6,7 +6,7 @@ import { AppText, Card } from './ui';
 import { CategoryBadge, DifficultyBadge } from './RouteBadges';
 import { StarRating } from './StarRating';
 import { colors, spacing, useDesignVersion, useThemeColors } from '../theme';
-import { TopoPattern } from './decor';
+import { Postmark, StampEdge, TopoPattern } from './decor';
 import { categoryIcon, difficultyIcon } from '../theme/icons';
 import { formatDistanceKm, formatDuration } from '../utils/format';
 import { useT, usePickLocalized, useLocaleStore } from '../i18n';
@@ -111,9 +111,10 @@ export function RouteCard({ route, onPress }: RouteCardProps): React.ReactElemen
   );
 }
 
-/** Atlas ('v3') layout — full-bleed image poster: serif title and meta sit ON
- *  the photo over a bottom scrim, badges float top-left, stats run as a strip
- *  along the bottom. Imageless routes get a topo-contour placeholder. */
+/** Atlas ('v3') layout — a vintage postage stamp: perforated punched edge,
+ *  wide parchment margin, a double-ruled frame around the photo, a faded
+ *  postal cancellation mark, and a ledger-style stats line underneath.
+ *  Imageless routes get a topo-contour placeholder inside the frame. */
 function AtlasRouteCard({
   route,
   onPress,
@@ -131,114 +132,124 @@ function AtlasRouteCard({
 
   return (
     <Card onPress={onPress} padded={false} style={styles.atlasCard}>
-      <View style={[styles.atlasCover, { backgroundColor: theme.primarySoft }]}>
-        {showImage ? (
-          <>
-            <Image
-              source={{ uri: route.coverImageUrl! }}
-              style={styles.image}
-              onError={onImageError}
-            />
-            {/* Bottom scrim so the on-photo text stays readable */}
-            <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
-              <Defs>
-                <LinearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0.35" stopColor="#000" stopOpacity="0" />
-                  <Stop offset="1" stopColor="#1E1A13" stopOpacity="0.82" />
-                </LinearGradient>
-              </Defs>
-              <Rect x="0" y="0" width="100%" height="100%" fill="url(#scrim)" />
-            </Svg>
-          </>
-        ) : (
-          <>
-            <TopoPattern color={theme.primary} opacity={0.28} />
-            <View style={styles.placeholder}>
-              <Icon
-                name={categoryIcon[route.category]}
-                size={44}
-                color={theme.primary}
-              />
-            </View>
-          </>
-        )}
+      <View style={styles.stampBody}>
+        {/* Double-ruled engraving frame around the picture */}
+        <View style={[styles.stampFrameOuter, { borderColor: theme.primary }]}>
+          <View style={[styles.stampFrameInner, { borderColor: theme.primary }]}>
+            <View style={[styles.atlasCover, { backgroundColor: theme.primarySoft }]}>
+              {showImage ? (
+                <>
+                  <Image
+                    source={{ uri: route.coverImageUrl! }}
+                    style={styles.image}
+                    onError={onImageError}
+                  />
+                  {/* Bottom scrim so the on-photo text stays readable */}
+                  <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+                    <Defs>
+                      <LinearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
+                        <Stop offset="0.35" stopColor="#000" stopOpacity="0" />
+                        <Stop offset="1" stopColor="#191612" stopOpacity="0.82" />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect x="0" y="0" width="100%" height="100%" fill="url(#scrim)" />
+                  </Svg>
+                </>
+              ) : (
+                <>
+                  <TopoPattern color={theme.primary} opacity={0.28} />
+                  <View style={styles.placeholder}>
+                    <Icon
+                      name={categoryIcon[route.category]}
+                      size={44}
+                      color={theme.primary}
+                    />
+                  </View>
+                </>
+              )}
 
-        <View style={styles.badgeRow}>
-          {/* Parchment "stamps" instead of the generic pills: localized,
-              uppercase, sitting on the paper color of the design. */}
-          <View style={[styles.atlasStamp, { backgroundColor: theme.background }]}>
-            <Icon name={categoryIcon[route.category]} size={13} color={theme.primary} />
-            <AppText variant="overline" color={theme.primaryEmphasis} style={styles.atlasStampText}>
-              {t(`category.${route.category}`)}
-            </AppText>
-          </View>
-          <View style={styles.badgeGap} />
-          <View style={[styles.atlasStamp, { backgroundColor: theme.background }]}>
-            <Icon name={difficultyIcon[route.difficulty]} size={13} color={gradeColor} />
-            <AppText variant="overline" color={gradeColor} style={styles.atlasStampText}>
-              {t(`difficulty.${route.difficulty}`)}
-            </AppText>
-          </View>
-        </View>
+              <View style={styles.badgeRow}>
+                <View style={[styles.atlasStamp, { backgroundColor: theme.background }]}>
+                  <Icon name={categoryIcon[route.category]} size={13} color={theme.primary} />
+                  <AppText variant="overline" color={theme.primaryEmphasis} style={styles.atlasStampText}>
+                    {t(`category.${route.category}`)}
+                  </AppText>
+                </View>
+                <View style={styles.badgeGap} />
+                <View style={[styles.atlasStamp, { backgroundColor: theme.background }]}>
+                  <Icon name={difficultyIcon[route.difficulty]} size={13} color={gradeColor} />
+                  <AppText variant="overline" color={gradeColor} style={styles.atlasStampText}>
+                    {t(`difficulty.${route.difficulty}`)}
+                  </AppText>
+                </View>
+              </View>
 
-        <View style={styles.atlasOverlay}>
-          <AppText
-            variant="heading"
-            color={showImage ? '#FFFDF6' : theme.text}
-            numberOfLines={2}
-          >
-            {pickLocalized(route.title)}
-          </AppText>
-          <View style={styles.regionRow}>
-            <Icon
-              name="map-marker-outline"
-              size={14}
-              color={showImage ? 'rgba(255,253,246,0.85)' : theme.textMuted}
-            />
-            <AppText
-              variant="caption"
-              color={showImage ? 'rgba(255,253,246,0.85)' : theme.textSecondary}
-              numberOfLines={1}
-              style={styles.region}
-            >
-              {pickLocalized(route.region)}
-            </AppText>
-            {route.rating.count > 0 ? (
-              <>
-                <Icon name="star" size={13} color={theme.warning} style={styles.atlasStar} />
+              {/* Cancellation mark over the photo's top-right corner */}
+              <View style={styles.postmarkWrap}>
+                <Postmark color={showImage ? '#F4ECD9' : theme.accent} opacity={0.55} size={80} />
+              </View>
+
+              <View style={styles.atlasOverlay}>
                 <AppText
-                  variant="caption"
-                  color={showImage ? 'rgba(255,253,246,0.95)' : theme.textSecondary}
+                  variant="heading"
+                  color={showImage ? '#FBF5E4' : theme.text}
+                  numberOfLines={2}
                 >
-                  {route.rating.average.toFixed(1)} ({route.rating.count})
+                  {pickLocalized(route.title)}
                 </AppText>
-              </>
-            ) : null}
+                <View style={styles.regionRow}>
+                  <Icon
+                    name="map-marker-outline"
+                    size={14}
+                    color={showImage ? 'rgba(251,245,228,0.85)' : theme.textMuted}
+                  />
+                  <AppText
+                    variant="caption"
+                    color={showImage ? 'rgba(251,245,228,0.85)' : theme.textSecondary}
+                    numberOfLines={1}
+                    style={styles.region}
+                  >
+                    {pickLocalized(route.region)}
+                  </AppText>
+                  {route.rating.count > 0 ? (
+                    <>
+                      <Icon name="star" size={13} color={theme.warning} style={styles.atlasStar} />
+                      <AppText
+                        variant="caption"
+                        color={showImage ? 'rgba(251,245,228,0.95)' : theme.textSecondary}
+                      >
+                        {route.rating.average.toFixed(1)} ({route.rating.count})
+                      </AppText>
+                    </>
+                  ) : null}
+                </View>
+              </View>
+            </View>
           </View>
+        </View>
+
+        {/* Ledger line under the picture, inside the stamp margin */}
+        <View style={styles.atlasStats}>
+          <AtlasStat icon="map-marker-distance" text={formatDistanceKm(route.distanceKm)} />
+          <View style={[styles.atlasStatDivider, { backgroundColor: theme.border }]} />
+          <AtlasStat
+            icon="clock-outline"
+            text={formatDuration(route.estimatedMinutes, language)}
+          />
+          <View style={[styles.atlasStatDivider, { backgroundColor: theme.border }]} />
+          <AtlasStat
+            icon="flag-variant-outline"
+            text={
+              route._count.checkpoints === 1
+                ? t('route.stopsOne')
+                : t('route.stops', { count: route._count.checkpoints })
+            }
+          />
         </View>
       </View>
 
-      {/* Ticket tear line between photo and stats */}
-      <View style={[styles.atlasTear, { borderColor: theme.border }]} />
-      <View style={[styles.atlasStats, { backgroundColor: theme.surfaceAlt }]}>
-        <AtlasStat icon="map-marker-distance" text={formatDistanceKm(route.distanceKm)} />
-        <View style={[styles.atlasStatDivider, { backgroundColor: theme.border }]} />
-        <AtlasStat
-          icon="clock-outline"
-          text={formatDuration(route.estimatedMinutes, language)}
-        />
-        <View style={[styles.atlasStatDivider, { backgroundColor: theme.border }]} />
-        <AtlasStat
-          icon="flag-variant-outline"
-          text={
-            route._count.checkpoints === 1
-              ? t('route.stopsOne')
-              : t('route.stops', { count: route._count.checkpoints })
-          }
-        />
-      </View>
-      {/* Difficulty grade edge — thin severity-colored spine down the left */}
-      <View style={[styles.atlasSpine, { backgroundColor: gradeColor }]} />
+      {/* Perforated punched edge — must be last so holes sit on top */}
+      <StampEdge holeColor={theme.background} />
     </Card>
   );
 }
@@ -306,22 +317,26 @@ const styles = StyleSheet.create({
   stat: { flexDirection: 'row', alignItems: 'center', marginRight: spacing.lg },
   statText: { marginLeft: 4 },
 
-  // Atlas (v3)
-  atlasCard: { marginBottom: spacing.lg, borderRadius: 20 },
-  atlasCover: { height: 190, overflow: 'hidden' },
+  // Atlas (v3) — postage-stamp card
+  atlasCard: { marginBottom: spacing.lg, borderRadius: 10 },
+  stampBody: { padding: spacing.md + 2 },
+  stampFrameOuter: { borderWidth: 1.6, borderRadius: 4, padding: 3 },
+  stampFrameInner: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 2, overflow: 'hidden' },
+  atlasCover: { height: 175, overflow: 'hidden' },
   atlasOverlay: {
     position: 'absolute',
-    left: spacing.lg,
-    right: spacing.lg,
-    bottom: spacing.md,
+    left: spacing.md,
+    right: spacing.md,
+    bottom: spacing.sm,
   },
+  postmarkWrap: { position: 'absolute', top: -6, right: -22 },
   atlasStar: { marginLeft: spacing.sm, marginRight: 3 },
   atlasStats: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm + 2,
+    paddingHorizontal: spacing.xs,
   },
   atlasStat: { flexDirection: 'row', alignItems: 'center' },
   atlasStatDivider: { width: StyleSheet.hairlineWidth, alignSelf: 'stretch' },
@@ -333,14 +348,4 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   atlasStampText: { marginLeft: 4 },
-  atlasTear: { borderTopWidth: 1.2, borderStyle: 'dashed' },
-  atlasSpine: {
-    position: 'absolute',
-    left: 0,
-    top: 14,
-    bottom: 14,
-    width: 4,
-    borderTopRightRadius: 4,
-    borderBottomRightRadius: 4,
-  },
 });

@@ -86,35 +86,39 @@ export const terra = {
   night600: '#363A36',
 } as const;
 
-/** Atlas ('v3') additions — expedition field-guide palette: aged paper,
- *  olive, terracotta, warm espresso darks. */
+/** Atlas ('v3') additions — aged industrial-era palette: yellowed archive
+ *  paper, verdigris (oxidized copper) as the working green, rust iron as the
+ *  accent, and a soot-and-lamplight dark mode. Vintage postage-stamp /
+ *  factory-ledger feel rather than a fresh outdoorsy green. */
 export const atlas = {
-  olive700: '#3C4D2A',
-  olive600: '#4A5D33',
-  olive500: '#5C7040',
-  olive200: '#CDD4B8',
-  olive100: '#E8ECDA',
-  olive50: '#F1F4E8',
+  // Verdigris — the green of weathered copper roofs and old machinery paint
+  verdigris700: '#2E4C43',
+  verdigris600: '#3D6156',
+  verdigris500: '#4E7568',
+  verdigris200: '#BCD0C6',
+  verdigris100: '#DEE8E1',
+  verdigris50: '#EDF2EC',
 
-  terracotta600: '#A84325',
-  terracotta500: '#C2532C',
-  terracotta100: '#F7E3D8',
+  // Rust — oxidized iron, stamps' cancellation-ink red
+  rust600: '#8F3A18',
+  rust500: '#AE4A22',
+  rust100: '#F2DCC8',
 
-  // Warm paper neutrals (cream, not gray)
-  ink: '#2B261C',
-  umber600: '#6B6353',
-  umber400: '#9C927D',
-  sand300: '#DDD3BC',
-  sand200: '#EAE2CE',
-  sand100: '#F2ECDC',
-  paper: '#F8F4E9',
-  parchment: '#FFFDF6',
+  // Aged archive-paper neutrals (yellowed, sepia-leaning)
+  ink: '#2F2A1D',
+  umber600: '#6E6450',
+  umber400: '#9B8F74',
+  sand300: '#D6C8A8',
+  sand200: '#E5DABE',
+  sand100: '#EDE3CC',
+  paper: '#F4ECD9',
+  parchment: '#FBF5E4',
 
-  // Espresso dark mode — warm brown-charcoal, no blue cast
-  night900: '#1E1A13',
-  night800: '#28231A',
-  night700: '#322C21',
-  night600: '#453D2E',
+  // Soot-and-lamplight dark mode — coal blacks with a warm cast
+  night900: '#191612',
+  night800: '#231F18',
+  night700: '#2D281F',
+  night600: '#413A2C',
 } as const;
 
 /** Build the full semantic color set for a scheme. Same shape for light/dark
@@ -218,30 +222,30 @@ function buildAtlasColors(scheme: ColorScheme) {
   return {
     ...v1,
 
-    primary: dark ? atlas.olive500 : atlas.olive600,
-    primaryDark: atlas.olive700,
-    primaryEmphasis: dark ? atlas.olive200 : atlas.olive700,
-    primarySoft: dark ? '#333425' : atlas.olive100,
-    primaryTint: dark ? '#2A2B1E' : atlas.olive50,
+    primary: dark ? atlas.verdigris500 : atlas.verdigris600,
+    primaryDark: atlas.verdigris700,
+    primaryEmphasis: dark ? atlas.verdigris200 : atlas.verdigris700,
+    primarySoft: dark ? '#293630' : atlas.verdigris100,
+    primaryTint: dark ? '#222C27' : atlas.verdigris50,
 
-    accent: atlas.terracotta500,
-    accentDark: atlas.terracotta600,
-    accentSoft: dark ? '#3A2A1E' : atlas.terracotta100,
+    accent: atlas.rust500,
+    accentDark: atlas.rust600,
+    accentSoft: dark ? '#3B2A1C' : atlas.rust100,
 
     background: dark ? atlas.night900 : atlas.paper,
     surface: dark ? atlas.night800 : atlas.parchment,
     surfaceAlt: dark ? atlas.night700 : atlas.sand100,
     border: dark ? atlas.night600 : atlas.sand300,
-    overlay: dark ? 'rgba(0, 0, 0, 0.65)' : 'rgba(43, 38, 28, 0.55)',
+    overlay: dark ? 'rgba(0, 0, 0, 0.65)' : 'rgba(47, 42, 29, 0.55)',
 
-    text: dark ? '#F0EBDD' : atlas.ink,
-    textSecondary: dark ? '#C4BBA6' : atlas.umber600,
-    textMuted: dark ? '#948A73' : atlas.umber400,
+    text: dark ? '#EFE7D2' : atlas.ink,
+    textSecondary: dark ? '#C7BBA0' : atlas.umber600,
+    textMuted: dark ? '#96896E' : atlas.umber400,
 
-    success: atlas.olive500,
+    success: atlas.verdigris500,
 
     difficulty: {
-      EASY: { main: atlas.olive500, soft: dark ? '#333425' : atlas.olive100 },
+      EASY: { main: atlas.verdigris500, soft: dark ? '#293630' : atlas.verdigris100 },
       MODERATE: v1.difficulty.MODERATE,
       HARD: v1.difficulty.HARD,
     },
