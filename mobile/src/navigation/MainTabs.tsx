@@ -42,11 +42,14 @@ export function MainTabs(): React.ReactElement {
       <Tab.Screen
         name="ExploreTab"
         component={ExploreStack}
-        // The map-heavy Explore tab holds a live Mapbox GL surface; without
-        // this it stays mounted (and the map alive) in the background after
-        // switching tabs, which was driving the app into constant
-        // critical-memory GC and freezing touches elsewhere in the app.
-        options={{ title: t('tab.explore'), freezeOnBlur: true }}
+        // The live Mapbox GL surface used to be paused via freezeOnBlur, but
+        // react-native-screens' freeze leaves the bottom sheet's gesture
+        // handler in a stuck state after unfreezing (scroll would lock up
+        // permanently the first time you left and returned to this tab).
+        // ExploreScreen now unmounts just the MapView on blur instead (see
+        // useIsFocused there), which fixes the same GC/memory issue without
+        // freezing the whole screen's gesture handlers.
+        options={{ title: t('tab.explore') }}
       />
       <Tab.Screen
         name="ForumTab"

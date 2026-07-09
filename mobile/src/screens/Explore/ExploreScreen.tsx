@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useIsFocused } from '@react-navigation/native';
 import Mapbox from '@rnmapbox/maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
@@ -48,6 +49,7 @@ export function ExploreScreen({
   navigation,
 }: ExploreScreenProps<'Explore'>): React.ReactElement {
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused();
   const t = useT();
   const theme = useThemeColors();
   const design = useDesignVersion();
@@ -222,7 +224,7 @@ export function ExploreScreen({
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {hasMapboxToken ? (
+      {hasMapboxToken && isFocused ? (
         <Mapbox.MapView
           style={styles.map}
           styleURL={mapStyleUrl}
