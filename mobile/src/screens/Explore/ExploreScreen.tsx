@@ -67,16 +67,36 @@ export function ExploreScreen({
   const cameraRef = useRef<Mapbox.Camera>(null);
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['22%', '55%', '92%'], []);
-  const fittedRef = useRef(false);
+  const positionedRef = useRef(false);
+  // Whether getCurrentPosition() has finished (regardless of outcome). Lets the
+  // marker-fit fallback wait until we actually know there's no location, rather
+  // than racing it and stealing the camera before the user's position arrives.
+  const [locationResolved, setLocationResolved] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const onMapReady = useCallback(() => setMapReady(true), []);
 
-  // Try to get the user's location once so we can surface nearby routes first.
+  // The MapView is unmounted while the tab is blurred (see the isFocused gate
+  // on <Mapbox.MapView> — it's how we avoid the gesture-handler scroll freeze).
+  // On remount the native camera starts from DEFAULT_CAMERA again, so clear the
+  // "already positioned" flag and the ready flag when we blur; returning to the
+  // tab then re-centres on the user (or re-fits to markers) instead of leaving
+  // the camera stranded on the default.
+  useEffect(() => {
+    if (!isFocused) {
+      positionedRef.current = false;
+      setMapReady(false);
+    }
+  }, [isFocused]);
+
+  // Try to get the user's location once so we can surface nearby routes first
+  // and centre the map on them.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const pos = await getCurrentPosition();
-      if (!cancelled && pos) setUserPos({ lat: pos.lat, lng: pos.lng });
+      if (cancelled) return;
+      if (pos) setUserPos({ lat: pos.lat, lng: pos.lng });
+      setLocationResolved(true);
     })();
     return () => {
       cancelled = true;
@@ -108,20 +128,38 @@ export function ExploreScreen({
     [displayed, language],
   );
 
-  // Fit the camera to the visible markers once, after the map has actually
-  // finished loading (a bare requestAnimationFrame could fire before the
-  // native camera exists and silently no-op — see RoutePreviewMap).
+  // Position the camera once per focus, after the map has finished loading (a
+  // bare requestAnimationFrame could fire before the native camera exists and
+  // silently no-op — see RoutePreviewMap). The default view is the user's own
+  // location. Only if location is denied/unavailable do we fall back to fitting
+  // the route markers; failing that, the map stays on the Pavlodar default
+  // baked into DEFAULT_CAMERA. Never the far-away world default that used to
+  // strand the camera on the US.
   useEffect(() => {
-    if (fittedRef.current || !hasMapboxToken || !mapReady) return;
+    if (positionedRef.current || !hasMapboxToken || !mapReady) return;
+
+    if (userPos) {
+      positionedRef.current = true;
+      cameraRef.current?.setCamera({
+        centerCoordinate: [userPos.lng, userPos.lat],
+        zoomLevel: 11,
+        animationDuration: 600,
+      });
+      return;
+    }
+
+    // No user location yet — wait until we know it's truly unavailable before
+    // committing the camera to the marker-fit fallback.
+    if (!locationResolved) return;
     const coords = featureCollection.features.map((f) => f.geometry.coordinates);
     if (coords.length === 0) return;
     const lngs = coords.map((c) => c[0]);
     const lats = coords.map((c) => c[1]);
     const ne: Coord = [Math.max(...lngs), Math.max(...lats)];
     const sw: Coord = [Math.min(...lngs), Math.min(...lats)];
-    fittedRef.current = true;
+    positionedRef.current = true;
     cameraRef.current?.fitBounds(ne, sw, [120, 60, 320, 60], 800);
-  }, [featureCollection, mapReady]);
+  }, [featureCollection, mapReady, userPos, locationResolved]);
 
   const openRoute = useCallback(
     (routeId: string) => navigation.navigate('RouteDetail', { routeId }),

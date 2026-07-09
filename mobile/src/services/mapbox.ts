@@ -32,8 +32,11 @@ export function useMapStyleUrl(): string {
   return isDark ? darkMapStyleUrl : mapStyleUrl;
 }
 
-/** Sensible default camera (centre of contiguous US) before routes load. */
+/** Default camera shown briefly before routes load / the camera fits to the
+ *  markers. Centred on Pavlodar (the app's home region) — NOT a world/US
+ *  default, so a remount of the MapView never flashes the map halfway across
+ *  the planet. */
 export const DEFAULT_CAMERA = {
-  centerCoordinate: [-98.5, 39.8] as [number, number],
-  zoomLevel: 3,
+  centerCoordinate: [76.9674, 52.2873] as [number, number],
+  zoomLevel: 5,
 };
