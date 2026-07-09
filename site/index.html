@@ -522,14 +522,16 @@
         <path id="ridge-mid" d="M0 48.75 L36 32.5 L84 46.25 L140 25 L196 47.5 L248 32.5 L300 45 L360 31.25 L360 60 L0 60 Z"/>
         <path id="ridge-near" d="M0 60 L20 50 L72 57.5 L132 41.25 L200 57.5 L268 45 L326 56.25 L360 48.75 L360 60 Z"/>
       </defs>
+      <!-- Вторая копия хребта зеркалится вокруг x=720 (x → 720−x), заполняя
+           правую половину viewBox бесшовно: стык в x=360 совпадает сам с собой. -->
       <g fill="#4E7568" fill-opacity="0.5">
-        <use href="#ridge-far"/><use href="#ridge-far" transform="translate(360 0) scale(-1 1) translate(-360 0)" x="360"/>
+        <use href="#ridge-far"/><use href="#ridge-far" transform="translate(720 0) scale(-1 1)"/>
       </g>
       <g fill="#3D6156" fill-opacity="0.75">
-        <use href="#ridge-mid"/><use href="#ridge-mid" transform="translate(360 0) scale(-1 1) translate(-360 0)" x="360"/>
+        <use href="#ridge-mid"/><use href="#ridge-mid" transform="translate(720 0) scale(-1 1)"/>
       </g>
       <g fill="#2E4C43">
-        <use href="#ridge-near"/><use href="#ridge-near" transform="translate(360 0) scale(-1 1) translate(-360 0)" x="360"/>
+        <use href="#ridge-near"/><use href="#ridge-near" transform="translate(720 0) scale(-1 1)"/>
       </g>
     </svg>
   </div>
