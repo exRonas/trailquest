@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Button, Card, Chip, TextField } from '../../components/ui';
+import { TopoPattern } from '../../components/decor';
 import {
   spacing,
   useDesignStore,
@@ -120,16 +121,30 @@ export function SettingsScreen({
     );
   };
 
+  const atlas = designVersion === 'v3';
+  // Section header: in Atlas gets a short dashed rust underline, like a
+  // heading in a field ledger.
+  const sectionHeader = (label: string) => (
+    <View style={styles.sectionHeader}>
+      <AppText variant="overline" color={theme.textMuted}>
+        {label}
+      </AppText>
+      {atlas ? <View style={[styles.atlasUnderline, { borderColor: theme.accent }]} /> : null}
+    </View>
+  );
+  const atlasCardStyle = atlas
+    ? [styles.card, styles.atlasCard, { borderColor: theme.border }]
+    : styles.card;
+
   return (
     <ScrollView
       style={[styles.fill, { backgroundColor: theme.background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <AppText variant="overline" color={theme.textMuted} style={styles.sectionTitle}>
-        {t('settings.appearance')}
-      </AppText>
-      <Card style={styles.card}>
+      {sectionHeader(t('settings.appearance'))}
+      <Card style={atlasCardStyle}>
+        {atlas ? <TopoPattern color={theme.primary} opacity={0.08} /> : null}
         <AppText variant="label" color={theme.textSecondary} style={styles.fieldLabel}>
           {t('settings.theme')}
         </AppText>
@@ -164,10 +179,8 @@ export function SettingsScreen({
         </View>
       </Card>
 
-      <AppText variant="overline" color={theme.textMuted} style={styles.sectionTitle}>
-        {t('settings.profileSection')}
-      </AppText>
-      <Card style={styles.card}>
+      {sectionHeader(t('settings.profileSection'))}
+      <Card style={atlasCardStyle}>
         <TextField
           label={t('settings.name')}
           icon="account-outline"
@@ -193,10 +206,8 @@ export function SettingsScreen({
         ) : null}
       </Card>
 
-      <AppText variant="overline" color={theme.textMuted} style={styles.sectionTitle}>
-        {t('settings.passwordSection')}
-      </AppText>
-      <Card style={styles.card}>
+      {sectionHeader(t('settings.passwordSection'))}
+      <Card style={atlasCardStyle}>
         <TextField
           label={t('settings.currentPassword')}
           icon="lock-outline"
@@ -245,8 +256,19 @@ export function SettingsScreen({
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   content: { padding: spacing.xl, paddingBottom: spacing.huge },
-  sectionTitle: { marginBottom: spacing.sm, marginTop: spacing.lg },
+  sectionHeader: { marginBottom: spacing.sm, marginTop: spacing.lg },
+  atlasUnderline: {
+    width: 42,
+    borderBottomWidth: 2,
+    borderStyle: 'dashed',
+    marginTop: 3,
+  },
   card: { marginBottom: spacing.lg },
+  atlasCard: {
+    borderWidth: 1.2,
+    borderStyle: 'dashed',
+    borderRadius: 10,
+  },
   fieldLabel: { marginBottom: spacing.sm },
   statusText: { marginTop: spacing.sm, textAlign: 'center' },
   themeRow: { flexDirection: 'row', flexWrap: 'wrap' },

@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from '../ui';
-import { colors, palette } from '../../theme';
+import { palette, useThemeColors } from '../../theme';
 import { parseAvatarId } from '../avatars';
 
 const FALLBACK_COLORS = [
@@ -35,18 +35,22 @@ interface AvatarProps {
   size?: number;
 }
 
-/** Cartoon-icon avatar when the user picked one, initials otherwise. */
+/** Cartoon-icon avatar when the user picked one, initials otherwise. Icon
+ *  avatars always use the current theme accent — picking an avatar used to
+ *  also pick its own color and silently reskin the whole app, which was
+ *  confusing and (in Atlas) broke the art-directed palette outright. */
 export function Avatar({ name, avatar, size = 40 }: AvatarProps): React.ReactElement {
+  const theme = useThemeColors();
   const spec = parseAvatarId(avatar);
   if (spec) {
     return (
       <View
         style={[
           styles.avatar,
-          { width: size, height: size, borderRadius: size / 2, backgroundColor: spec.bg },
+          { width: size, height: size, borderRadius: size / 2, backgroundColor: theme.primarySoft },
         ]}
       >
-        <Icon name={spec.icon} size={Math.round(size * 0.62)} color={spec.fg} />
+        <Icon name={spec.icon} size={Math.round(size * 0.62)} color={theme.primary} />
       </View>
     );
   }
@@ -57,7 +61,7 @@ export function Avatar({ name, avatar, size = 40 }: AvatarProps): React.ReactEle
         { width: size, height: size, borderRadius: size / 2, backgroundColor: colorFor(name) },
       ]}
     >
-      <AppText variant={size < 36 ? 'label' : 'bodyStrong'} color={colors.textInverse}>
+      <AppText variant={size < 36 ? 'label' : 'bodyStrong'} color={theme.textInverse}>
         {initials(name)}
       </AppText>
     </View>

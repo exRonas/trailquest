@@ -20,7 +20,7 @@ import { ProgressRow } from '../../components/ProgressRow';
 import { PendingSyncBanner } from '../../components/PendingSyncBanner';
 import { UpdateBanner } from '../../components/UpdateBanner';
 import { colors, shadow, spacing, useDesignVersion, useThemeColors } from '../../theme';
-import { CloudDrift, MountainScene, Pulse, TopoPattern } from '../../components/decor';
+import { CloudDrift, MountainScene, Pulse, StampEdge, TopoPattern } from '../../components/decor';
 import { formatClock, formatDate, formatDistanceKm } from '../../utils/format';
 import { useAuthStore } from '../../store/authStore';
 import {
@@ -143,6 +143,7 @@ export function ProfileScreen({
         sun={theme.accent}
         height={72}
       />
+      <StampEdge holeColor={theme.background} />
     </View>
   );
 
@@ -245,7 +246,7 @@ export function ProfileScreen({
         style={[
           styles.summary,
           { backgroundColor: design === 'v3' ? theme.primaryTint : theme.surface },
-          design === 'v3' ? styles.atlasSummary : null,
+          design === 'v3' ? [styles.atlasSummary, { borderColor: theme.primary }] : null,
         ]}
       >
         {design === 'v3' ? <TopoPattern color={theme.primary} opacity={0.14} /> : null}
@@ -273,15 +274,37 @@ export function ProfileScreen({
         {t('profile.language')}
       </AppText>
       <View style={styles.langRow}>
-        {LANGUAGES.map((l) => (
-          <Chip
-            key={l.code}
-            label={l.label}
-            icon="translate"
-            selected={language === l.code}
-            onPress={() => setLanguage(l.code)}
-          />
-        ))}
+        {LANGUAGES.map((l) =>
+          design === 'v3' ? (
+            // Atlas: rubber-stamp pills — dashed frame, uppercase, verdigris
+            // ink when selected.
+            <Pressable
+              key={l.code}
+              onPress={() => setLanguage(l.code)}
+              style={[
+                styles.atlasLangStamp,
+                language === l.code
+                  ? { backgroundColor: theme.primary, borderColor: theme.primaryDark }
+                  : { backgroundColor: theme.surface, borderColor: theme.border },
+              ]}
+            >
+              <AppText
+                variant="overline"
+                color={language === l.code ? theme.textInverse : theme.textSecondary}
+              >
+                {l.label}
+              </AppText>
+            </Pressable>
+          ) : (
+            <Chip
+              key={l.code}
+              label={l.label}
+              icon="translate"
+              selected={language === l.code}
+              onPress={() => setLanguage(l.code)}
+            />
+          ),
+        )}
       </View>
 
       <View style={styles.historyHeader}>
@@ -398,7 +421,7 @@ function LevelRow({
       style={[
         styles.levelCard,
         { backgroundColor: design === 'v3' ? theme.primaryTint : theme.surface },
-        design === 'v3' ? styles.atlasLevelCard : null,
+        design === 'v3' ? [styles.atlasLevelCard, { borderColor: theme.primary }] : null,
       ]}
       elevated={false}
     >
@@ -525,7 +548,7 @@ const styles = StyleSheet.create({
 
   // Atlas (v3)
   atlasHero: {
-    borderRadius: 24,
+    borderRadius: 10,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
@@ -536,9 +559,29 @@ const styles = StyleSheet.create({
   },
   atlasName: { marginTop: spacing.md },
   atlasChip: { alignSelf: 'center', marginTop: spacing.md },
-  atlasLevelCard: { borderRadius: 20, overflow: 'hidden' },
-  atlasSummary: { borderRadius: 20, overflow: 'hidden' },
-  atlasRow: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 18 },
+  // Ledger-form cards: dashed rule frame, like a field-office record sheet.
+  atlasLevelCard: {
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1.2,
+    borderStyle: 'dashed',
+  },
+  atlasSummary: {
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1.2,
+    borderStyle: 'dashed',
+  },
+  atlasRow: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 10 },
+  atlasLangStamp: {
+    borderWidth: 1.2,
+    borderStyle: 'dashed',
+    borderRadius: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginRight: spacing.sm,
+    marginBottom: spacing.sm,
+  },
   atlasRowIcon: {
     width: 42,
     height: 42,
