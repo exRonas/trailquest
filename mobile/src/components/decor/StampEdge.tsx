@@ -1,58 +1,87 @@
-import React, { useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
 interface StampEdgeProps {
   /** Color of the punched holes — must match the page background the stamp
    *  sits on, so the notches read as cut out of the card. */
   holeColor: string;
-  holeRadius?: number;
-  /** Center-to-center distance between holes. */
-  gap?: number;
+  holeSize?: number;
+  /** How many holes per edge — same count top/bottom and left/right. */
+  count?: number;
+}
+
+const H_DOTS = 12;
+const V_DOTS = 7;
+
+function Dot({ color, size }: { color: string; size: number }): React.ReactElement {
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: color,
+      }}
+    />
+  );
 }
 
 /**
  * Postage-stamp perforation: a ring of punched half-holes around the card's
- * edge (Atlas design). Render as the LAST child of a `position: relative`,
- * `overflow: 'hidden'` card so the holes sit on top of its content.
+ * edge (Atlas design), built purely from flexbox — no measurement, no state,
+ * so it can't cause the re-render churn a `onLayout`-driven version would
+ * inside a virtualized list. Render as the LAST child of a `position:
+ * relative`, `overflow: 'hidden'` card so the holes sit on top of its content.
  */
 export function StampEdge({
   holeColor,
-  holeRadius = 3.6,
-  gap = 13,
+  holeSize = 7,
+  count = H_DOTS,
 }: StampEdgeProps): React.ReactElement {
-  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
-  const onLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    if (!size || Math.abs(size.w - width) > 1 || Math.abs(size.h - height) > 1) {
-      setSize({ w: width, h: height });
-    }
-  };
-
-  let holes: Array<{ x: number; y: number }> = [];
-  if (size) {
-    const { w, h } = size;
-    const countX = Math.max(2, Math.round(w / gap));
-    const countY = Math.max(2, Math.round(h / gap));
-    for (let i = 0; i <= countX; i++) {
-      const x = (i / countX) * w;
-      holes.push({ x, y: 0 }, { x, y: h });
-    }
-    for (let i = 1; i < countY; i++) {
-      const y = (i / countY) * h;
-      holes.push({ x: 0, y }, { x: w, y });
-    }
-  }
+  const hCount = count;
+  const vCount = Math.round((count * V_DOTS) / H_DOTS);
+  const half = holeSize / 2;
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill} onLayout={onLayout}>
-      {size ? (
-        <Svg width="100%" height="100%">
-          {holes.map((p, i) => (
-            <Circle key={i} cx={p.x} cy={p.y} r={holeRadius} fill={holeColor} />
-          ))}
-        </Svg>
-      ) : null}
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <View style={[styles.row, { top: -half }]}>
+        {Array.from({ length: hCount }).map((_, i) => (
+          <Dot key={i} color={holeColor} size={holeSize} />
+        ))}
+      </View>
+      <View style={[styles.row, { bottom: -half }]}>
+        {Array.from({ length: hCount }).map((_, i) => (
+          <Dot key={i} color={holeColor} size={holeSize} />
+        ))}
+      </View>
+      <View style={[styles.col, { left: -half }]}>
+        {Array.from({ length: vCount }).map((_, i) => (
+          <Dot key={i} color={holeColor} size={holeSize} />
+        ))}
+      </View>
+      <View style={[styles.col, { right: -half }]}>
+        {Array.from({ length: vCount }).map((_, i) => (
+          <Dot key={i} color={holeColor} size={holeSize} />
+        ))}
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  row: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 2,
+  },
+  col: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    justifyContent: 'space-between',
+    paddingVertical: 2,
+  },
+});
