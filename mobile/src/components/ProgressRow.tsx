@@ -30,7 +30,7 @@ export function ProgressRow({ session, onPress }: ProgressRowProps): React.React
 
   return (
     <Pressable onPress={onPress}>
-      <Card style={styles.row} elevated={false}>
+      <Card style={styles.row}>
         {design === 'v3' ? (
           <View style={[styles.atlasSpine, { backgroundColor: spineColor }]} />
         ) : null}

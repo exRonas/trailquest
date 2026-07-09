@@ -1,6 +1,14 @@
 /**
- * TrailQuest palette — a warm, outdoorsy system built around pine green with a
- * clay-orange accent. Deliberately not the default RN look.
+ * TrailQuest's theme — the "Atlas" expedition look: warm cream paper, a
+ * verdigris (oxidized copper) primary, a rust-iron accent, serif display
+ * type and SVG decor. TrailQuest used to ship three switchable designs
+ * (Pine/Terra/Atlas); Atlas won and the other two were retired — see
+ * `./archive/legacyDesigns.ts` if either look is ever wanted back.
+ *
+ * `palette` below is shared scaffolding (severity colors — danger/warning/
+ * info/checkpoint/tip/difficulty — plus a few base neutrals) that every
+ * design built on top of; it's not "the old look", just infrastructure
+ * `buildAtlasColors` extends.
  *
  * Light + dark variants. The exported `colors` is baked from the OS color
  * scheme at module load (see bottom) so static `StyleSheet.create` calls across
@@ -51,40 +59,11 @@ export const palette = {
 
 export type ColorScheme = 'light' | 'dark';
 
-/** Three selectable design languages, all kept in the app so they can be
- *  compared side by side:
- *  - 'v1' "Pine" — the original warm green-tinted look.
- *  - 'v2' "Terra" — an editorial style modeled on AllTrails/Airbnb: neutral
- *    true-white surfaces, near-black ink, a single deep forest accent, no
- *    green cast on grays, and a neutral (not green) dark mode.
- *  - 'v3' "Atlas" — expedition / vintage-field-guide: warm cream paper,
- *    olive-green primary, terracotta accent, serif display type and SVG
- *    decor (topo contours, mountain scenes, scout patches).
- */
-export type DesignVersion = 'v1' | 'v2' | 'v3';
-
-/** Terra additions to the raw palette. */
-export const terra = {
-  forest700: '#14472F',
-  forest600: '#1D5C3E',
-  forest500: '#2A7A53',
-  forest200: '#BFD9CC',
-  forest100: '#E9F1EC',
-  forest50: '#F3F7F4',
-
-  ink: '#1C1D1B',
-  gray600: '#5F615C',
-  gray400: '#9A9C96',
-  gray200: '#E7E7E3',
-  gray100: '#F4F4F1',
-  paper: '#FBFBF9',
-
-  // Neutral charcoal dark mode (iOS-like, no green cast)
-  night900: '#151715',
-  night800: '#1E211E',
-  night700: '#262A26',
-  night600: '#363A36',
-} as const;
+/** Single-member union kept (rather than a plain string literal) so existing
+ *  call sites that were written for multiple designs — `DesignVersion`
+ *  props, `useDesignVersion()` — keep compiling unchanged now that Atlas is
+ *  the only design. See archive/legacyDesigns.ts for the retired ones. */
+export type DesignVersion = 'v3';
 
 /** Atlas ('v3') additions — aged industrial-era palette: yellowed archive
  *  paper, verdigris (oxidized copper) as the working green, rust iron as the
@@ -180,47 +159,14 @@ function buildColors(scheme: ColorScheme) {
   };
 }
 
-/** Terra ('v2') semantic set. Shares the semantic sub-palettes (checkpoint /
- *  tip / difficulty severity hues) with v1 so map markers and badges keep
- *  their recognizable meaning; everything chrome-level goes neutral. */
-function buildTerraColors(scheme: ColorScheme) {
-  const dark = scheme === 'dark';
-  const v1 = buildColors(scheme);
-  return {
-    ...v1,
-
-    primary: dark ? terra.forest500 : terra.forest600,
-    primaryDark: terra.forest700,
-    primaryEmphasis: dark ? terra.forest200 : terra.forest700,
-    primarySoft: dark ? '#24312A' : terra.forest100,
-    primaryTint: dark ? '#1D2620' : terra.forest50,
-
-    accent: palette.clay500,
-    accentDark: palette.clay600,
-    accentSoft: dark ? '#33251A' : palette.clay100,
-
-    background: dark ? terra.night900 : terra.paper,
-    surface: dark ? terra.night800 : palette.white,
-    surfaceAlt: dark ? terra.night700 : terra.gray100,
-    border: dark ? terra.night600 : terra.gray200,
-    overlay: dark ? 'rgba(0, 0, 0, 0.65)' : 'rgba(20, 22, 20, 0.5)',
-
-    text: dark ? '#F2F3F0' : terra.ink,
-    textSecondary: dark ? '#B5B8B2' : terra.gray600,
-    textMuted: dark ? '#878A84' : terra.gray400,
-
-    success: terra.forest500,
-  };
-}
-
 /** Atlas ('v3') semantic set. Keeps the severity sub-palettes recognizable
  *  (difficulty stays traffic-light) but re-tints everything chrome-level to
  *  the warm expedition paper + olive + terracotta scheme. */
 function buildAtlasColors(scheme: ColorScheme) {
   const dark = scheme === 'dark';
-  const v1 = buildColors(scheme);
+  const base = buildColors(scheme);
   return {
-    ...v1,
+    ...base,
 
     primary: dark ? atlas.verdigris500 : atlas.verdigris600,
     primaryDark: atlas.verdigris700,
@@ -246,32 +192,28 @@ function buildAtlasColors(scheme: ColorScheme) {
 
     difficulty: {
       EASY: { main: atlas.verdigris500, soft: dark ? '#293630' : atlas.verdigris100 },
-      MODERATE: v1.difficulty.MODERATE,
-      HARD: v1.difficulty.HARD,
+      MODERATE: base.difficulty.MODERATE,
+      HARD: base.difficulty.HARD,
     },
   };
 }
 
 import { Appearance } from 'react-native';
 
-export const lightColors = buildColors('light');
-export const darkColors = buildColors('dark');
+export const lightColors = buildAtlasColors('light');
+export const darkColors = buildAtlasColors('dark');
 
-// Widen the `as const` palette literals to plain strings so both design
-// versions' sets (which use different hex values) satisfy the same shape.
+// Widen the `as const` palette literals to plain strings.
 type Widen<T> = T extends string ? string : { [K in keyof T]: Widen<T[K]> };
 export type AppColors = Widen<typeof lightColors>;
 
-/** All four baked color sets, addressable by design version + scheme. */
+/** The one design's baked color sets, addressable by scheme. Kept as a
+ *  `DesignVersion`-keyed record (rather than flattening to just
+ *  `Record<ColorScheme, AppColors>`) so useThemeColors.ts's indexing
+ *  survived the Pine/Terra removal unchanged. */
 export const colorSets: Record<DesignVersion, Record<ColorScheme, AppColors>> = {
-  v1: { light: lightColors, dark: darkColors },
-  v2: { light: buildTerraColors('light'), dark: buildTerraColors('dark') },
-  v3: { light: buildAtlasColors('light'), dark: buildAtlasColors('dark') },
+  v3: { light: lightColors, dark: darkColors },
 };
-
-// The design version behind the mutable `colors` object. Persisted prefs load
-// asynchronously, so boot always starts on v1 until the design store hydrates.
-let activeDesign: DesignVersion = 'v1';
 
 // Baked at module load from the OS scheme so static StyleSheets get the right
 // neutrals immediately (getColorScheme() is synchronous). Mutated in place by
@@ -285,15 +227,7 @@ export const colors: AppColors = {
 };
 
 export function applyColorScheme(scheme: ColorScheme): void {
-  Object.assign(colors, colorSets[activeDesign][scheme]);
-}
-
-/** Switch the active design language (and re-resolve the current scheme).
- *  Same live-update contract as applyColorScheme: hook consumers update
- *  immediately, static StyleSheets keep their boot values. */
-export function applyDesign(design: DesignVersion, scheme: ColorScheme): void {
-  activeDesign = design;
-  Object.assign(colors, colorSets[design][scheme]);
+  Object.assign(colors, colorSets.v3[scheme]);
 }
 
 export type CheckpointTypeKey = keyof typeof lightColors.checkpoint;

@@ -147,7 +147,7 @@ export function ActivityDetailScreen({
         />
       </View>
 
-      <Card style={styles.metaCard} elevated={false}>
+      <Card style={styles.metaCard}>
         <View style={styles.metaRow}>
           <AppText variant="callout" color={colors.textSecondary}>
             {t('activity.started')}

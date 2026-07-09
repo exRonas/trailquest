@@ -3,14 +3,7 @@ import { ActivityIndicator, Animated, StyleSheet, ViewStyle } from 'react-native
 import { Pressable } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import {
-  DesignVersion,
-  radius,
-  spacing,
-  useDesignVersion,
-  useThemeColors,
-  ThemeColors,
-} from '../../theme';
+import { radius, spacing, useThemeColors, ThemeColors } from '../../theme';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
@@ -41,7 +34,6 @@ export function Button({
   style,
 }: ButtonProps): React.ReactElement {
   const theme = useThemeColors();
-  const design = useDesignVersion();
   const scale = useRef(new Animated.Value(1)).current;
   const isDisabled = disabled || loading;
 
@@ -53,7 +45,7 @@ export function Button({
       bounciness: 4,
     }).start();
 
-  const palette = getVariantStyle(variant, theme, design);
+  const palette = getVariantStyle(variant, theme);
 
   // Pressable is imported from gesture-handler, not core RN — works around a
   // longstanding Fabric bug where onPress randomly stops firing after a
@@ -74,8 +66,6 @@ export function Button({
         style={[
           styles.base,
           { height: heights[size], backgroundColor: palette.bg },
-          // Terra: fully rounded pill buttons (AllTrails-style CTA).
-          design === 'v2' ? styles.pill : null,
           palette.border ? { borderWidth: 1.5, borderColor: palette.border } : null,
           isDisabled ? styles.disabled : null,
         ]}
@@ -108,7 +98,6 @@ export function Button({
 function getVariantStyle(
   variant: Variant,
   theme: ThemeColors,
-  design: DesignVersion,
 ): {
   bg: string;
   fg: string;
@@ -116,11 +105,7 @@ function getVariantStyle(
 } {
   switch (variant) {
     case 'secondary':
-      // Terra: quiet neutral outline + ink text (Airbnb-style secondary)
-      // instead of the brand-colored outline.
-      return design === 'v2'
-        ? { bg: theme.surface, fg: theme.text, border: theme.border }
-        : { bg: theme.surface, fg: theme.primary, border: theme.primary };
+      return { bg: theme.surface, fg: theme.primary, border: theme.primary };
     case 'ghost':
       return { bg: 'transparent', fg: theme.primary };
     case 'danger':
@@ -140,7 +125,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
   },
-  pill: { borderRadius: radius.pill },
   disabled: { opacity: 0.5 },
   icon: { marginRight: spacing.sm },
 });

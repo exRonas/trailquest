@@ -2,15 +2,15 @@ import { useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { AppColors, colorSets } from './colors';
 import { useThemeStore } from './themeStore';
-import { useDesignStore } from './designStore';
 import { BrandShades } from './shade';
 
 export type ThemeColors = Omit<AppColors, keyof BrandShades> & BrandShades;
 
 /**
- * The active color set, resolved from the design (Pine/Terra/Atlas) and the
- * theme mode + OS scheme. Components that render themed UI should read from
- * this hook instead of importing `colors` directly so they re-render when the
+ * The active color set, resolved from the theme mode + OS scheme (Atlas is
+ * the only design now — see ./archive/legacyDesigns.ts for the retired
+ * Pine/Terra ones). Components that render themed UI should read from this
+ * hook instead of importing `colors` directly so they re-render when the
  * theme changes.
  *
  * Avatars no longer recolor the app — that per-user accent (driven by the
@@ -22,11 +22,10 @@ export type ThemeColors = Omit<AppColors, keyof BrandShades> & BrandShades;
 export function useThemeColors(): ThemeColors {
   const os = useColorScheme();
   const mode = useThemeStore((s) => s.mode);
-  const design = useDesignStore((s) => s.version);
   return useMemo(() => {
     const dark = mode === 'system' ? os === 'dark' : mode === 'dark';
-    return colorSets[design][dark ? 'dark' : 'light'];
-  }, [os, mode, design]);
+    return colorSets.v3[dark ? 'dark' : 'light'];
+  }, [os, mode]);
 }
 
 /** True when the resolved theme is dark (for StatusBar / nav theme wiring). */

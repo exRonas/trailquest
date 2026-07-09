@@ -294,10 +294,6 @@ const en: Dict = {
   'settings.themeSystem': 'System',
   'settings.themeLight': 'Light',
   'settings.themeDark': 'Dark',
-  'settings.design': 'Design',
-  'settings.designV1': 'Pine (classic)',
-  'settings.designV2': 'Terra (new)',
-  'settings.designV3': 'Atlas (expedition)',
 
   // Friends
   'friends.title': 'Friends',
@@ -592,10 +588,6 @@ const ru: Dict = {
   'settings.themeSystem': 'Системная',
   'settings.themeLight': 'Светлая',
   'settings.themeDark': 'Тёмная',
-  'settings.design': 'Дизайн',
-  'settings.designV1': 'Пайн (классика)',
-  'settings.designV2': 'Терра (новый)',
-  'settings.designV3': 'Атлас (экспедиция)',
 
   // Friends
   'friends.title': 'Друзья',
@@ -889,10 +881,6 @@ const kk: Dict = {
   'settings.themeSystem': 'Жүйелік',
   'settings.themeLight': 'Ашық',
   'settings.themeDark': 'Қараңғы',
-  'settings.design': 'Дизайн',
-  'settings.designV1': 'Пайн (классика)',
-  'settings.designV2': 'Терра (жаңа)',
-  'settings.designV3': 'Атлас (экспедиция)',
 
   // Friends
   'friends.title': 'Достар',

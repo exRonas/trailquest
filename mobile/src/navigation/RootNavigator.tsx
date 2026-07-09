@@ -8,7 +8,7 @@ import {
   Theme,
 } from '@react-navigation/native';
 import { Loader } from '../components/ui';
-import { useThemeColors, useIsDark, useThemeStore, useDesignStore } from '../theme';
+import { useThemeColors, useIsDark, useThemeStore } from '../theme';
 import { useAuthStore } from '../store/authStore';
 import { useLocaleStore } from '../i18n';
 import { initMapbox } from '../services/mapbox';
@@ -23,7 +23,6 @@ export function RootNavigator(): React.ReactElement {
   const hydrate = useAuthStore((s) => s.hydrate);
   const hydrateLocale = useLocaleStore((s) => s.hydrate);
   const hydrateTheme = useThemeStore((s) => s.hydrate);
-  const hydrateDesign = useDesignStore((s) => s.hydrate);
   const theme = useThemeColors();
   const isDark = useIsDark();
 
@@ -46,13 +45,11 @@ export function RootNavigator(): React.ReactElement {
   useEffect(() => {
     initMapbox();
     void hydrateLocale();
-    // Design after theme: both mutate the shared `colors` object, and the
-    // design store re-resolves the scheme from the theme store when applying.
-    void hydrateTheme().then(() => hydrateDesign());
+    void hydrateTheme();
     void hydrate();
     // Seed the Explore list from disk so a cold offline launch isn't empty.
     void hydrateRoutesCache(queryClient);
-  }, [hydrate, hydrateDesign, hydrateLocale, hydrateTheme]);
+  }, [hydrate, hydrateLocale, hydrateTheme]);
 
   // Flush any offline-queued route sessions (see offlineQueue.ts) whenever
   // connectivity returns or the app comes back to the foreground.

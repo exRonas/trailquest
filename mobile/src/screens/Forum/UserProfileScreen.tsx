@@ -114,7 +114,7 @@ function ActivityRow({
   const pickLocalized = usePickLocalized();
   return (
     <Pressable onPress={onPress}>
-      <Card style={styles.row} elevated={false}>
+      <Card style={styles.row}>
         <AppText variant="bodyStrong" numberOfLines={1}>
           {pickLocalized(session.route.title)}
         </AppText>

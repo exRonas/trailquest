@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { radius, spacing, useDesignVersion } from '../../theme';
+import { radius, spacing } from '../../theme';
 
 interface BadgeProps {
   label: string;
@@ -22,14 +22,10 @@ export function Badge({
   icon,
   style,
 }: BadgeProps): React.ReactElement {
-  const design = useDesignVersion();
   return (
     <View
       style={[
         styles.badge,
-        // Terra: gently rounded rectangles instead of full pills — pastel
-        // pill tags everywhere are a signature of template/AI layouts.
-        design === 'v2' ? styles.squared : null,
         { backgroundColor: background },
         style,
       ]}
@@ -53,6 +49,5 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: radius.pill,
   },
-  squared: { borderRadius: 6 },
   icon: { marginRight: 4 },
 });

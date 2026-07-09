@@ -1,13 +1,12 @@
 import React from 'react';
 import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { radius, shadow, spacing, useDesignVersion, useThemeColors } from '../../theme';
+import { radius, spacing, useThemeColors } from '../../theme';
 
 interface CardProps {
   children: React.ReactNode;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
   padded?: boolean;
-  elevated?: boolean;
 }
 
 export function Card({
@@ -15,17 +14,12 @@ export function Card({
   onPress,
   style,
   padded = true,
-  elevated = true,
 }: CardProps): React.ReactElement {
   const theme = useThemeColors();
-  const design = useDesignVersion();
   const cardStyle: StyleProp<ViewStyle>[] = [
     styles.card,
     { backgroundColor: theme.surface, borderColor: theme.border },
     padded ? styles.padded : {},
-    // Terra: flat cards — hairline border only, no drop shadow (the soft
-    // shadow-on-everything look is a big part of what reads as "generated").
-    elevated && design === 'v1' ? shadow.sm : {},
     style ?? {},
   ];
 

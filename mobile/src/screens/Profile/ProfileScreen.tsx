@@ -423,7 +423,6 @@ function LevelRow({
         { backgroundColor: design === 'v3' ? theme.primaryTint : theme.surface },
         design === 'v3' ? [styles.atlasLevelCard, { borderColor: theme.primary }] : null,
       ]}
-      elevated={false}
     >
       {design === 'v3' ? <TopoPattern color={theme.primary} opacity={0.16} /> : null}
       <View style={styles.levelHeader}>
