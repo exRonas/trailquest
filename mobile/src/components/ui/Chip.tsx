@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { Pressable } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { radius, spacing, useThemeColors } from '../../theme';
+import { radius, spacing, useDesignVersion, useThemeColors } from '../../theme';
 
 interface ChipProps {
   label: string;
@@ -20,13 +20,20 @@ export function Chip({
   icon,
 }: ChipProps): React.ReactElement {
   const theme = useThemeColors();
+  const design = useDesignVersion();
+  // Terra: selected chips invert to ink-on-surface (Airbnb's filter chips go
+  // near-black when active; in dark mode that flips to near-white) and the
+  // outline thins to a hairline.
+  const selectedBg = design === 'v2' ? theme.text : theme.primary;
+  const selectedFg = design === 'v2' ? theme.surface : theme.textInverse;
   return (
     <Pressable
       onPress={onPress}
       style={[
         styles.chip,
+        design === 'v2' ? styles.thinBorder : null,
         selected
-          ? { backgroundColor: theme.primary, borderColor: theme.primary }
+          ? { backgroundColor: selectedBg, borderColor: selectedBg }
           : { backgroundColor: theme.surface, borderColor: theme.border },
       ]}
     >
@@ -34,13 +41,13 @@ export function Chip({
         <Icon
           name={icon}
           size={14}
-          color={selected ? theme.textInverse : theme.textSecondary}
+          color={selected ? selectedFg : theme.textSecondary}
           style={styles.icon}
         />
       ) : null}
       <AppText
         variant="label"
-        color={selected ? theme.textInverse : theme.textSecondary}
+        color={selected ? selectedFg : theme.textSecondary}
       >
         {label}
       </AppText>
@@ -59,5 +66,6 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
     marginBottom: spacing.sm,
   },
+  thinBorder: { borderWidth: 1 },
   icon: { marginRight: 4 },
 });

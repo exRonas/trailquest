@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { useAuthStore } from '../store/authStore';
 import { parseAvatarId } from '../components/avatars';
-import { AppColors, darkColors, lightColors } from './colors';
+import { AppColors, colorSets } from './colors';
 import { useThemeStore } from './themeStore';
+import { useDesignStore } from './designStore';
 import { shadeSet, BrandShades } from './shade';
 
 export type ThemeColors = Omit<AppColors, keyof BrandShades> & BrandShades;
@@ -19,14 +20,15 @@ export type ThemeColors = Omit<AppColors, keyof BrandShades> & BrandShades;
 export function useThemeColors(): ThemeColors {
   const os = useColorScheme();
   const mode = useThemeStore((s) => s.mode);
+  const design = useDesignStore((s) => s.version);
   const avatarId = useAuthStore((s) => s.user?.avatar ?? null);
   return useMemo(() => {
     const dark = mode === 'system' ? os === 'dark' : mode === 'dark';
-    const base = dark ? darkColors : lightColors;
+    const base = colorSets[design][dark ? 'dark' : 'light'];
     const spec = parseAvatarId(avatarId);
     if (!spec) return base;
     return { ...base, ...shadeSet(spec.fg, dark) };
-  }, [os, mode, avatarId]);
+  }, [os, mode, design, avatarId]);
 }
 
 /** True when the resolved theme is dark (for StatusBar / nav theme wiring). */

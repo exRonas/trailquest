@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { Pressable } from 'react-native-gesture-handler';
-import { radius, shadow, spacing, useThemeColors } from '../../theme';
+import { radius, shadow, spacing, useDesignVersion, useThemeColors } from '../../theme';
 
 interface CardProps {
   children: React.ReactNode;
@@ -19,11 +19,14 @@ export function Card({
   elevated = true,
 }: CardProps): React.ReactElement {
   const theme = useThemeColors();
+  const design = useDesignVersion();
   const cardStyle: StyleProp<ViewStyle>[] = [
     styles.card,
     { backgroundColor: theme.surface, borderColor: theme.border },
     padded ? styles.padded : {},
-    elevated ? shadow.sm : {},
+    // Terra: flat cards — hairline border only, no drop shadow (the soft
+    // shadow-on-everything look is a big part of what reads as "generated").
+    elevated && design === 'v1' ? shadow.sm : {},
     style ?? {},
   ];
 

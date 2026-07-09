@@ -930,3 +930,35 @@ back half went out on tsc/jest/gradle-build verification, not on-device.
 > (Firebase/FCM), password reset (SMTP).
 > Not on-device verified this round: dark mode look across every screen, the
 > share sheet, friends UI, monthly board. Worth a pass when the phone's back.
+
+## 2026-07-09 — Design V2 "Terra" (switchable, client feedback: "looks AI-generated")
+
+- [x] **Second design language, in-app switchable.** Client said the design
+      reads as AI-generated; built an alternative modeled on real award-winning
+      outdoor apps (AllTrails — Apple Design Award, Airbnb editorial style)
+      WITHOUT removing the original, so both can be compared live and either
+      can ship. Settings → Appearance → «Дизайн»: Пайн (классика) / Терра
+      (новый). Persisted as `designVersion` pref, hydrated after theme in
+      RootNavigator (both mutate the shared `colors` object).
+- [x] `theme/designStore.ts` — zustand store (`v1`/`v2`), applies palette +
+      typography on set/hydrate.
+- [x] `colors.ts` — `terra` palette + `buildTerraColors()`: neutral true-white
+      surfaces / near-black ink (no green-tinted grays), single deep forest
+      accent `#1D5C3E`, neutral charcoal dark mode (no green cast). Semantic
+      hues (difficulty/checkpoint/tip) shared with v1. `colorSets[design][scheme]`,
+      `applyDesign()`; `AppColors` widened from `as const` literals to `string`.
+- [x] `typography.ts` — v2 editorial scale: 36/28/22 headlines with negative
+      tracking (-0.6…-0.3), 16pt reading body, quieter overline (600/0.6 vs
+      700/1.1). `typography` is now a live-mutable clone; AppText spreads per
+      render, so the switch restyles text immediately.
+- [x] **Primitives design-aware:** Button → pill CTA (AllTrails), v2 secondary =
+      neutral hairline outline + ink text; Card → flat (hairline border, no
+      drop shadow); Chip → selected inverts to ink-on-surface (Airbnb filter
+      chips), 1px border; Badge → rounded-rect 6px instead of full pill.
+- [x] i18n: `settings.design(V1/V2)` in EN/RU/KK. tsc clean, eslint 0 errors
+      (only pre-existing warning patterns).
+- Known limit: static `StyleSheet.create` values (radius/shadow baked at module
+  load) keep v1 metrics — v2 look is carried by colors, typography, and the
+  four primitives, which cover most visible chrome.
+- NOT device-verified yet — needs an on-device pass over Explore, Route Detail,
+  Profile, Forum in both designs × both themes before showing the client.

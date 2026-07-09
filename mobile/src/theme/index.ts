@@ -16,8 +16,18 @@ export const theme = {
 
 export type AppTheme = typeof theme;
 
-export { colors, palette, lightColors, darkColors, applyColorScheme } from './colors';
-export type { ColorScheme, AppColors } from './colors';
+export {
+  colors,
+  palette,
+  terra,
+  lightColors,
+  darkColors,
+  colorSets,
+  applyColorScheme,
+  applyDesign,
+} from './colors';
+export type { ColorScheme, AppColors, DesignVersion } from './colors';
+export { useDesignStore, useDesignVersion, DESIGN_VERSIONS } from './designStore';
 export { typography, fontFamily, fontFamilyMedium } from './typography';
 export { spacing, radius, shadow, hitSlop } from './layout';
 export { useThemeColors, useIsDark } from './useThemeColors';

@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Button, Card, Chip, TextField } from '../../components/ui';
-import { spacing, useThemeColors, useThemeStore, THEME_MODES } from '../../theme';
+import {
+  spacing,
+  useDesignStore,
+  useThemeColors,
+  useThemeStore,
+  DESIGN_VERSIONS,
+  THEME_MODES,
+} from '../../theme';
 import { useAuthStore } from '../../store/authStore';
 import { useUpdateName, useChangePassword } from '../../api/hooks/useUsers';
 import { getApiErrorMessage } from '../../api/client';
@@ -21,6 +28,16 @@ const THEME_ICON: Record<string, string> = {
   dark: 'moon-waning-crescent',
 };
 
+const DESIGN_LABEL_KEY: Record<string, string> = {
+  v1: 'settings.designV1',
+  v2: 'settings.designV2',
+};
+
+const DESIGN_ICON: Record<string, string> = {
+  v1: 'pine-tree',
+  v2: 'image-filter-hdr',
+};
+
 export function SettingsScreen({
   navigation,
 }: ProfileScreenProps<'Settings'>): React.ReactElement {
@@ -29,6 +46,8 @@ export function SettingsScreen({
   const user = useAuthStore((s) => s.user);
   const themeMode = useThemeStore((s) => s.mode);
   const setThemeMode = useThemeStore((s) => s.setMode);
+  const designVersion = useDesignStore((s) => s.version);
+  const setDesignVersion = useDesignStore((s) => s.setVersion);
   const updateName = useUpdateName();
   const changePassword = useChangePassword();
 
@@ -123,6 +142,24 @@ export function SettingsScreen({
             />
           ))}
         </View>
+        <AppText
+          variant="label"
+          color={theme.textSecondary}
+          style={[styles.fieldLabel, styles.designLabel]}
+        >
+          {t('settings.design')}
+        </AppText>
+        <View style={styles.themeRow}>
+          {DESIGN_VERSIONS.map((v) => (
+            <Chip
+              key={v}
+              label={t(DESIGN_LABEL_KEY[v])}
+              icon={DESIGN_ICON[v]}
+              selected={designVersion === v}
+              onPress={() => setDesignVersion(v)}
+            />
+          ))}
+        </View>
       </Card>
 
       <AppText variant="overline" color={theme.textMuted} style={styles.sectionTitle}>
@@ -211,4 +248,5 @@ const styles = StyleSheet.create({
   fieldLabel: { marginBottom: spacing.sm },
   statusText: { marginTop: spacing.sm, textAlign: 'center' },
   themeRow: { flexDirection: 'row', flexWrap: 'wrap' },
+  designLabel: { marginTop: spacing.md },
 });
