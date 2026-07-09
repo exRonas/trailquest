@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Keyboard, ScrollView, StyleSheet, View } from 'react-native';
+import { Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Button, Card, Chip, TextField } from '../../components/ui';
 import { spacing, useThemeColors, useThemeStore, THEME_MODES } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
@@ -38,19 +38,22 @@ export function SettingsScreen({
 
   const [name, setName] = useState(user?.name ?? '');
   const [nameError, setNameError] = useState<string | null>(null);
+  const [nameStatus, setNameStatus] = useState<string | null>(null);
 
   const onSaveName = () => {
     const err = validateName(name, t);
     setNameError(err);
+    setNameStatus(null);
     if (err) return;
-    // Close the keyboard before the success Alert/back navigation — leaving
-    // it open while the screen pops causes RN's touch responder to get
-    // stuck, freezing every button on the screen underneath until reload.
     Keyboard.dismiss();
     updateName.mutate(name.trim(), {
-      onSuccess: () => Alert.alert(t('settings.nameSaved')),
-      onError: (e) =>
-        Alert.alert(t('settings.nameSaveFailed'), getApiErrorMessage(e)),
+      // Shown inline instead of Alert.alert — a native dialog popping up
+      // right before the user taps back triggers an Android native-stack
+      // bug that leaves Profile's buttons permanently unresponsive
+      // (confirmed: only reproduces on name/password save, which alert;
+      // theme change, which doesn't alert, never breaks it).
+      onSuccess: () => setNameStatus(t('settings.nameSaved')),
+      onError: (e) => setNameStatus(getApiErrorMessage(e, t('settings.nameSaveFailed'))),
     });
   };
 
@@ -62,6 +65,7 @@ export function SettingsScreen({
     next?: string;
     confirm?: string;
   }>({});
+  const [passwordStatus, setPasswordStatus] = useState<string | null>(null);
 
   const onChangePassword = () => {
     const currentErr = currentPassword
@@ -75,6 +79,7 @@ export function SettingsScreen({
       next: nextErr ?? undefined,
       confirm: confirmErr ?? undefined,
     });
+    setPasswordStatus(null);
     if (currentErr || nextErr || confirmErr) return;
 
     Keyboard.dismiss();
@@ -85,11 +90,10 @@ export function SettingsScreen({
           setCurrentPassword('');
           setNewPassword('');
           setConfirmPassword('');
-          Alert.alert(t('settings.passwordUpdated'));
+          setPasswordStatus(t('settings.passwordUpdated'));
         },
         onError: (e) => {
-          const message = getApiErrorMessage(e, t('settings.passwordSaveFailed'));
-          Alert.alert(t('settings.passwordSaveFailed'), message);
+          setPasswordStatus(getApiErrorMessage(e, t('settings.passwordSaveFailed')));
         },
       },
     );
@@ -139,6 +143,15 @@ export function SettingsScreen({
           onPress={onSaveName}
           loading={updateName.isPending}
         />
+        {nameStatus ? (
+          <AppText
+            variant="caption"
+            color={updateName.isError ? theme.danger : theme.success}
+            style={styles.statusText}
+          >
+            {nameStatus}
+          </AppText>
+        ) : null}
       </Card>
 
       <AppText variant="overline" color={theme.textMuted} style={styles.sectionTitle}>
@@ -176,6 +189,15 @@ export function SettingsScreen({
           onPress={onChangePassword}
           loading={changePassword.isPending}
         />
+        {passwordStatus ? (
+          <AppText
+            variant="caption"
+            color={changePassword.isError ? theme.danger : theme.success}
+            style={styles.statusText}
+          >
+            {passwordStatus}
+          </AppText>
+        ) : null}
       </Card>
     </ScrollView>
   );
@@ -187,5 +209,6 @@ const styles = StyleSheet.create({
   sectionTitle: { marginBottom: spacing.sm, marginTop: spacing.lg },
   card: { marginBottom: spacing.lg },
   fieldLabel: { marginBottom: spacing.sm },
+  statusText: { marginTop: spacing.sm, textAlign: 'center' },
   themeRow: { flexDirection: 'row', flexWrap: 'wrap' },
 });

@@ -246,7 +246,7 @@ export function ProfileScreen({
     <View style={[styles.fill, { backgroundColor: theme.background }]}>
       {picker}
       <FlatList
-        style={styles.fill}
+        style={[styles.fill, { backgroundColor: theme.background }]}
         data={recent}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.content}

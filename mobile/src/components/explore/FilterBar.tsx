@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText, Chip } from '../ui';
-import { colors, spacing } from '../../theme';
+import { spacing, useThemeColors } from '../../theme';
 import { categoryIcon, difficultyIcon } from '../../theme/icons';
 import { useT } from '../../i18n';
 import { Difficulty, RouteCategory, RouteFilters } from '../../types/api';
@@ -22,6 +22,7 @@ interface FilterBarProps {
 
 export function FilterBar({ filters, onChange }: FilterBarProps): React.ReactElement {
   const t = useT();
+  const theme = useThemeColors();
   const toggleCategory = (c: RouteCategory) =>
     onChange({ ...filters, category: filters.category === c ? undefined : c });
   const toggleDifficulty = (d: Difficulty) =>
@@ -32,7 +33,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps): React.ReactEle
   // left the last category off-screen).
   return (
     <View>
-      <AppText variant="overline" color={colors.textMuted} style={styles.heading}>
+      <AppText variant="overline" color={theme.textMuted} style={styles.heading}>
         {t('filter.category')}
       </AppText>
       <View style={styles.row}>
@@ -47,7 +48,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps): React.ReactEle
         ))}
       </View>
 
-      <AppText variant="overline" color={colors.textMuted} style={styles.heading}>
+      <AppText variant="overline" color={theme.textMuted} style={styles.heading}>
         {t('filter.difficulty')}
       </AppText>
       <View style={styles.row}>

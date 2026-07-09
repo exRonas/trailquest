@@ -45,6 +45,14 @@ export interface BrandShades {
  *  brand accent's soft background stays dark rather than washing out. */
 const DARK_SURFACE: [number, number, number] = [21, 28, 24];
 
+/** A "soft" pill background for `base`, theme-aware: blends toward white in
+ *  light mode, toward the dark surface in dark mode. Use this instead of
+ *  `lighten(base, amount)` for any badge/pill background that must also work
+ *  in dark mode — `lighten` alone always washes out to a light color. */
+export function softTint(base: string, dark: boolean, amount = 0.82): string {
+  return dark ? mix(base, DARK_SURFACE, amount) : lighten(base, amount);
+}
+
 /** Derive the same 5-step shade ramp the static pine palette uses, from any
  *  base hue. In dark mode the soft/tint steps blend toward the dark surface
  *  instead of white so pills/backgrounds read correctly. */

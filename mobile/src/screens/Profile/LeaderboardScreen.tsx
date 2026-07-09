@@ -44,7 +44,7 @@ export function LeaderboardScreen({
   return (
     <View style={[styles.fill, { backgroundColor: theme.background }]}>
       <FlatList
-        style={styles.fill}
+        style={[styles.fill, { backgroundColor: theme.background }]}
         data={top}
         keyExtractor={(item) => item.user.id}
         contentContainerStyle={styles.content}

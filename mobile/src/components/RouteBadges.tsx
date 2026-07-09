@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge } from './ui';
-import { colors, useThemeColors } from '../theme';
-import { blend, lighten } from '../theme/shade';
+import { colors, useIsDark, useThemeColors } from '../theme';
+import { blend, softTint } from '../theme/shade';
 import { categoryIcon, difficultyIcon } from '../theme/icons';
 import { labelForCategory, labelForDifficulty } from '../utils/format';
 import { Difficulty, RouteCategory } from '../types/api';
@@ -16,11 +16,12 @@ export function DifficultyBadge({
   difficulty: Difficulty;
 }): React.ReactElement {
   const theme = useThemeColors();
+  const isDark = useIsDark();
   // Traffic-light severity (green=easy, amber=moderate, red=hard) always
   // stays the recognizable cue, just tinted toward the user's chosen accent
   // so it doesn't look like a foreign color dropped onto the theme.
   const main = blend(colors.difficulty[difficulty].main, theme.primary, HARMONIZE_AMOUNT);
-  const c = { main, soft: lighten(main, 0.82) };
+  const c = { main, soft: softTint(main, isDark) };
   return (
     <Badge
       label={labelForDifficulty(difficulty)}
