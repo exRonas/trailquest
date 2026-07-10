@@ -11,6 +11,5 @@ export const appVersion = {
   // everyone here since ~99% of real devices are arm64.
   downloadUrl:
     'https://github.com/exRonas/trailquest/releases/latest/download/app-arm64-v8a-release.apk',
-  notes:
-    'Password reset by email, and push notifications for friend requests.',
+  notes: 'Push notifications for friend requests.',
 };
