@@ -18,6 +18,15 @@ function getSmtpTransport(): Transporter | null {
       port: env.SMTP_PORT,
       secure: env.SMTP_PORT === 465,
       auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD },
+      // Without these, a slow/unresponsive step anywhere in the SMTP
+      // handshake (seen live: Gmail's relay just sat on RCPT TO for a
+      // recipient at a domain with no mail server) hangs nodemailer's
+      // default multi-minute timeouts — which, awaited synchronously by
+      // the request handler, hangs the whole HTTP request. 10s is
+      // generous for any real mail server's response.
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 10_000,
     });
   }
   return smtpTransport;

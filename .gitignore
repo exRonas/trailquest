@@ -6,5 +6,5 @@
 Thumbs.db
 
 # Firebase secrets — never commit
-backend/firebase-service-account.json
+backend/firebase-service-account*.json
 mobile/android/app/google-services.json

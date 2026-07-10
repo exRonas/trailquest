@@ -117,11 +117,21 @@ export async function requestPasswordReset(email: string): Promise<void> {
   });
 
   const resetUrl = `${env.PASSWORD_RESET_URL_BASE}?token=${rawToken}`;
-  await sendMail({
+  // Fire-and-forget: mail delivery speed/reliability is entirely outside
+  // our control (seen live — a dead recipient domain hung Gmail's relay
+  // well past nodemailer's own timeouts). Awaiting it here would make the
+  // response time leak whether the email exists (the not-found branch
+  // above returns instantly) and would hang the request on a slow mail
+  // server. The token is already committed, so a reset link the user
+  // never receives can just be requested again.
+  sendMail({
     to: user.email,
     subject: 'Reset your TrailQuest password',
     text: `Reset your password: ${resetUrl}\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.`,
     html: `<p>Someone requested a password reset for your TrailQuest account.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This link expires in 1 hour. If you didn't request this, ignore this email.</p>`,
+  }).catch((err) => {
+    // eslint-disable-next-line no-console
+    console.warn('[auth] password reset email failed to send:', err);
   });
 }
 
