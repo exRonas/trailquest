@@ -19,7 +19,7 @@ import { Difficulty, RouteCategory } from '../../types/api';
  *  - BATTLE          the two swords swing apart and clash back into a cross
  *  - SCENIC          the sun rises from behind the ridge
  *  - GATHERING_SPOT  the side figures huddle in toward the middle one
- *  - MIXED           the crossing arrows slide along their own paths
+ *  - MIXED           the two signpost boards seesaw as if knocked by wind
  *  - difficulty      a gauge whose needle kicks harder the harder the grade
  *
  * Parents trigger the animation imperatively via ref.play() on press —
@@ -369,25 +369,29 @@ const GatheringIcon = forwardRef<FilterIconHandle, IconProps>(
 GatheringIcon.displayName = 'GatheringIcon';
 
 // ---------------------------------------------------------------------------
-// MIXED — two crossing route-arrows that each slide along their own path.
+// MIXED — trail signpost with two boards pointing opposite ways; a tap knocks
+// them into a seesaw wobble (boards swing in antiphase and spring back).
+// The post runs through x=12, the horizontal centre of the viewBox, so
+// rotating each board layer around the view centre reads as pivoting on
+// the post.
 // ---------------------------------------------------------------------------
 
 const MixedIcon = forwardRef<FilterIconHandle, IconProps>(
   ({ size, color }, ref) => {
-    const slide = useRef(new Animated.Value(0)).current;
+    const wobble = useRef(new Animated.Value(0)).current;
 
     useImperativeHandle(ref, () => ({
       play: () => {
         Animated.sequence([
-          Animated.timing(slide, {
+          Animated.timing(wobble, {
             toValue: 1,
-            duration: 180,
+            duration: 120,
             easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
-          Animated.spring(slide, {
+          Animated.spring(wobble, {
             toValue: 0,
-            friction: 5,
+            friction: 3,
             tension: 90,
             useNativeDriver: true,
           }),
@@ -395,37 +399,41 @@ const MixedIcon = forwardRef<FilterIconHandle, IconProps>(
       },
     }));
 
-    const forward = slide.interpolate({
+    const topSwing = wobble.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, size * 0.12],
+      outputRange: ['0deg', '9deg'],
     });
-    const backward = slide.interpolate({
+    const bottomSwing = wobble.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, -size * 0.12],
+      outputRange: ['0deg', '-9deg'],
     });
-
-    const arrowProps = {
-      stroke: color,
-      strokeWidth: 2,
-      strokeLinecap: 'round' as const,
-      strokeLinejoin: 'round' as const,
-      fill: 'none' as const,
-    };
 
     return (
       <View style={{ width: size, height: size }}>
+        {/* Post + finial knob (static) */}
+        <Layer size={size}>
+          <Path
+            d="M12 4.5 V21"
+            stroke={color}
+            strokeWidth={2}
+            strokeLinecap="round"
+          />
+          <Circle cx={12} cy={3.4} r={1.1} fill={color} />
+        </Layer>
+        {/* Upper board, pointing right */}
         <AnimatedView
-          style={[StyleSheet.absoluteFill, { transform: [{ translateX: forward }] }]}
+          style={[StyleSheet.absoluteFill, { transform: [{ rotate: topSwing }] }]}
         >
           <Layer size={size}>
-            <Path d="M3 6.5 C9 6.5 15 17.5 21 17.5 M21 17.5 l-3.6 -1.7 M21 17.5 l-3.6 1.7" {...arrowProps} />
+            <Path d="M8 6.2 H16.8 L19.2 8 L16.8 9.8 H8 Z" fill={color} />
           </Layer>
         </AnimatedView>
+        {/* Lower board, pointing left */}
         <AnimatedView
-          style={[StyleSheet.absoluteFill, { transform: [{ translateX: backward }] }]}
+          style={[StyleSheet.absoluteFill, { transform: [{ rotate: bottomSwing }] }]}
         >
           <Layer size={size}>
-            <Path d="M3 17.5 C9 17.5 15 6.5 21 6.5 M21 6.5 l-3.6 -1.7 M21 6.5 l-3.6 1.7" {...arrowProps} />
+            <Path d="M16 12.2 H7.2 L4.8 14 L7.2 15.8 H16 Z" fill={color} />
           </Layer>
         </AnimatedView>
       </View>
