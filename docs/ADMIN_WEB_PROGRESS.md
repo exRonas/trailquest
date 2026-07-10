@@ -962,3 +962,227 @@ back half went out on tsc/jest/gradle-build verification, not on-device.
   four primitives, which cover most visible chrome.
 - NOT device-verified yet — needs an on-device pass over Explore, Route Detail,
   Profile, Forum in both designs × both themes before showing the client.
+
+---
+
+## Round 16 — dark-mode stabilization + "dead buttons" bug hunt (2026-07-09)
+
+The Terra on-device pass above surfaced a cluster of separate bugs that all
+looked like the same symptom ("buttons in Profile stop responding"). Chased
+one at a time:
+
+- [x] Map screens (Explore, RoutePreviewMap, ActiveNavigation, TrackMap) always
+      used the light Mapbox style regardless of app theme — added a
+      `mapbox/dark-v11` counterpart + `useMapStyleUrl()`. Removed a leftover
+      static light-mode `<StatusBar>` in `App.tsx` fighting the theme-aware one.
+- [x] The floating update banner was pinned at `insets.top`, exactly where the
+      header's Settings gear sits, silently eating taps whenever an update was
+      available — looked like "nothing in Profile works" right after users
+      changed their name, but was unrelated to that flow. Replaced with a
+      dismissible in-flow row at the top of Profile (remembers the dismissed
+      version). Also lightened dark theme's near-black bg/surface to a softer
+      charcoal-green.
+- [x] Fixed a second update-banner bug found while relocating it: the render
+      guard only checked `!data`, so the banner showed for *every* successful
+      version check, not just a real update.
+- [x] **Root cause #1 of "dead buttons":** `StyleSheet.create()` bakes colors
+      in at module-load time; manually switching Light/Dark while booted in
+      the other scheme left ~30 screens' own stylesheets frozen on the boot
+      colors even though the shared primitives (Card/Button/Chip) flip live.
+      Fixed by reading affected colors from `useThemeColors()` inline at each
+      usage site instead of the frozen `StyleSheet` entry.
+- [x] **Root cause #2 (the real one) — v2.10:** popping Settings while a
+      `TextInput` was still focused triggers a known react-navigation +
+      Android native-stack bug (react-navigation#10096, #11521): the touch
+      responder stays latched to the unmounted screen, freezing every button
+      underneath until a full reload. Settings always has a focused field
+      right before Save → back, so this fired every time. Fixed with
+      `Keyboard.dismiss()` before the post-save navigate, plus
+      `animation: 'none'` on the Settings transition. Also corrected a
+      tab-bar option from the invalid `unmountOnBlur` to the real
+      `freezeOnBlur`.
+- [x] **Root cause #3 — v2.11, a genuine Fabric bug:** `Pressable.onPress`
+      randomly stops firing after a layout/theme change coincides with a
+      navigation pop (facebook/react-native#36710). Switched
+      Button/Card/Chip/ProfileScreen from core RN's `Pressable` to
+      `react-native-gesture-handler`'s as a workaround.
+- [x] Dark-mode polish: `DifficultyBadge` soft background, `FilterBar`
+      headings, Profile/Leaderboard `FlatList` backgrounds all switched to
+      live theme reads; Settings save feedback moved from a blocking
+      `Alert.alert` (which itself could leave a stuck responder) to an inline
+      status line.
+- Shipped as v2.10 (touch-responder fix) then v2.11 (Fabric Pressable fix),
+  same day, back to back.
+
+> Three unrelated bugs (banner-over-header, stale-stylesheet theming,
+> react-navigation responder latch) had all been reported as the same
+> symptom — worth remembering that "buttons don't work after X" is a weak
+> signal for root-causing; each needed its own repro.
+
+---
+
+## Round 17 — Design V2 "Terra" ships (2026-07-09)
+
+- [x] Shipped as v2.12 (versionCode 23) after the Round 16 stabilization
+      above. Settings → Appearance → Design: Пайн / Терра, both fully live.
+- [x] Regression found right after: the gesture-handler `Pressable` adopted
+      in Round 16 for Button/Card/Chip claims the pan gesture inside
+      `BottomSheetFlatList` on Explore, so the route list stopped scrolling
+      past the first card. Reverted `Card` specifically back to core RN
+      `Pressable` (Button/Chip keep gesture-handler since they don't sit
+      inside the bottom sheet's list) — this exact "scrolls once, wedges"
+      class of bug recurs twice more in Round 18, each time with a different
+      root cause.
+
+---
+
+## Round 18 — Design V3 "Atlas" ships + iteration (2026-07-09)
+
+Client wanted a third option. Atlas: expedition/archive style — warm cream
+paper, serif type, SVG decor (topo contours, mountain ridges, scout patch
+badges), full-bleed poster route cards.
+
+- [x] Base Atlas design: palette (`buildAtlasColors`), serif typography,
+      new `components/decor/` (`TopoPattern`, `MountainScene`, `WaveDivider`,
+      `PatchBadge`), Atlas-only layouts for RouteCard/Profile hero/Auth
+      shell/Achievements/Leaderboard/Countries/EmptyState. Third option next
+      to Pine/Terra in Settings → Design (Атлас).
+- [x] Idle motion (`decor/motion.tsx`: Drift/Sway/Pulse, native-driver loops)
+      wired into Profile hero, Auth hero, Achievements banner, EmptyState;
+      `decor/CloudDrift.tsx` flat clouds. FilterBar restructured: category
+      icon tiles, difficulty as a joined 3-segment severity bar.
+- [x] Route cards v2, richer Profile (parchment leaderboard/friends rows,
+      status-spine ProgressRow), Forum restyle (journal-entry PostCard,
+      topo hero banner) — fixed a bug along the way where `PostCard` was
+      frozen on boot theme colors instead of subscribing live.
+- [x] Re-tinted to an "aged industrial archive" palette (yellowed sepia,
+      verdigris primary, rust accent) + postage-stamp route cards:
+      `StampEdge` perforation ring, engraved photo frame, `Postmark` corner
+      stamp, ledger-line stats.
+- [x] **Scroll-freeze bug #2:** `StampEdge` measured its own size via
+      `onLayout`+`setState` to place perforation holes — inside a
+      virtualized `FlatList` that fires layout on every scroll, this churned
+      re-renders per visible card and could wedge the scroll gesture. Same
+      "scrolls once, then stuck" symptom as Round 17's Card/Pressable bug,
+      different cause. Rewrote to pure flexbox (fixed dot count), no
+      measurement, no state.
+- [x] **Scroll-freeze bug #3:** `freezeOnBlur` on the Explore tab (added
+      earlier to stop the live Mapbox GL surface burning memory in the
+      background) uses react-native-screens' freeze, which left
+      `BottomSheetFlatList`'s gesture handler stuck after unfreezing — scroll
+      worked once, died permanently after leaving and returning to the tab.
+      Narrowed the fix: `ExploreScreen` now just unmounts `Mapbox.MapView` on
+      blur (`useIsFocused`) instead of freezing the whole screen. Camera
+      resets to default on tab return as an accepted tradeoff.
+- [x] Avatar: removed the separate avatar color picker — avatars always
+      render in the current theme accent now (the old color choice used to
+      reskin the whole app via a `shadeSet` override, which broke Atlas's
+      art-directed palette). Fixed `AvatarPicker`'s Save/Reset never firing:
+      RN's `Modal` mounts outside the app's `GestureHandlerRootView`, so
+      gesture-handler `Pressable`s inside it never got touches — wrapped the
+      sheet content in its own `GestureHandlerRootView`. Fixed the hero
+      `MountainScene` sun/peaks getting cropped on short banners (e.g.
+      Leaderboard) by moving the sun to its own absolutely-positioned view
+      and rescaling the ridge viewBox; sun position now tracks real time of
+      day (rises 6:00, solar noon peak, sets 20:00).
+- Shipped as v2.13 (versionCode 24).
+
+> All three scroll-freeze bugs (Round 17's Card/gesture-handler,
+> `StampEdge` measurement loop, `freezeOnBlur` stuck gesture state) shared
+> the same symptom on the same screen (Explore's `BottomSheetFlatList`) —
+> worth checking that list specifically first if scroll ever breaks there
+> again.
+
+---
+
+## Round 19 — landing page + Atlas becomes the only design (2026-07-09/10)
+
+Client picked Atlas. Also wanted a public download page instead of handing
+out the APK link directly.
+
+- [x] Fixed the update-download link 404ing intermittently: it pointed at
+      the GitHub release asset's *display label* (`TrailQuest.apk`) via
+      `/releases/latest/download/<label>`, which resolves on a HEAD probe but
+      404s on the real GET fairly often (a GitHub quirk). Pointed at the
+      asset's actual uploaded filename (`app-release.apk`) instead.
+- [x] `site/index.html`: single-page static landing site in the Atlas design
+      language (verdigris/rust/parchment, serif headings, mountain ridges,
+      postage-stamp cards, topo contours, time-of-day sun) so the site and
+      app feel like one product. Download button links straight at
+      `/releases/latest/download/app-release.apk` (always the newest release,
+      no per-version page edits needed); version label fetched from the
+      GitHub Releases API as decoration only. Deployed via GitHub Actions to
+      Pages on pushes touching `site/`. Live at
+      **exronas.github.io/trailquest**. Fixed a mirrored-ridge transform bug
+      that left the right half of the hero scene empty.
+- [x] **Atlas-only.** Removed the Pine/Terra design switcher (Settings →
+      Appearance → Design) — Atlas is what the app actually looks like now.
+      `useDesignVersion()` kept as a fixed hook returning `'v3'` so the many
+      Atlas-specific decor checks scattered across screens keep working
+      unchanged. Pine/Terra's full color/typography definitions weren't
+      deleted — archived to `mobile/src/theme/archive/legacyDesigns.ts` as a
+      self-contained reference in case either look is wanted again. Landing
+      page's "3 стиля оформления" stat removed to match.
+- [x] **Shipped as v2.14 (versionCode 25)** — Atlas-only design + landing
+      page live.
+
+---
+
+## Round 20 — post-launch polish (2026-07-10)
+
+- [x] Release APK was a 200MB universal build bundling native libs for all 4
+      ABIs. Dropped emulator-only x86/x86_64, split the two real ARM targets
+      into separate APKs (`splits.abi`): arm64-v8a (~63MB, ~99% of devices)
+      and armeabi-v7a (~50MB, old 32-bit phones) — no more universal APK.
+      Download button (site + in-app update banner) points at the arm64
+      build; site carries a small secondary link to the 32-bit one.
+- [x] Explore map "stranded on the US" bug: `DEFAULT_CAMERA` was literally
+      centred on the contiguous US, and because the map unmounts on tab
+      blur (Round 18's fix) with a once-only "fitted" ref, it never
+      re-positioned on remount. Now defaults to the user's real geolocation
+      on every focus (positioned ref resets on blur), falling back to
+      fitting route markers, then to a Pavlodar (home-region) default —
+      never a far-away world default — if location is unavailable.
+- [x] Landing page version badge was hardcoded in HTML as a fallback and
+      overwritten by JS once the GitHub API responded — every release meant
+      remembering to bump that hardcoded text too (missed for 2.14, so
+      visitors briefly saw the old number flash to the new one). Now hidden
+      until the API resolves, filled in once.
+- [x] Atlas FilterBar category/difficulty icons replaced with custom
+      multi-layer SVG icons that play a small tap animation matching their
+      picture (temple columns re-erect, swords clash, sun rises, figures
+      huddle in, gauge needle kicks), triggered imperatively via ref so
+      tapping doesn't re-render the bar sitting above Explore's
+      `BottomSheetFlatList`. Also lightened Atlas's dark-mode surface colors
+      (previous coal-black values read too dark/muddy).
+
+> Uncommitted in the working tree right now: a small tuning pass on the new
+> filter icons (`FilterIcons.tsx` — mixed-category arrow direction reversed,
+> gauge needle shortened). Not yet committed or device-verified.
+
+## RESUME HERE (current, 2026-07-10)
+
+> **Atlas is the app's only design** (v2.14, versionCode 25) — the
+> Pine/Terra switcher is gone; both old palettes are archived in
+> `mobile/src/theme/archive/legacyDesigns.ts` if ever wanted again. A public
+> landing page is live at **exronas.github.io/trailquest** (GitHub Pages,
+> auto-deployed from `site/` on push) with a permanent download link
+> pointing at the arm64 release APK (a smaller 32-bit build is linked
+> separately) — no more handing out the raw GitHub release URL.
+>
+> Backend + Neon DB are still on Render (see Round 8), admin still on
+> `:5173`. Everything through Round 20 above is `tsc`-clean; the Atlas
+> scroll-freeze / dead-button / dark-mode bugs (Rounds 16-18) were all found
+> via real on-device reports and fixed, not just typechecked.
+>
+> Not yet done / honest gaps, roughly in order of value:
+> 1. The brand-new animated `FilterIcons` (Round 20) and the in-progress
+>    uncommitted tweak to them haven't been confirmed on-device yet.
+> 2. Push notifications (Firebase/FCM) and password reset (SMTP) are still
+>    deferred — need the user's external accounts set up first.
+> 3. Still no automated tests for the admin panel beyond the 10 Vitest unit
+>    tests from Round 15; no e2e/UI test suite for mobile.
+> 4. Static `StyleSheet.create` metrics (radius/shadow) baked at module load
+>    are a known minor limitation carried over from the Terra-era note —
+>    low priority now that Atlas is the only design and has its own
+>    dedicated styling.

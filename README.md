@@ -2,30 +2,43 @@
 
 A production-grade hiking-route navigator: explore curated trails (historical
 sites, battlefields, scenic overlooks) on a map, walk them with live GPS
-navigation, get automatic checkpoint alerts when you enter a checkpoint's
-radius, and share tips in a per-route forum.
+navigation, scan QR checkpoints to earn XP and country ranks, and share tips
+in a per-route forum. RU/EN/KK throughout. Landing page + download:
+**[exronas.github.io/trailquest](https://exronas.github.io/trailquest)**.
 
-This is a monorepo with two independent projects plus shared docs.
+This is a monorepo: mobile app, backend API, browser admin panel, landing
+page, plus shared docs.
 
 ```
 trailquest/
 ├── backend/    # Node + Express + TypeScript + PostgreSQL + Prisma REST API
-├── mobile/     # React Native (bare CLI) + TypeScript app
-├── docs/       # TECHNICAL_SPEC.md, CLAUDE_CODE_BUILD_PROMPT.md
+├── mobile/     # React Native (bare CLI) + TypeScript app — Atlas design
+├── admin/      # Vite + React + TypeScript browser admin panel
+├── site/       # Static landing page (GitHub Pages)
+├── docs/       # TECHNICAL_SPEC.md, ADMIN_WEB_PROGRESS.md, CLAUDE_CODE_BUILD_PROMPT.md
 └── claude-context.md
 ```
 
 ## Quick start
+
+### Live / hosted
+
+The real app talks to a permanently-hosted backend + DB, not localhost:
+
+- Backend: **https://trailquest-backend-uze0.onrender.com** (Render, free
+  tier, kept warm by a cron-job.org ping) + **Neon** Postgres (Frankfurt).
+- Landing page + APK download: **https://exronas.github.io/trailquest**.
+- Local setup below is only needed for development.
 
 ### 1. Backend
 
 ```bash
 cd backend
 npm install
-cp .env.example .env          # set DATABASE_URL + JWT secrets
+cp .env.example .env          # set DATABASE_URL + DIRECT_URL + JWT secrets
 npx prisma migrate dev --name init
-npx prisma db seed            # 4 real routes, checkpoints, tips, users, a thread
-npm run dev                   # http://localhost:4000  (GET /api/health)
+npx prisma db seed            # 8 real routes, checkpoints, tips, users, a thread
+npm run dev                   # http://localhost:4001  (GET /api/health)
 ```
 
 Need Postgres fast?
@@ -47,8 +60,18 @@ npm start                     # Metro
 npm run android               # or: npm run ios  (after pod install)
 ```
 
-Full details (Mapbox tokens, background geolocation, native setup):
-[`mobile/README.md`](mobile/README.md).
+Full details (Mapbox tokens, native setup): [`mobile/README.md`](mobile/README.md).
+
+### 3. Admin panel
+
+```bash
+cd admin
+npm install
+cp .env.example .env          # set VITE_API_URL + VITE_MAPBOX_TOKEN
+npm run dev                   # http://localhost:5173
+```
+
+Full details: [`admin/README.md`](admin/README.md).
 
 ### Demo credentials (seeded)
 
@@ -59,54 +82,46 @@ Full details (Mapbox tokens, background geolocation, native setup):
 
 ## What works end-to-end
 
-- Register / login with JWT (access + refresh), tokens stored in the device
+- Register / login with JWT (access + refresh), tokens in the device
   Keychain/Keystore, auto-login on relaunch.
-- Explore routes on a clustered Mapbox map with a bottom-sheet list and
-  category/difficulty filters.
-- Route detail: description, stats, a route-line + checkpoint preview map,
-  visually-distinct tips/warnings, and a checkpoints list.
-- Start a route → live navigation HUD (speed, distance, elapsed, progress, ETA)
-  with real GPS, background tracking, and **automatic checkpoint geo-triggers**
-  (Haversine within each checkpoint's radius) that fire a local notification and
-  a modal.
-- Forum: browse posts per route, read/threaded comments, create posts and
-  comments with optimistic updates.
-- Profile: completed/in-progress routes with distance/time/date stats; logout.
+- Explore routes on a clustered Mapbox map (defaults to the user's own
+  location) with a bottom-sheet list and category/difficulty filters.
+- Route detail: description, stats, road-snapped route line + checkpoint
+  preview map, ratings/reviews, tips/warnings, offline map download.
+- Start a route → live navigation HUD (speed, distance, elapsed, progress,
+  ETA). Checkpoints are marked by **scanning a physical/on-screen QR code**
+  (not GPS proximity), awarding XP toward per-country levels/ranks, with a
+  celebratory scan card.
+- **Offline-first**: start/scan/complete all queue locally and auto-sync
+  when connectivity returns; the route list itself is cached for a cold
+  start with no signal.
+- Forum: browse posts per route, threaded comments, tap an author to see
+  their public profile; admin moderation (delete post/comment).
+- Profile: completed/in-progress routes, achievements, friends, global +
+  monthly leaderboard, avatar picker, dark/light/system theme, RU/EN/KK.
+- Browser **admin panel**: create/edit routes with a road-snapping map
+  editor, QR generation per checkpoint, per-language (RU/EN/KK) content
+  editing, image upload, forum moderation, analytics dashboard.
+- In-app update banner (compares against the backend's published version).
 
 ## Tech
 
 | Layer    | Choices |
 |----------|---------|
-| Backend  | Express, TypeScript (strict), PostgreSQL, Prisma, JWT, Zod, bcrypt, helmet |
-| Mobile   | React Native 0.86, TypeScript (strict), @rnmapbox/maps, react-native-background-geolocation, React Navigation, Zustand, React Query, Notifee, Keychain |
-| Geo      | Plain lat/lng + Haversine (no PostGIS); server-side path-log distance/speed, client-side checkpoint triggers + speed smoothing |
-
-## Verification status
-
-- **Backend:** ran for real against a local PostgreSQL 16 instance —
-  `prisma migrate dev` + `prisma db seed` applied successfully, then live
-  HTTP calls confirmed: health check, route listing, login (JWT issued),
-  start route → log GPS points → complete (Haversine distance/speed computed
-  correctly), forum posts list. Also `tsc --noEmit` clean and production
-  build (`npm run build`) clean. Runs on **port 4001** in this environment
-  (4000 was occupied by an unrelated local service — update if that's not
-  the case on your machine).
-- **Mobile:** `tsc --noEmit` clean, Jest unit tests pass, and the **Metro
-  bundler successfully built the full JS bundle for both Android and iOS**
-  (`react-native start` + fetched `index.bundle`). This caught and fixed a
-  real issue: `react-native-reanimated@3.x` doesn't work with RN 0.86 (it
-  references a legacy renderer file RN 0.86 removed) — upgraded to
-  `react-native-reanimated@^4.5.0` + `react-native-worklets@^0.10.0`, which
-  officially target RN 0.83–0.86.
-  Native on-device/emulator builds were **not** run here — there's no Android
-  emulator (AVD) configured and no physical device attached, and creating an
-  emulator image is a multi-GB download outside this session's scope. See the
-  guide below for exactly how to run it on your machine.
+| Backend  | Express, TypeScript (strict), PostgreSQL (Neon), Prisma, JWT, Zod, bcrypt, helmet, hosted on Render |
+| Mobile   | React Native 0.86, TypeScript (strict), @rnmapbox/maps, @react-native-community/geolocation, react-native-camera-kit (QR), React Navigation, Zustand, React Query, Notifee, Keychain, AsyncStorage, reanimated 4, gesture-handler, view-shot/share |
+| Admin    | Vite, React, TypeScript, react-router-dom, @tanstack/react-query, axios, mapbox-gl, qrcode.react |
+| Design   | Single in-house design language ("Atlas" — expedition/archive style, custom SVG decor), dark/light/system theming |
+| Geo      | Plain lat/lng + Haversine (no PostGIS); road-snapping via Mapbox Directions at admin edit-time; QR-scan checkpoints (no GPS proximity check) |
 
 ## Not in this build
 
-AR/camera overlays, QR scanning, an admin panel UI (manage data via Prisma
-Studio), forum moderation, and offline map tiles (a `TODO` marker is left in
-`mobile/src/screens/RouteDetail/RouteDetailScreen.tsx`).
+AR/camera overlays (Phase 2 — the data model is AR-ready but unbuilt), push
+notifications (needs a Firebase/FCM project), password reset (needs an
+SMTP/email service).
 
-See [`docs/TECHNICAL_SPEC.md`](docs/TECHNICAL_SPEC.md) for the full spec.
+See [`docs/ADMIN_WEB_PROGRESS.md`](docs/ADMIN_WEB_PROGRESS.md) for the full,
+round-by-round build history and current gaps, and
+[`docs/TECHNICAL_SPEC.md`](docs/TECHNICAL_SPEC.md) for the original concept
+spec (checkpoints there are described as GPS-triggered; QR-scan replaced
+that — see the progress doc's Round 7).
