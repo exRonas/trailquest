@@ -22,3 +22,14 @@ export async function fetchMe(): Promise<User> {
   const res = await api.get<{ data: User }>('/auth/me');
   return unwrap(res.data);
 }
+
+export async function forgotPasswordRequest(email: string): Promise<void> {
+  await api.post('/auth/forgot-password', { email });
+}
+
+export async function resetPasswordRequest(
+  token: string,
+  password: string,
+): Promise<void> {
+  await api.post('/auth/reset-password', { token, password });
+}

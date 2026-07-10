@@ -24,3 +24,14 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
   const user = await authService.getMe(req.user.sub);
   sendData(res, user);
 });
+
+export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  await authService.requestPasswordReset(req.body.email);
+  // Always the same response — never reveals whether the email exists.
+  sendData(res, { message: 'If that email exists, a reset link has been sent.' });
+});
+
+export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  await authService.resetPassword(req.body.token, req.body.password);
+  sendData(res, { message: 'Password reset successfully.' });
+});

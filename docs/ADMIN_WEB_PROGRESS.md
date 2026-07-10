@@ -1160,6 +1160,66 @@ out the APK link directly.
 > filter icons (`FilterIcons.tsx` — mixed-category arrow direction reversed,
 > gauge needle shortened). Not yet committed or device-verified.
 
+## Round 21 — password reset (email) + push notifications (FCM) (2026-07-10)
+
+The two long-deferred "needs external accounts" features, now that the user
+created both accounts (Firebase project `trailquest-6134f`; Gmail App
+Password for SMTP; a Resend API key exists as a fallback but can't email
+arbitrary recipients until a sending domain is verified).
+
+**Secrets (never committed, in root `.gitignore`):**
+- `backend/firebase-service-account.json` — Firebase Admin service account.
+- `mobile/android/app/google-services.json` — Firebase Android client config.
+- Gmail SMTP + Resend keys live in `backend/.env` (see `.env.example`).
+
+**Backend:**
+- New models `PasswordResetToken` (SHA-256 hash of the emailed token, 1h
+  expiry, single-use via `usedAt`) and `PushToken` (FCM token per device,
+  upsert on re-register) — migration `20260710095823`.
+- `lib/mailer.ts`: nodemailer via Gmail SMTP (`EMAIL_PROVIDER=smtp`, works
+  for any recipient today) or Resend HTTP API (`resend`, needs the domain).
+  Missing config = log + no-op, never a crash.
+- `POST /auth/forgot-password` (never reveals whether the email exists) and
+  `POST /auth/reset-password { token, password }`. Reset email links to
+  `trailquest://reset-password?token=...` (`PASSWORD_RESET_URL_BASE`).
+- `lib/push.ts`: firebase-admin v14 modular API. Credentials from
+  `FIREBASE_SERVICE_ACCOUNT_JSON` (raw JSON env var — use this on Render)
+  or `FIREBASE_SERVICE_ACCOUNT_PATH` (local file). `sendPushToUser` never
+  throws and auto-deletes tokens FCM reports as dead.
+- `POST /push/register` / `POST /push/unregister` (both `requireAuth`).
+- First push consumer: friend requests — `friend.service` notifies the
+  addressee on a new request and the requester on accept.
+- Verified live: real reset email delivered via Gmail SMTP; full
+  reset-flow script (valid token resets + login works + reused token
+  rejected); Firebase Admin auth confirmed (dummy token got a real
+  `messaging/invalid-argument` from FCM, i.e. credentials accepted).
+
+**Mobile:**
+- `@react-native-firebase/app` + `/messaging`; `com.google.gms.google-services`
+  gradle plugin wired into both build.gradle files.
+- `services/pushNotifications.ts`: permission prompt (reuses notifee) →
+  `getToken()` → register with backend; foreground messages displayed via
+  notifee (`general-alerts` channel); `onTokenRefresh` re-registers.
+  Called from `RootNavigator` on every sign-in.
+- Forgot/Reset password screens in the Auth stack ("Забыли пароль?" link on
+  Login), full ru/en/kk i18n. Deep link `trailquest://reset-password?token=...`
+  via a `linking` config on `NavigationContainer` + a manifest intent-filter
+  (scheme `trailquest`, host `reset-password`).
+- Gradle Metaspace bumped 512m→1024m — `lintVitalAnalyzeRelease` OOMs at
+  512m once react-native-firebase is in the dependency graph.
+
+**NOT yet done / caveats:**
+- On-device verification pending (phone was disconnected): deep link →
+  ResetPassword screen, real FCM token registration, an actual
+  friend-request push arriving. APK is built and ready to install.
+- `mobile/.env` currently points at `http://localhost:4001/api` for device
+  testing via `adb reverse` — **must be flipped back to the Render URL
+  before any public release build**.
+- Render env needs `FIREBASE_SERVICE_ACCOUNT_JSON` + the SMTP vars set in
+  its dashboard before these features work in production.
+- Resend stays dormant until a sending domain is verified; then just set
+  `EMAIL_PROVIDER=resend`.
+
 ## RESUME HERE (current, 2026-07-10)
 
 > **Atlas is the app's only design** (v2.14, versionCode 25) — the

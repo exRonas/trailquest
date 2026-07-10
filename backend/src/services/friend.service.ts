@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { AppError } from '../utils/AppError';
+import { sendPushToUser } from '../lib/push';
 
 const friendUserSelect = {
   id: true,
@@ -54,18 +55,22 @@ export async function sendRequest(meId: string, targetId: string) {
     if (existing.status === 'ACCEPTED') return existing;
     // A pending request they sent to me → accept it.
     if (existing.addresseeId === meId) {
-      return prisma.friendship.update({
+      const accepted = await prisma.friendship.update({
         where: { id: existing.id },
         data: { status: 'ACCEPTED' },
       });
+      await notifyFriendAccepted(existing.requesterId, meId);
+      return accepted;
     }
     // A pending request I already sent → no-op.
     return existing;
   }
 
-  return prisma.friendship.create({
+  const friendship = await prisma.friendship.create({
     data: { requesterId: meId, addresseeId: targetId, status: 'PENDING' },
   });
+  await notifyFriendRequest(meId, targetId);
+  return friendship;
 }
 
 /** Accept a pending request that `requesterId` sent to me. */
@@ -76,9 +81,37 @@ export async function acceptRequest(meId: string, requesterId: string) {
   if (!friendship) {
     throw AppError.notFound('No pending request from this user');
   }
-  return prisma.friendship.update({
+  const accepted = await prisma.friendship.update({
     where: { id: friendship.id },
     data: { status: 'ACCEPTED' },
+  });
+  await notifyFriendAccepted(requesterId, meId);
+  return accepted;
+}
+
+async function notifyFriendRequest(fromUserId: string, toUserId: string): Promise<void> {
+  const from = await prisma.user.findUnique({
+    where: { id: fromUserId },
+    select: { name: true },
+  });
+  if (!from) return;
+  await sendPushToUser(toUserId, {
+    title: 'New friend request',
+    body: `${from.name} wants to be your friend`,
+    data: { type: 'friend_request', userId: fromUserId },
+  });
+}
+
+async function notifyFriendAccepted(requesterUserId: string, accepterId: string): Promise<void> {
+  const accepter = await prisma.user.findUnique({
+    where: { id: accepterId },
+    select: { name: true },
+  });
+  if (!accepter) return;
+  await sendPushToUser(requesterUserId, {
+    title: 'Friend request accepted',
+    body: `${accepter.name} accepted your friend request`,
+    data: { type: 'friend_accepted', userId: accepterId },
   });
 }
 

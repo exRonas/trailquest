@@ -76,6 +76,16 @@ export function LoginScreen({
         style={styles.submit}
       />
 
+      <Pressable
+        onPress={() => navigation.navigate('ForgotPassword')}
+        hitSlop={8}
+        style={styles.forgotLink}
+      >
+        <AppText variant="callout" color={theme.primary}>
+          {t('auth.forgotPassword')}
+        </AppText>
+      </Pressable>
+
       <View style={styles.footer}>
         <AppText variant="callout" color={colors.textSecondary}>
           {t('auth.noAccount')}
@@ -93,6 +103,7 @@ export function LoginScreen({
 const styles = StyleSheet.create({
   banner: { marginBottom: spacing.lg },
   submit: { marginTop: spacing.sm },
+  forgotLink: { alignSelf: 'center', marginTop: spacing.md },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',

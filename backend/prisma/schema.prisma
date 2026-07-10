@@ -74,8 +74,42 @@ model User {
   reviews         RouteReview[]
   sentRequests     Friendship[] @relation("FriendRequester")
   receivedRequests Friendship[] @relation("FriendAddressee")
+  resetTokens      PasswordResetToken[]
+  pushTokens       PushToken[]
 
   @@map("users")
+}
+
+// One-time password-reset link. Raw token is emailed to the user and only
+// its SHA-256 hash is stored (same rationale as refresh tokens elsewhere in
+// this codebase — a leaked DB row shouldn't be directly usable).
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// FCM registration token for a single installed app instance. A user can
+// have several (multiple devices); re-registering the same token just bumps
+// updatedAt (upsert), and a token that FCM reports as dead is deleted.
+model PushToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  platform  String   @default("android")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("push_tokens")
 }
 
 model Route {

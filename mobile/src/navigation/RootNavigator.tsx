@@ -5,6 +5,7 @@ import {
   NavigationContainer,
   DefaultTheme,
   DarkTheme,
+  LinkingOptions,
   Theme,
 } from '@react-navigation/native';
 import { Loader } from '../components/ui';
@@ -15,8 +16,26 @@ import { initMapbox } from '../services/mapbox';
 import { syncAll } from '../services/offlineQueue';
 import { hydrateRoutesCache } from '../services/routesCache';
 import { queryClient } from '../api/queryClient';
+import { registerPushNotifications } from '../services/pushNotifications';
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabs } from './MainTabs';
+import { AuthStackParamList } from '../types/navigation';
+
+// Password-reset emails link to trailquest://reset-password?token=... — this
+// only resolves against AuthNavigator's screens (the logged-out stack), so a
+// stale link tapped while already signed in is silently ignored, which is
+// the intended behavior (a signed-in user changes password from Settings).
+const linking: LinkingOptions<AuthStackParamList> = {
+  prefixes: ['trailquest://'],
+  config: {
+    screens: {
+      Login: 'login',
+      Register: 'register',
+      ForgotPassword: 'forgot-password',
+      ResetPassword: 'reset-password',
+    },
+  },
+};
 
 export function RootNavigator(): React.ReactElement {
   const status = useAuthStore((s) => s.status);
@@ -70,6 +89,14 @@ export function RootNavigator(): React.ReactElement {
     };
   }, [status]);
 
+  // Ask for notification permission + register the FCM token once signed
+  // in. Re-runs on every sign-in (not just first launch) so a token that
+  // rotated while logged out — or a second account on this device — still
+  // gets registered.
+  useEffect(() => {
+    if (status === 'authenticated') void registerPushNotifications();
+  }, [status]);
+
   const statusBar = (
     <StatusBar
       barStyle={isDark ? 'light-content' : 'dark-content'}
@@ -87,7 +114,7 @@ export function RootNavigator(): React.ReactElement {
   }
 
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer theme={navTheme} linking={linking}>
       {statusBar}
       {status === 'authenticated' ? <MainTabs /> : <AuthNavigator />}
     </NavigationContainer>

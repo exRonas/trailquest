@@ -1,13 +1,22 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { User } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../utils/AppError';
+import { sendMail } from '../lib/mailer';
+import { env } from '../config/env';
 import {
   signAccessToken,
   signRefreshToken,
   verifyRefreshToken,
 } from '../utils/jwt';
 import { LoginInput, RegisterInput } from '../schemas/auth.schema';
+
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+function hashResetToken(rawToken: string): string {
+  return crypto.createHash('sha256').update(rawToken).digest('hex');
+}
 
 export const BCRYPT_ROUNDS = 12;
 
@@ -87,4 +96,60 @@ export async function getMe(userId: string): Promise<SafeUser> {
     throw AppError.notFound('User not found');
   }
   return toSafeUser(user);
+}
+
+/**
+ * Always resolves without revealing whether the email exists (avoids
+ * account enumeration) — if it does, mints a one-time token and emails a
+ * reset link; if not, this is a silent no-op.
+ */
+export async function requestPasswordReset(email: string): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) return;
+
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  await prisma.passwordResetToken.create({
+    data: {
+      userId: user.id,
+      tokenHash: hashResetToken(rawToken),
+      expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+    },
+  });
+
+  const resetUrl = `${env.PASSWORD_RESET_URL_BASE}?token=${rawToken}`;
+  await sendMail({
+    to: user.email,
+    subject: 'Reset your TrailQuest password',
+    text: `Reset your password: ${resetUrl}\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.`,
+    html: `<p>Someone requested a password reset for your TrailQuest account.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This link expires in 1 hour. If you didn't request this, ignore this email.</p>`,
+  });
+}
+
+export async function resetPassword(
+  rawToken: string,
+  newPassword: string,
+): Promise<void> {
+  const tokenHash = hashResetToken(rawToken);
+  const resetToken = await prisma.passwordResetToken.findUnique({
+    where: { tokenHash },
+  });
+  if (
+    !resetToken ||
+    resetToken.usedAt ||
+    resetToken.expiresAt.getTime() < Date.now()
+  ) {
+    throw AppError.badRequest('This reset link is invalid or has expired');
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: resetToken.userId },
+      data: { passwordHash },
+    }),
+    prisma.passwordResetToken.update({
+      where: { id: resetToken.id },
+      data: { usedAt: new Date() },
+    }),
+  ]);
 }

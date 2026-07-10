@@ -10,6 +10,7 @@ import friendRoutes from './friend.routes';
 import adminRoutes from './admin.routes';
 import userRoutes from './user.routes';
 import imageRoutes from './image.routes';
+import pushRoutes from './push.routes';
 import { appVersion } from '../config/appVersion';
 
 const router = Router();
@@ -33,5 +34,6 @@ router.use('/friends', friendRoutes);
 router.use('/admin', adminRoutes);
 router.use('/users', userRoutes);
 router.use('/images', imageRoutes);
+router.use('/push', pushRoutes);
 
 export default router;
