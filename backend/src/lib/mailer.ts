@@ -104,23 +104,39 @@ async function sendViaSmtp(input: SendMailInput): Promise<void> {
     text: input.text,
   };
 
-  // Build the list of connect targets: each resolved IPv4, or the bare
-  // hostname if we couldn't resolve (e.g. a dev box whose resolver blocks
-  // raw A queries — nodemailer's own resolution still runs in that case).
-  let hosts: string[];
-  try {
-    hosts = await resolveSmtpIPv4List(env.SMTP_HOST);
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      `[mailer] couldn't resolve ${env.SMTP_HOST} to IPv4, falling back to hostname:`,
-      err,
-    );
-    hosts = [env.SMTP_HOST];
-  }
-
+  // Gmail's SMTP connections from Render's *shared* egress IP are throttled
+  // intermittently — confirmed live: a burst delivered fine, then later
+  // connects to Gmail timed out (ETIMEDOUT on CONN), then recovered. Each
+  // DNS query for smtp.gmail.com returns just one (rotating) endpoint, so
+  // there's no sibling IP to fall over to within a single attempt. Instead,
+  // retry the whole resolve+connect with backoff: a fresh resolution
+  // usually yields a different endpoint, and the throttle windows are
+  // short. Sends are fire-and-forget (see auth.service), so spending ~30s
+  // across retries never blocks a request.
+  const BACKOFFS_MS = [0, 3_000, 8_000, 20_000];
   let lastErr: unknown;
-  for (const host of hosts) {
+
+  for (let attempt = 0; attempt < BACKOFFS_MS.length; attempt++) {
+    if (BACKOFFS_MS[attempt] > 0) {
+      await new Promise((r) => setTimeout(r, BACKOFFS_MS[attempt]));
+    }
+
+    let host: string;
+    try {
+      const ips = await resolveSmtpIPv4List(env.SMTP_HOST);
+      host = ips[0];
+    } catch (err) {
+      // Dev box whose resolver blocks raw A queries — let nodemailer resolve.
+      host = env.SMTP_HOST;
+      if (attempt === 0) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[mailer] couldn't resolve ${env.SMTP_HOST} to IPv4, falling back to hostname:`,
+          err,
+        );
+      }
+    }
+
     const transport = createTransport(host);
     try {
       await transport.sendMail(message);
@@ -128,12 +144,15 @@ async function sendViaSmtp(input: SendMailInput): Promise<void> {
     } catch (err) {
       lastErr = err;
       // eslint-disable-next-line no-console
-      console.warn(`[mailer] send via ${host} failed, trying next:`, err);
+      console.warn(
+        `[mailer] send attempt ${attempt + 1}/${BACKOFFS_MS.length} via ${host} failed:`,
+        err,
+      );
     } finally {
       transport.close();
     }
   }
-  throw lastErr ?? new Error('[mailer] all SMTP endpoints failed');
+  throw lastErr ?? new Error('[mailer] all SMTP send attempts failed');
 }
 
 /** Sends through whichever provider `EMAIL_PROVIDER` selects. Never throws
