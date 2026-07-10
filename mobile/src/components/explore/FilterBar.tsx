@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppText, Chip } from '../ui';
 import { spacing, useDesignVersion, useThemeColors, ThemeColors } from '../../theme';
 import { categoryIcon, difficultyIcon } from '../../theme/icons';
+import { CategoryIcon, GaugeIcon, FilterIconHandle } from './FilterIcons';
 import { useT } from '../../i18n';
 import { Difficulty, RouteCategory, RouteFilters } from '../../types/api';
 
@@ -25,10 +25,18 @@ export function FilterBar({ filters, onChange }: FilterBarProps): React.ReactEle
   const t = useT();
   const theme = useThemeColors();
   const design = useDesignVersion();
-  const toggleCategory = (c: RouteCategory) =>
+  // Each animated filter icon exposes an imperative play(); triggering via
+  // refs keeps taps from causing any extra renders (see FilterIcons.tsx).
+  const categoryIconRefs = useRef<Partial<Record<RouteCategory, FilterIconHandle | null>>>({});
+  const gaugeRefs = useRef<Partial<Record<Difficulty, FilterIconHandle | null>>>({});
+  const toggleCategory = (c: RouteCategory) => {
+    categoryIconRefs.current[c]?.play();
     onChange({ ...filters, category: filters.category === c ? undefined : c });
-  const toggleDifficulty = (d: Difficulty) =>
+  };
+  const toggleDifficulty = (d: Difficulty) => {
+    gaugeRefs.current[d]?.play();
     onChange({ ...filters, difficulty: filters.difficulty === d ? undefined : d });
+  };
 
   if (design === 'v3') {
     // Atlas: field-guide tiles — square icon tiles for categories, one
@@ -54,8 +62,11 @@ export function FilterBar({ filters, onChange }: FilterBarProps): React.ReactEle
                   },
                 ]}
               >
-                <Icon
-                  name={categoryIcon[c]}
+                <CategoryIcon
+                  ref={(h) => {
+                    categoryIconRefs.current[c] = h;
+                  }}
+                  category={c}
                   size={22}
                   color={selected ? theme.textInverse : theme.primary}
                 />
@@ -86,6 +97,9 @@ export function FilterBar({ filters, onChange }: FilterBarProps): React.ReactEle
               last={i === DIFFICULTIES.length - 1}
               label={t(`difficulty.${d}`)}
               theme={theme}
+              iconRef={(h) => {
+                gaugeRefs.current[d] = h;
+              }}
               onPress={() => toggleDifficulty(d)}
             />
           ))}
@@ -141,6 +155,7 @@ function GradeSegment({
   last,
   label,
   theme,
+  iconRef,
   onPress,
 }: {
   difficulty: Difficulty;
@@ -149,6 +164,7 @@ function GradeSegment({
   last: boolean;
   label: string;
   theme: ThemeColors;
+  iconRef: (h: FilterIconHandle | null) => void;
   onPress: () => void;
 }): React.ReactElement {
   const c = theme.difficulty[difficulty];
@@ -165,8 +181,9 @@ function GradeSegment({
         },
       ]}
     >
-      <Icon
-        name={difficultyIcon[difficulty]}
+      <GaugeIcon
+        ref={iconRef}
+        difficulty={difficulty}
         size={16}
         color={selected ? theme.textInverse : c.main}
       />

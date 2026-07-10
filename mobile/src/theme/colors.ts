@@ -93,11 +93,13 @@ export const atlas = {
   paper: '#F4ECD9',
   parchment: '#FBF5E4',
 
-  // Soot-and-lamplight dark mode — coal blacks with a warm cast
-  night900: '#191612',
-  night800: '#231F18',
-  night700: '#2D281F',
-  night600: '#413A2C',
+  // Dark mode — warm dark leather/umber, not near-black coal (that read as
+  // too dark/muddy — see the lighter values below vs. the original
+  // '#191612'/'#231F18'/'#2D281F'/'#413A2C').
+  night900: '#24211A',
+  night800: '#302A21',
+  night700: '#3D362A',
+  night600: '#554C3A',
 } as const;
 
 /** Build the full semantic color set for a scheme. Same shape for light/dark
@@ -171,12 +173,12 @@ function buildAtlasColors(scheme: ColorScheme) {
     primary: dark ? atlas.verdigris500 : atlas.verdigris600,
     primaryDark: atlas.verdigris700,
     primaryEmphasis: dark ? atlas.verdigris200 : atlas.verdigris700,
-    primarySoft: dark ? '#293630' : atlas.verdigris100,
-    primaryTint: dark ? '#222C27' : atlas.verdigris50,
+    primarySoft: dark ? '#33413A' : atlas.verdigris100,
+    primaryTint: dark ? '#2B362F' : atlas.verdigris50,
 
     accent: atlas.rust500,
     accentDark: atlas.rust600,
-    accentSoft: dark ? '#3B2A1C' : atlas.rust100,
+    accentSoft: dark ? '#46331F' : atlas.rust100,
 
     background: dark ? atlas.night900 : atlas.paper,
     surface: dark ? atlas.night800 : atlas.parchment,
