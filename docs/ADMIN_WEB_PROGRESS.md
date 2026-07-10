@@ -1208,17 +1208,43 @@ arbitrary recipients until a sending domain is verified).
 - Gradle Metaspace bumped 512m→1024m — `lintVitalAnalyzeRelease` OOMs at
   512m once react-native-firebase is in the dependency graph.
 
-**NOT yet done / caveats:**
-- On-device verification pending (phone was disconnected): deep link →
-  ResetPassword screen, real FCM token registration, an actual
-  friend-request push arriving. APK is built and ready to install.
-- `mobile/.env` currently points at `http://localhost:4001/api` for device
-  testing via `adb reverse` — **must be flipped back to the Render URL
-  before any public release build**.
-- Render env needs `FIREBASE_SERVICE_ACCOUNT_JSON` + the SMTP vars set in
-  its dashboard before these features work in production.
-- Resend stays dormant until a sending domain is verified; then just set
-  `EMAIL_PROVIDER=resend`.
+**Push notifications: verified working end-to-end** on the v2.15 release
+build against production Render — device registered its FCM token
+(`POST /push/register` 200 in the logs, no errors), Firebase Admin
+credentials accepted. Friend-request push wired in.
+
+**Password reset: built and correct, but SHELVED — no working email path.**
+Chased email delivery hard on production and hit a wall that isn't a code
+bug:
+- The `mailer.ts` went through several live-debugged fixes: force IPv4
+  (Render advertises IPv6 but has no v6 egress → ENETUNREACH), then
+  resolve+retry with backoff, then alternate ports 587/465. All are in
+  the committed code and are genuinely good hardening.
+- **Root cause that killed it: Render blocks outbound SMTP.** Final logs
+  showed all four attempts (587, 465, 587, 465) timing out on TCP CONN —
+  a network-level egress block, not Gmail app-level throttling (which
+  would accept the socket then reject in-protocol). Earlier a burst of 5
+  emails slipped through a brief window, which is what made it look
+  intermittent at first.
+- **Resend can't rescue it without a domain**: without a verified sending
+  domain it only delivers to the Resend account owner's own address —
+  hard anti-spam policy, no workaround. The user declined buying a domain
+  for now, and couldn't complete a Brevo signup.
+- **Decision (user): shelve password reset for now.** The `"Забыли
+  пароль?"` link on the mobile Login screen is hidden behind
+  `PASSWORD_RESET_ENABLED = false` (LoginScreen.tsx) so users don't hit a
+  dead end. Everything else stays in place and dormant: backend endpoints,
+  token model, Forgot/Reset screens (still registered in AuthNavigator),
+  deep link, i18n. To revive: get a real email path (cheapest reliable =
+  a ~$1-2/yr domain + the existing Resend key over its HTTP API, which
+  sidesteps the SMTP block entirely; or a SendGrid/Postmark single-sender
+  key), set `EMAIL_PROVIDER`, flip `PASSWORD_RESET_ENABLED` to true,
+  rebuild.
+- `mobile/.env` was flipped back to the Render URL for the v2.15 release
+  build (was briefly localhost for adb-reverse device testing).
+- Render env still needs `FIREBASE_SERVICE_ACCOUNT_JSON` set in the
+  dashboard (done by the user) for push; the SMTP vars there are moot
+  until email has a working transport.
 
 ## RESUME HERE (current, 2026-07-10)
 

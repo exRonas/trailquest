@@ -9,6 +9,15 @@ import { validateEmail, validatePassword } from '../../utils/validation';
 import { useT } from '../../i18n';
 import { AuthScreenProps } from '../../types/navigation';
 
+// Password reset is fully built end-to-end (backend endpoints + email +
+// Forgot/Reset screens + deep link) but its entry point is hidden until a
+// working transactional-email path exists: Render blocks outbound SMTP
+// (both 465 and 587 time out on connect), and Resend can't email arbitrary
+// recipients without a verified domain. Flip this to true once an email
+// provider that actually delivers is configured (EMAIL_PROVIDER on the
+// backend). See docs/ADMIN_WEB_PROGRESS.md Round 21.
+const PASSWORD_RESET_ENABLED = false;
+
 export function LoginScreen({
   navigation,
 }: AuthScreenProps<'Login'>): React.ReactElement {
@@ -76,15 +85,17 @@ export function LoginScreen({
         style={styles.submit}
       />
 
-      <Pressable
-        onPress={() => navigation.navigate('ForgotPassword')}
-        hitSlop={8}
-        style={styles.forgotLink}
-      >
-        <AppText variant="callout" color={theme.primary}>
-          {t('auth.forgotPassword')}
-        </AppText>
-      </Pressable>
+      {PASSWORD_RESET_ENABLED ? (
+        <Pressable
+          onPress={() => navigation.navigate('ForgotPassword')}
+          hitSlop={8}
+          style={styles.forgotLink}
+        >
+          <AppText variant="callout" color={theme.primary}>
+            {t('auth.forgotPassword')}
+          </AppText>
+        </Pressable>
+      ) : null}
 
       <View style={styles.footer}>
         <AppText variant="callout" color={colors.textSecondary}>
