@@ -42,7 +42,7 @@ async function resolveSmtpIPv4List(host: string): Promise<string[]> {
   return addresses;
 }
 
-function createTransport(host: string) {
+function createTransport(host: string, port: number) {
   // `servername` isn't in @types/nodemailer, but the runtime reads it
   // (smtp-connection: `this.servername = this.options.servername`) — needed
   // so STARTTLS/SNI still validates against the real hostname once `host`
@@ -50,8 +50,8 @@ function createTransport(host: string) {
   const options: SMTPTransport.Options & { servername?: string } = {
     host,
     servername: env.SMTP_HOST,
-    port: env.SMTP_PORT,
-    secure: env.SMTP_PORT === 465,
+    port,
+    secure: port === 465, // 465 = implicit TLS; 587 = STARTTLS
     auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD },
     // Fail fast instead of hanging nodemailer's default multi-minute
     // timeouts, so a dead endpoint is abandoned quickly and the next IP
@@ -109,16 +109,27 @@ async function sendViaSmtp(input: SendMailInput): Promise<void> {
   // connects to Gmail timed out (ETIMEDOUT on CONN), then recovered. Each
   // DNS query for smtp.gmail.com returns just one (rotating) endpoint, so
   // there's no sibling IP to fall over to within a single attempt. Instead,
-  // retry the whole resolve+connect with backoff: a fresh resolution
-  // usually yields a different endpoint, and the throttle windows are
-  // short. Sends are fire-and-forget (see auth.service), so spending ~30s
-  // across retries never blocks a request.
-  const BACKOFFS_MS = [0, 3_000, 8_000, 20_000];
+  // retry the whole resolve+connect with backoff, and alternate the port
+  // between the configured one and its sibling (587 STARTTLS <-> 465
+  // implicit TLS) — if a cloud host throttles/blocks one submission port,
+  // the other often still connects. A fresh resolution each attempt also
+  // usually yields a different Gmail endpoint. Sends are fire-and-forget
+  // (see auth.service), so spending ~30s across retries never blocks a
+  // request.
+  const altPort = env.SMTP_PORT === 465 ? 587 : 465;
+  // [port, backoff-before-this-attempt-ms]
+  const ATTEMPTS: Array<[number, number]> = [
+    [env.SMTP_PORT, 0],
+    [altPort, 3_000],
+    [env.SMTP_PORT, 8_000],
+    [altPort, 20_000],
+  ];
   let lastErr: unknown;
 
-  for (let attempt = 0; attempt < BACKOFFS_MS.length; attempt++) {
-    if (BACKOFFS_MS[attempt] > 0) {
-      await new Promise((r) => setTimeout(r, BACKOFFS_MS[attempt]));
+  for (let attempt = 0; attempt < ATTEMPTS.length; attempt++) {
+    const [port, backoff] = ATTEMPTS[attempt];
+    if (backoff > 0) {
+      await new Promise((r) => setTimeout(r, backoff));
     }
 
     let host: string;
@@ -137,7 +148,7 @@ async function sendViaSmtp(input: SendMailInput): Promise<void> {
       }
     }
 
-    const transport = createTransport(host);
+    const transport = createTransport(host, port);
     try {
       await transport.sendMail(message);
       return; // delivered
@@ -145,7 +156,7 @@ async function sendViaSmtp(input: SendMailInput): Promise<void> {
       lastErr = err;
       // eslint-disable-next-line no-console
       console.warn(
-        `[mailer] send attempt ${attempt + 1}/${BACKOFFS_MS.length} via ${host} failed:`,
+        `[mailer] send attempt ${attempt + 1}/${ATTEMPTS.length} via ${host}:${port} failed:`,
         err,
       );
     } finally {
