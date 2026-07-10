@@ -184,7 +184,7 @@ function GradeSegment({
       <GaugeIcon
         ref={iconRef}
         difficulty={difficulty}
-        size={16}
+        size={20}
         color={selected ? theme.textInverse : c.main}
       />
       <AppText

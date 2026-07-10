@@ -418,14 +418,14 @@ const MixedIcon = forwardRef<FilterIconHandle, IconProps>(
           style={[StyleSheet.absoluteFill, { transform: [{ translateX: forward }] }]}
         >
           <Layer size={size}>
-            <Path d="M3 6.5 C9 6.5 15 17.5 21 17.5 M21 17.5 l-3.6 -1.8 M21 17.5 l-1.8 3.6" {...arrowProps} />
+            <Path d="M3 6.5 C9 6.5 15 17.5 21 17.5 M21 17.5 l-3.6 -1.7 M21 17.5 l-3.6 1.7" {...arrowProps} />
           </Layer>
         </AnimatedView>
         <AnimatedView
           style={[StyleSheet.absoluteFill, { transform: [{ translateX: backward }] }]}
         >
           <Layer size={size}>
-            <Path d="M21 6.5 C15 6.5 9 17.5 3 17.5 M3 17.5 l3.6 -1.8 M3 17.5 l1.8 3.6" {...arrowProps} />
+            <Path d="M3 17.5 C9 17.5 15 6.5 21 6.5 M21 6.5 l-3.6 -1.7 M21 6.5 l-3.6 1.7" {...arrowProps} />
           </Layer>
         </AnimatedView>
       </View>
@@ -441,15 +441,15 @@ MixedIcon.displayName = 'MixedIcon';
 // ---------------------------------------------------------------------------
 
 const GAUGE_REST_DEG: Record<Difficulty, number> = {
-  EASY: -52,
+  EASY: -40,
   MODERATE: 0,
-  HARD: 52,
+  HARD: 40,
 };
 
 const GAUGE_KICK: Record<Difficulty, { windup: number; kick: number }> = {
   EASY: { windup: -8, kick: 10 },
-  MODERATE: { windup: -16, kick: 20 },
-  HARD: { windup: -30, kick: 34 },
+  MODERATE: { windup: -14, kick: 18 },
+  HARD: { windup: -24, kick: 28 },
 };
 
 export const GaugeIcon = forwardRef<
@@ -501,7 +501,7 @@ export const GaugeIcon = forwardRef<
         <Path
           d="M4.5 12 A 7.5 7.5 0 0 1 19.5 12"
           stroke={color}
-          strokeWidth={2}
+          strokeWidth={1.6}
           strokeLinecap="round"
           fill="none"
         />
@@ -512,7 +512,7 @@ export const GaugeIcon = forwardRef<
       >
         <Layer size={size}>
           <Path
-            d="M12 12 L12 3.5"
+            d="M12 12 L12 7"
             stroke={color}
             strokeWidth={2.2}
             strokeLinecap="round"
